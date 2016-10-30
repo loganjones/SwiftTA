@@ -185,8 +185,8 @@ extension Document {
             case .file(let file):
                 do {
                     let fileURL = rootDirectory.appendingPathComponent(file.name)
-                    let data = "file: \(file.size) bytes".data(using: .utf8)
-                    try data?.write(to: fileURL, options: [.atomic])
+                    let data = try HPIItem.extract(item: item, fromFile: self.fileURL!)
+                    try data.write(to: fileURL, options: [.atomic])
                 }
                 catch {
                     Swift.print("Failed to write \(file.name) to file: \(error)")
