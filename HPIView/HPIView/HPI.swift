@@ -85,20 +85,20 @@ public enum HPIFormat {
         /// The decompressed size of file in bytes.
         var fileSize: UInt32
         
-        /// Specifies the compression metthod used on the file data, if any.
+        /// Specifies the compression method used on the file data, if any.
         var compressionType: UInt8
     }
     
-    struct FileEntryCompressionTypes: OptionSet {
-        let rawValue: UInt8
+    enum FileEntryCompression: UInt8 {
         
-        /// Compression flag indicating that the file data is compressed using
-        /// LZ77 compression.
-        static let lz77 = FileEntryCompressionTypes(rawValue: 1 << 0)
+        /// Compression flag indicating that the file data is not compressed.
+        case none = 0
         
-        /// Compression flag indicating that the file data is compressed using
-        /// ZLIB compression.
-        static let zlib = FileEntryCompressionTypes(rawValue: 1 << 1)
+        /// Compression flag indicating that the file data is compressed using LZ77 compression.
+        case lz77 = 1
+        
+        /// Compression flag indicating that the file data is compressed using ZLIB compression.
+        case zlib = 2
     }
     
     public struct ChunkHeader {
@@ -207,7 +207,7 @@ extension FileHandle {
 }
 
 enum HPIItem {
-    case file(name: String)
+    case file(name: String, size: Int, offset: Int, compression: HPIFormat.FileEntryCompression)
     indirect case directory(name: String, items: [HPIItem])
 }
 
@@ -277,7 +277,17 @@ extension HPIItem {
                 items.append(.directory(name: name, items: items2))
             }
             else {
-                items.append(.file(name: name))
+                let fileEntryData = file.readAndDecryptData(ofLength: MemoryLayout<HPIFormat.FileEntry>.size,
+                                                        offset: entry.dataOffset,
+                                                        key: key)
+                let fileEntry: HPIFormat.FileEntry = fileEntryData.withUnsafeBytes { $0.pointee }
+                
+                items.append(.file(
+                    name: name,
+                    size: Int(fileEntry.fileSize),
+                    offset: Int(fileEntry.offsetToFileData),
+                    compression: HPIFormat.FileEntryCompression(rawValue: fileEntry.compressionType) ?? .none
+                    ))
             }
         }
         return items

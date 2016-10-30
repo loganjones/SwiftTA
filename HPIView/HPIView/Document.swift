@@ -93,7 +93,7 @@ extension Document: NSBrowserDelegate {
     func browser(_ browser: NSBrowser, objectValueForItem item: Any?) -> Any? {
         guard let hpi = item as? HPIItem else { return "!?!" }
         switch hpi {
-        case .file(let name): return name
+        case .file(let file): return file.name
         case .directory(let name, _): return name
         }
     }
@@ -182,14 +182,14 @@ extension Document {
         for item in items {
             
             switch item {
-            case .file(let name):
+            case .file(let file):
                 do {
-                    let fileURL = rootDirectory.appendingPathComponent(name)
-                    let data = "test string".data(using: .utf8)
+                    let fileURL = rootDirectory.appendingPathComponent(file.name)
+                    let data = "file: \(file.size) bytes".data(using: .utf8)
                     try data?.write(to: fileURL, options: [.atomic])
                 }
                 catch {
-                    Swift.print("Failed to write \(name) to file: \(error)")
+                    Swift.print("Failed to write \(file.name) to file: \(error)")
                 }
                 
             case .directory(let name, let children):
