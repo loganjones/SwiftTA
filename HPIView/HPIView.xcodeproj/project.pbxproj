@@ -13,6 +13,8 @@
 		B50F6A551D87A54B0016C15B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A541D87A54B0016C15B /* Assets.xcassets */; };
 		B50F6A581D87A54B0016C15B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A561D87A54B0016C15B /* MainMenu.xib */; };
 		B50F6A601D87A8C40016C15B /* HPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6A5F1D87A8C40016C15B /* HPI.swift */; };
+		B58ECABE1DC6B81C005F231F /* ta_HPI_decompress.c in Sources */ = {isa = PBXBuildFile; fileRef = B58ECABC1DC6B81C005F231F /* ta_HPI_decompress.c */; };
+		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +26,11 @@
 		B50F6A571D87A54B0016C15B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		B50F6A591D87A54B0016C15B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B50F6A5F1D87A8C40016C15B /* HPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HPI.swift; sourceTree = "<group>"; };
+		B58ECABA1DC6B35B005F231F /* ta_HPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_HPI.h; sourceTree = "<group>"; };
+		B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
+		B58ECABC1DC6B81C005F231F /* ta_HPI_decompress.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ta_HPI_decompress.c; sourceTree = "<group>"; };
+		B58ECABD1DC6B81C005F231F /* ta_HPI_decompress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_HPI_decompress.h; sourceTree = "<group>"; };
+		B58ECAC01DC6BE90005F231F /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +38,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +50,7 @@
 			children = (
 				B50F6A4C1D87A54B0016C15B /* HPIView */,
 				B50F6A4B1D87A54B0016C15B /* Products */,
+				B58ECABF1DC6BE90005F231F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -59,12 +68,24 @@
 				B50F6A4D1D87A54B0016C15B /* AppDelegate.swift */,
 				B50F6A4F1D87A54B0016C15B /* Document.swift */,
 				B50F6A5F1D87A8C40016C15B /* HPI.swift */,
+				B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */,
+				B58ECABA1DC6B35B005F231F /* ta_HPI.h */,
+				B58ECABC1DC6B81C005F231F /* ta_HPI_decompress.c */,
+				B58ECABD1DC6B81C005F231F /* ta_HPI_decompress.h */,
 				B50F6A511D87A54B0016C15B /* Document.xib */,
 				B50F6A541D87A54B0016C15B /* Assets.xcassets */,
 				B50F6A561D87A54B0016C15B /* MainMenu.xib */,
 				B50F6A591D87A54B0016C15B /* Info.plist */,
 			);
 			path = HPIView;
+			sourceTree = "<group>";
+		};
+		B58ECABF1DC6BE90005F231F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B58ECAC01DC6BE90005F231F /* libz.tbd */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -141,6 +162,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B50F6A601D87A8C40016C15B /* HPI.swift in Sources */,
+				B58ECABE1DC6B81C005F231F /* ta_HPI_decompress.c in Sources */,
 				B50F6A501D87A54B0016C15B /* Document.swift in Sources */,
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
 			);
@@ -268,6 +290,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = Toasty.HPIView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = HPIView/BridgingHeader.h;
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -282,6 +305,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = Toasty.HPIView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = HPIView/BridgingHeader.h;
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
@@ -305,6 +329,7 @@
 				B50F6A5E1D87A54B0016C15B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

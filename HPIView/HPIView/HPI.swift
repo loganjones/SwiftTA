@@ -85,26 +85,26 @@ public enum HPIFormat {
         /// The decompressed size of file in bytes.
         var fileSize: UInt32
         
-        /// Specifies the compression metthod used on the file data, if any.
+        /// Specifies the compression method used on the file data, if any.
         var compressionType: UInt8
     }
     
-    struct FileEntryCompressionTypes: OptionSet {
-        let rawValue: UInt8
+    enum FileEntryCompression: UInt8 {
         
-        /// Compression flag indicating that the file data is compressed using
-        /// LZ77 compression.
-        static let lz77 = FileEntryCompressionTypes(rawValue: 1 << 0)
+        /// Compression flag indicating that the file data is not compressed.
+        case none = 0
         
-        /// Compression flag indicating that the file data is compressed using
-        /// ZLIB compression.
-        static let zlib = FileEntryCompressionTypes(rawValue: 1 << 1)
+        /// Compression flag indicating that the file data is compressed using LZ77 compression.
+        case lz77 = 1
+        
+        /// Compression flag indicating that the file data is compressed using ZLIB compression.
+        case zlib = 2
     }
     
     public struct ChunkHeader {
         
         /// This marks this as a data chunk.
-        var marker: Int32
+        var marker: UInt32
 
         /// This is always 0x02.
         var unknown_1: UInt8
@@ -130,16 +130,16 @@ public enum HPIFormat {
     /// Check for the marker to make sure the chunk is valid. Should be 'SQSH'
     public static let ChunkHeaderMarker: UInt32 = 0x48535153
     
-    struct ChunckCompressionTypes: OptionSet {
-        let rawValue: UInt8
+    enum ChunckCompression: UInt8 {
         
-        /// Compression flag indicating that the chunk data is compressed using
-        /// LZ77 compression.
-        static let lz77 = ChunckCompressionTypes(rawValue: 1 << 0)
+        /// Compression flag indicating that the chunk data is not compressed.
+        case none = 0
         
-        /// Compression flag indicating that the chunk data is compressed using
-        /// ZLIB compression.
-        static let zlib = ChunckCompressionTypes(rawValue: 1 << 1)
+        /// Compression flag indicating that the chunk data is compressed using LZ77 compression.
+        case lz77 = 1
+        
+        /// Compression flag indicating that the chunk data is compressed using ZLIB compression.
+        case zlib = 2
     }
     
     /// The default chunk size for when a Total Annihilation file is split up
@@ -197,7 +197,7 @@ extension FileHandle {
         var data = readData(ofLength: size)
         let koffset = Int32(offset)
         for index in 0..<size {
-            let tkey = (koffset + index) ^ key
+            let tkey = (koffset &+ Int32(index)) ^ key
             let inv = Int32(~data[index])
             data[index] = UInt8(truncatingBitPattern: tkey ^ inv)
         }
@@ -207,7 +207,7 @@ extension FileHandle {
 }
 
 enum HPIItem {
-    case file(name: String)
+    case file(name: String, size: Int, offset: Int, compression: HPIFormat.FileEntryCompression)
     indirect case directory(name: String, items: [HPIItem])
 }
 
@@ -228,8 +228,8 @@ extension HPIItem {
         
         switch hpiType {
         case .ta: self = try HPIItem(withTAFile: file)
-        case .tak: throw LoadError.badHPIType(Int(header.version))
-        case .savegame: throw LoadError.badHPIType(Int(header.version))
+        case .tak: throw LoadError.unsupportedHPIType(Int(header.version))
+        case .savegame: throw LoadError.unsupportedHPIType(Int(header.version))
         }
         
     }
@@ -277,7 +277,17 @@ extension HPIItem {
                 items.append(.directory(name: name, items: items2))
             }
             else {
-                items.append(.file(name: name))
+                let fileEntryData = file.readAndDecryptData(ofLength: MemoryLayout<HPIFormat.FileEntry>.size,
+                                                        offset: entry.dataOffset,
+                                                        key: key)
+                let fileEntry: HPIFormat.FileEntry = fileEntryData.withUnsafeBytes { $0.pointee }
+                
+                items.append(.file(
+                    name: name,
+                    size: Int(fileEntry.fileSize),
+                    offset: Int(fileEntry.offsetToFileData),
+                    compression: HPIFormat.FileEntryCompression(rawValue: fileEntry.compressionType) ?? .none
+                    ))
             }
         }
         return items
@@ -288,5 +298,169 @@ extension HPIItem {
         case badHPIMarker(Int)
         case badHPIType(Int)
         case unsupportedHPIType(Int)
+        case cantExtractDirectory
+    }
+    
+    public static func extract(item: HPIItem, fromFile url: URL) throws -> Data {
+        
+        guard case .file(let fileInfo) = item
+            else { throw LoadError.cantExtractDirectory }
+        
+        guard let file = try? FileHandle(forReadingFrom: url)
+            else { throw LoadError.failedToOpenFile }
+        
+        let headerData = file.readData(ofLength: MemoryLayout<HPIFormat.FileHeader>.size)
+        let header: HPIFormat.FileHeader = headerData.withUnsafeBytes { $0.pointee }
+        
+        guard header.marker == HPIFormat.FileHeaderMarker
+            else { throw LoadError.badHPIMarker(Int(header.marker)) }
+        guard let hpiType = HPIFormat.FileHeaderVersion(rawValue: header.version)
+            else { throw LoadError.badHPIType(Int(header.version)) }
+        
+        guard hpiType == .ta
+            else { throw LoadError.unsupportedHPIType(Int(header.version)) }
+        
+        let extData = file.readData(ofLength: MemoryLayout<HPIFormat.TAExtendedHeader>.size)
+        let ext: HPIFormat.TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
+        let key = ~( (ext.headerKey * 4) | (ext.headerKey >> 6) )
+        
+        switch fileInfo.compression {
+            
+        case .none:
+            let data = file.readAndDecryptData(ofLength: fileInfo.size,
+                                               offset: UInt32(fileInfo.offset),
+                                               key: key)
+            return data
+            
+        case .lz77: fallthrough
+        case .zlib:
+            var data = Data()
+            
+            let chunkCount = (fileInfo.size / Int(HPIFormat.ChunkMaximumSize)) +
+                ( (fileInfo.size % Int(HPIFormat.ChunkMaximumSize)) != 0 ? 1:0 )
+            
+            let chunkSizeData = file.readAndDecryptData(ofLength: MemoryLayout<UInt32>.size * chunkCount,
+                                                        offset: UInt32(fileInfo.offset),
+                                                        key: key)
+            let chunkSizes = chunkSizeData.withUnsafeBytes {
+                Array(UnsafeBufferPointer<UInt32>(start: $0, count: chunkCount))
+            }
+            var chunkOffset = UInt32(fileInfo.offset + chunkSizeData.count)
+            for chunkSize in chunkSizes {
+                let chunkHeaderSize = UInt32(MemoryLayout<TA_HPI_CHUNK>.size)
+                let chunkHeaderData = file.readAndDecryptData(ofLength: Int(chunkHeaderSize),
+                                                              offset: chunkOffset,
+                                                              key: key)
+                let chunkHeader: TA_HPI_CHUNK = chunkHeaderData.withUnsafeBytes { $0.pointee }
+                guard chunkHeader.marker == HPIFormat.ChunkHeaderMarker
+                    else { throw LoadError.badHPIMarker(Int(header.marker)) }
+                
+                var chunkData = file.readAndDecryptData(ofLength: Int(chunkSize - chunkHeaderSize),
+                                                              offset: chunkOffset + chunkHeaderSize,
+                                                              key: key)
+                
+                if chunkHeader.encryptionFlag != 0 {
+                    for index in 0..<Int(chunkHeader.compressedSize) {
+                        let x = UInt8(truncatingBitPattern: index)
+                        chunkData[index] = (chunkData[index] &- x) ^ x
+                    }
+                }
+                
+                if let compression = HPIFormat.ChunckCompression(rawValue: chunkHeader.compressionType) {
+                    switch compression {
+                    case .none:
+                        print("chunk uses no compression")
+                        data.append(chunkData)
+                    case .lz77:
+                        print("chunk uses LZ77 compression")
+                        let outBytes = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(chunkHeader.decompressedSize))
+                        let outSize = chunkData.withUnsafeBytes { hpi_decompress_LZ77($0, outBytes) }
+                        data.append(outBytes, count: Int(outSize))
+                        outBytes.deallocate(capacity: Int(chunkHeader.decompressedSize))
+                    case .zlib:
+                        print("chunk uses ZLib compression")
+                        let outBytes = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(chunkHeader.decompressedSize))
+                        let outSize = chunkData.withUnsafeBytes { hpi_decompress_ZLib($0, outBytes, chunkHeader.compressedSize, chunkHeader.decompressedSize) }
+                        data.append(outBytes, count: Int(outSize))
+                        outBytes.deallocate(capacity: Int(chunkHeader.decompressedSize))
+                    }
+                }
+                else {
+                    
+                }
+                
+                chunkOffset += chunkSize
+            }
+            
+            return data
+        }
+    }
+}
+
+fileprivate extension Data {
+    
+    func decompressLZ77() -> Data {
+        
+//        int x;
+//        int work1;
+//        int work2;
+//        int work3;
+//        int inptr;
+//        int outptr;
+//        int count;
+//        int done;
+//        char DBuff[4096];
+//        int DPtr;
+        
+        var done = false
+        
+        var work1 = 1
+        var work2 = 1
+        var work3 = Int(self[0])
+        var inptr = 1
+        var out = Data()
+        
+        var DBuff = Array<UInt8>(repeating: 0, count: 4096)
+        
+        while !done {
+            if (work2 & work3) == 0 {
+                out.append(self[inptr])
+                DBuff[work1] = self[inptr]
+                work1 = (work1 + 1) & 0xFFF
+                inptr += 1
+            }
+            else {
+                var count: UInt16 = self.withUnsafeBytes { ($0 + inptr).pointee }
+                inptr += 2
+                var DPtr = Int(count >> 4)
+                if DPtr == 0 {
+                    return out
+                }
+                else {
+                    count = (count & 0x0F) + 2
+                    if count >= 0 {
+                        for _ in 0..<count {
+                            out.append(DBuff[DPtr])
+                            DBuff[work1] = DBuff[DPtr]
+                            DPtr = (DPtr + 1) & 0xFFF
+                            work1 = (work1 + 1) & 0xFFF
+                        }
+                        
+                    }
+                }
+            }
+            work2 *= 2
+            if (work2 & 0x0100) != 0 {
+                work2 = 1
+                work3 = Int(self[inptr])
+                inptr += 1
+            }
+        }
+        
+        return out
+    }
+    
+    func decompressZLIB() -> Data {
+        return self
     }
 }

@@ -93,7 +93,7 @@ extension Document: NSBrowserDelegate {
     func browser(_ browser: NSBrowser, objectValueForItem item: Any?) -> Any? {
         guard let hpi = item as? HPIItem else { return "!?!" }
         switch hpi {
-        case .file(let name): return name
+        case .file(let file): return file.name
         case .directory(let name, _): return name
         }
     }
@@ -142,6 +142,24 @@ extension Document {
     
     @IBAction func extract(sender: Any?) {
         
+        let items = selectedItems()
+        guard items.count > 0
+            else { Swift.print("No selected items to extract."); return }
+        
+        guard let window = windowForSheet
+            else { Swift.print("Document has no windowForSheet."); return }
+        
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.beginSheetModal(for: window) {
+            switch $0 {
+            case NSFileHandlingPanelOKButton:
+                if let url = panel.url { self.extractItems(items, to: url) }
+            default:
+                ()
+            }
+        }
     }
     
     @IBAction func extractAll(sender: Any?) {
@@ -157,6 +175,61 @@ extension Document {
             return (browser?.selectionIndexPaths.count ?? 0) > 0
         }
         return true
+    }
+    
+    func extractItems(_ items: [HPIItem], to rootDirectory: URL) {
+        
+        for item in items {
+            
+            switch item {
+            case .file(let file):
+                do {
+                    let fileURL = rootDirectory.appendingPathComponent(file.name)
+                    let data = try HPIItem.extract(item: item, fromFile: self.fileURL!)
+                    try data.write(to: fileURL, options: [.atomic])
+                }
+                catch {
+                    Swift.print("Failed to write \(file.name) to file: \(error)")
+                }
+                
+            case .directory(let name, let children):
+                do {
+                    let directoryURL = rootDirectory.appendingPathComponent(name)
+                    try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+                    extractItems(children, to: directoryURL)
+                }
+                catch {
+                    Swift.print("Failed to create directory \(name): \(error)")
+                }
+            }
+            
+        }
+        
+    }
+}
+
+extension Document {
+    
+    func selectedItems() -> [HPIItem] {
+        let items = (browser?.selectionIndexPaths ?? []).flatMap({ item(at: $0) })
+        return items
+    }
+    
+    func item(at path: IndexPath) -> HPIItem? {
+        
+        guard let root = root
+            else { return nil }
+        
+        var item = root
+        
+        for index in path {
+            switch item {
+            case .file: return nil
+            case .directory(_, let items): item = items[index]
+            }
+        }
+        
+        return item
     }
     
 }
