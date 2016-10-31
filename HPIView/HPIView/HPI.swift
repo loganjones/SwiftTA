@@ -146,48 +146,6 @@ public enum HPIFormat {
     /// into many chunks.
     public static let ChunkMaximumSize: UInt32 = 65536
     
-    static func testRead(url: URL) {
-        
-        guard let file = try? FileHandle(forReadingFrom: url)
-            else { return }
-        
-        let headerData = file.readData(ofLength: MemoryLayout<FileHeader>.size)
-        let header: FileHeader = headerData.withUnsafeBytes { $0.pointee }
-        
-        let extData = file.readData(ofLength: MemoryLayout<TAExtendedHeader>.size)
-        let ext: TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
-        print("header: \(header)")
-        print("ext:    \(ext)")
-        
-        let key = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
-
-        let rootData = file.readAndDecryptData(ofLength: MemoryLayout<DirectoryHeader>.size,
-                                               offset: ext.directoryOffset,
-                                               key: key)
-        let rootHeader: DirectoryHeader = rootData.withUnsafeBytes { $0.pointee }
-        print("root:   \(rootHeader)")
-
-        let entrySize = MemoryLayout<EntryHeader>.size
-        for entryIndex in 0..<rootHeader.numberOfEntries {
-            
-            let entryData = file.readAndDecryptData(ofLength: entrySize,
-                                                    offset: rootHeader.entryArrayOffset + (entryIndex * UInt32(entrySize)),
-                                                    key: key)
-            let entry: EntryHeader = entryData.withUnsafeBytes { $0.pointee }
-            
-            var charOffset = entry.nameOffset
-            var name = String()
-            string_read: while(true) {
-                let charData = file.readAndDecryptData(ofLength: 1, offset: charOffset, key: key)
-                let byte: UInt8 = charData.withUnsafeBytes { $0.pointee }
-                let char = UnicodeScalar(byte)
-                if byte != 0 { name.append(String(char)) } else { break string_read }
-                charOffset += 1
-            }
-            print("- \(name)")
-        }
-    }
-    
 }
 
 extension FileHandle {
