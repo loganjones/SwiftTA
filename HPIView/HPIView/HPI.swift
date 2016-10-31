@@ -146,48 +146,6 @@ public enum HPIFormat {
     /// into many chunks.
     public static let ChunkMaximumSize: UInt32 = 65536
     
-    static func testRead(url: URL) {
-        
-        guard let file = try? FileHandle(forReadingFrom: url)
-            else { return }
-        
-        let headerData = file.readData(ofLength: MemoryLayout<FileHeader>.size)
-        let header: FileHeader = headerData.withUnsafeBytes { $0.pointee }
-        
-        let extData = file.readData(ofLength: MemoryLayout<TAExtendedHeader>.size)
-        let ext: TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
-        print("header: \(header)")
-        print("ext:    \(ext)")
-        
-        let key = ~( (ext.headerKey * 4) | (ext.headerKey >> 6) )
-
-        let rootData = file.readAndDecryptData(ofLength: MemoryLayout<DirectoryHeader>.size,
-                                               offset: ext.directoryOffset,
-                                               key: key)
-        let rootHeader: DirectoryHeader = rootData.withUnsafeBytes { $0.pointee }
-        print("root:   \(rootHeader)")
-
-        let entrySize = MemoryLayout<EntryHeader>.size
-        for entryIndex in 0..<rootHeader.numberOfEntries {
-            
-            let entryData = file.readAndDecryptData(ofLength: entrySize,
-                                                    offset: rootHeader.entryArrayOffset + (entryIndex * UInt32(entrySize)),
-                                                    key: key)
-            let entry: EntryHeader = entryData.withUnsafeBytes { $0.pointee }
-            
-            var charOffset = entry.nameOffset
-            var name = String()
-            string_read: while(true) {
-                let charData = file.readAndDecryptData(ofLength: 1, offset: charOffset, key: key)
-                let byte: UInt8 = charData.withUnsafeBytes { $0.pointee }
-                let char = UnicodeScalar(byte)
-                if byte != 0 { name.append(String(char)) } else { break string_read }
-                charOffset += 1
-            }
-            print("- \(name)")
-        }
-    }
-    
 }
 
 extension FileHandle {
@@ -195,11 +153,14 @@ extension FileHandle {
     func readAndDecryptData(ofLength size: Int, offset: UInt32, key: Int32) -> Data {
         seek(toFileOffset: UInt64(offset))
         var data = readData(ofLength: size)
+        if data.count < size { print("read less data than requested! (wanted \(size) bytes, read \(data.count) bytes)") }
         let koffset = Int32(offset)
-        for index in 0..<size {
-            let tkey = (koffset &+ Int32(index)) ^ key
-            let inv = Int32(~data[index])
-            data[index] = UInt8(truncatingBitPattern: tkey ^ inv)
+        if key != 0 {
+            for index in 0..<data.count {
+                let tkey = (koffset &+ Int32(index)) ^ key
+                let inv = Int32(~data[index])
+                data[index] = UInt8(truncatingBitPattern: tkey ^ inv)
+            }
         }
         return data
     }
@@ -237,7 +198,7 @@ extension HPIItem {
     private init(withTAFile file: FileHandle) throws {
         let extData = file.readData(ofLength: MemoryLayout<HPIFormat.TAExtendedHeader>.size)
         let ext: HPIFormat.TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
-        let key = ~( (ext.headerKey * 4) | (ext.headerKey >> 6) )
+        let key = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
         let items = try HPIItem.loadItems(fromTAFile: file, atOffset: ext.directoryOffset, withKey: key)
         self = .directory(name: "", items: items)
     }
@@ -300,6 +261,10 @@ extension HPIItem {
         case unsupportedHPIType(Int)
         case cantExtractDirectory
     }
+    enum ExtractError: Error {
+        case badChunkMarker(Int)
+        case badCompressionType(Int)
+    }
     
     public static func extract(item: HPIItem, fromFile url: URL) throws -> Data {
         
@@ -322,7 +287,7 @@ extension HPIItem {
         
         let extData = file.readData(ofLength: MemoryLayout<HPIFormat.TAExtendedHeader>.size)
         let ext: HPIFormat.TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
-        let key = ~( (ext.headerKey * 4) | (ext.headerKey >> 6) )
+        let key = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
         
         switch fileInfo.compression {
             
@@ -353,7 +318,7 @@ extension HPIItem {
                                                               key: key)
                 let chunkHeader: TA_HPI_CHUNK = chunkHeaderData.withUnsafeBytes { $0.pointee }
                 guard chunkHeader.marker == HPIFormat.ChunkHeaderMarker
-                    else { throw LoadError.badHPIMarker(Int(header.marker)) }
+                    else { throw ExtractError.badChunkMarker(Int(chunkHeader.marker)) }
                 
                 var chunkData = file.readAndDecryptData(ofLength: Int(chunkSize - chunkHeaderSize),
                                                               offset: chunkOffset + chunkHeaderSize,
@@ -386,7 +351,7 @@ extension HPIItem {
                     }
                 }
                 else {
-                    
+                    throw ExtractError.badCompressionType(Int(chunkHeader.compressionType))
                 }
                 
                 chunkOffset += chunkSize
