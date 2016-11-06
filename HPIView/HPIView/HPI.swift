@@ -174,6 +174,17 @@ enum HPIItem {
 
 extension HPIItem {
     
+    var name: String {
+        switch self {
+        case .file(let properties): return properties.name
+        case .directory(let properties): return properties.name
+        }
+    }
+    
+}
+
+extension HPIItem {
+    
     init(withContentsOf url: URL) throws {
         
         guard let file = try? FileHandle(forReadingFrom: url)

@@ -11,7 +11,13 @@ import Cocoa
 class Document: NSDocument {
     
     var root: HPIItem?
-    @IBOutlet weak var browser: NSBrowser?
+    @IBOutlet weak var fileTreeView: NSOutlineView?
+    
+    let sizeFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
 
     override init() {
         super.init()
@@ -60,67 +66,79 @@ class Document: NSDocument {
 
 }
 
-extension Document: NSBrowserDelegate {
+extension Document: NSOutlineViewDataSource {
     
-    func rootItem(for browser: NSBrowser) -> Any? {
-        return root
-    }
-    
-    func browser(_ browser: NSBrowser, numberOfChildrenOfItem item: Any?) -> Int {
-        guard let hpi = item as? HPIItem else { return 0 }
-        switch hpi {
-        case .file: return 0
-        case .directory(_, let items): return items.count
+    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
+        if item == nil {
+            return root?.numberOfChildren ?? 0
+        }
+        else {
+            guard let hpi = item as? HPIItem
+                else { return 0 }
+            return hpi.numberOfChildren
         }
     }
     
-    func browser(_ browser: NSBrowser, child index: Int, ofItem item: Any?) -> Any {
-        guard let hpi = item as? HPIItem else { fatalError("Bad HPI Item") }
+    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
+        let hpi: HPIItem
+        if item == nil {
+            if let good = root { hpi = good } else { fatalError("Bad Root Item") }
+        }
+        else {
+            if let good = item as? HPIItem { hpi = good } else { fatalError("Bad HPI Item") }
+        }
         switch hpi {
         case .file: fatalError("Bad HPI Item")
         case .directory(_, let items): return items[index]
         }
     }
     
-    func browser(_ browser: NSBrowser, isLeafItem item: Any?) -> Bool {
-        guard let hpi = item as? HPIItem else { return true }
-        switch hpi {
-        case .file: return true
-        case .directory: return false
-        }
+    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
+        guard let hpi = item as? HPIItem else { fatalError("Bad HPI Item") }
+        return hpi.numberOfChildren > 0
     }
     
-    func browser(_ browser: NSBrowser, objectValueForItem item: Any?) -> Any? {
-        guard let hpi = item as? HPIItem else { return "!?!" }
-        switch hpi {
-        case .file(let file): return file.name
-        case .directory(let name, _): return name
-        }
-    }
-    
-    func browser(_ browser: NSBrowser, writeRowsWith rowIndexes: IndexSet, inColumn column: Int, to pasteboard: NSPasteboard) -> Bool {
-        Swift.print("browser:writeRowsWith:inColumn:to:")
+    func outlineView(_ outlineView: NSOutlineView, writeItems items: [Any], to pasteboard: NSPasteboard) -> Bool {
         
-        //pasteboard.declareTypes([NSFileContentsPboardType], owner: self)
-        
-        //pasteboard.clearContents()
-        //pasteboard.writeObjects([FooWriter()])
-        
-        pasteboard.declareTypes([NSFilesPromisePboardType], owner: self)
+        pasteboard.declareTypes([NSFilesPromisePboardType], owner: nil)
         pasteboard.setPropertyList(["txt"], forType: NSFilesPromisePboardType)
         
         return true
+        
     }
     
-    func browser(_ browser: NSBrowser, namesOfPromisedFilesDroppedAtDestination dropDestination: URL, forDraggedRowsWith rowIndexes: IndexSet, inColumn column: Int) -> [String] {
-        Swift.print("browser:namesOfPromisedFilesDropped(atDestination: \(dropDestination))")
-        return ["test.txt"]
+}
+
+extension Document: NSOutlineViewDelegate {
+    
+    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        guard let hpi = item as? HPIItem else { fatalError("Bad HPI Item") }
+        
+        switch tableColumn?.identifier {
+            
+        case .some("FileColumn"):
+            let view = outlineView.make(withIdentifier: "FileCell", owner: self) as? NSTableCellView
+            view?.textField?.stringValue = hpi.name
+            return view
+            
+        case .some("SizeColumn"):
+            let view = outlineView.make(withIdentifier: "SizeCell", owner: self) as? NSTableCellView
+            switch hpi {
+            case .file(let properties): view?.textField?.stringValue = sizeFormatter.string(fromByteCount: Int64(properties.size))
+            case .directory: view?.textField?.stringValue = ""
+            }
+            return view
+            
+        default:
+            return nil
+            
+        }
     }
     
-//    override func namesOfPromisedFilesDropped(atDestination dropDestination: URL) -> [String]? {
-//        Swift.print("namesOfPromisedFilesDropped(atDestination: \(dropDestination))")
-//        return ["test.txt"]
-//    }
+    func outlineView(_ outlineView: NSOutlineView, namesOfPromisedFilesDroppedAtDestination dropDestination: URL, forDraggedItems items: [Any]) -> [String] {
+    
+        return ["Foo"]
+    }
     
 }
 
@@ -172,7 +190,7 @@ extension Document {
     
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.action == #selector(extract) {
-            return (browser?.selectionIndexPaths.count ?? 0) > 0
+            return (fileTreeView?.selectedRowIndexes.count ?? 0) > 0
         }
         return true
     }
@@ -211,25 +229,8 @@ extension Document {
 extension Document {
     
     func selectedItems() -> [HPIItem] {
-        let items = (browser?.selectionIndexPaths ?? []).flatMap({ item(at: $0) })
-        return items
-    }
-    
-    func item(at path: IndexPath) -> HPIItem? {
-        
-        guard let root = root
-            else { return nil }
-        
-        var item = root
-        
-        for index in path {
-            switch item {
-            case .file: return nil
-            case .directory(_, let items): item = items[index]
-            }
-        }
-        
-        return item
+        guard let tree = fileTreeView else { return [] }
+        return tree.selectedRowIndexes.flatMap({ tree.item(atRow: $0) as? HPIItem })
     }
     
 }
@@ -257,4 +258,15 @@ extension FooWriter: NSPasteboardWriting {
             return nil
         }
     }
+}
+
+fileprivate extension HPIItem {
+    
+    var numberOfChildren: Int {
+        switch self {
+        case .file: return 0
+        case .directory(_, let items): return items.count
+        }
+    }
+    
 }
