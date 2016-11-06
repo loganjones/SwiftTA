@@ -185,6 +185,7 @@ extension HPIItem {
 
 extension HPIItem {
     
+    /// Parse & load an HPI file into a heirarchical set of HPIItems.
     init(withContentsOf url: URL) throws {
         
         guard let file = try? FileHandle(forReadingFrom: url)
@@ -206,63 +207,88 @@ extension HPIItem {
         
     }
     
+    /// Parse & load a Total Annihilation HPI file-system into a heirarchical set of HPIItems.
     private init(withTAFile file: FileHandle) throws {
+        
         let extData = file.readData(ofLength: MemoryLayout<HPIFormat.TAExtendedHeader>.size)
         let ext: HPIFormat.TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
-        let key = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
-        let items = try HPIItem.loadItems(fromTAFile: file, atOffset: ext.directoryOffset, withKey: key)
-        self = .directory(name: "", items: items)
+        
+        // The headerKey is non-zero then this entire HPI file (other than the header, of course)
+        // is enctrypted with a simple key. This keyiteslf must be decoded with some simple bit shifting.
+        let archiveKey = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
+        
+        // Read the entire file-system directory into memory.
+        // Every bit of meta-data about the filesystem should be within this data blob;
+        // everyting remaining in the HPI file is chunked (and optionally compressed) file conetent.
+        let fsData = file.readAndDecryptData(ofLength: Int(ext.directorySize),
+                                             offset: ext.directoryOffset,
+                                             key: archiveKey)
+        
+        // Parse the contents of the file-system directory by recursively iterating
+        // over its contents with loadDirectory(). We start with the root directory
+        // which should be the first item at to beginning of the file-system directory.
+        self = try fsData.withUnsafeBytes { (p: UnsafePointer<UInt8>) throws -> HPIItem in
+            let fileSystem = FileSystem(memory: p, offset: ext.directoryOffset)
+            let rootItems = try HPIItem.loadDirectory(atOffset: ext.directoryOffset, in: fileSystem)
+            return .directory(name: "", items: rootItems)
+        }
     }
     
-    private static func loadItems(fromTAFile file: FileHandle, atOffset offset: UInt32, withKey key: Int32) throws -> [HPIItem] {
+    /// A convenience structure that represents the file-system directory in memory.
+    /// loadDirectory() uses this to seek around the file-system directory and bind
+    /// various HPI structures.
+    private struct FileSystem {
+        var memory: UnsafePointer<UInt8>
+        var offset: UInt32
+        func at(_ offset: UInt32) -> UnsafePointer<UInt8> {
+            return memory + (Int(offset) - Int(self.offset))
+        }
+        func rawMemory(at offset: UInt32) -> UnsafeRawPointer {
+            return UnsafeRawPointer(memory + (Int(offset) - Int(self.offset)))
+        }
+        /// Bind a single instance of T structure in memory.
+        func bindMemory<T>(to type: T.Type, at offset: UInt32) -> UnsafePointer<T> {
+            return UnsafeRawPointer(memory + (Int(offset) - Int(self.offset))).bindMemory(to: type, capacity: 1)
+        }
+        /// Bind a sequence of T structures in memory.
+        public func bindMemoryBuffer<T>(to type: T.Type, capacity count: UInt32, at offset: UInt32) -> UnsafeBufferPointer<T> {
+            let raw = UnsafeRawPointer(memory + (Int(offset) - Int(self.offset)))
+            let p = raw.bindMemory(to: type, capacity: Int(count))
+            return UnsafeBufferPointer<T>(start: p, count: Int(count))
+        }
+    }
     
-        let rootData = file.readAndDecryptData(ofLength: MemoryLayout<HPIFormat.DirectoryHeader>.size,
-                                               offset: offset,
-                                               key: key)
-        let rootHeader: HPIFormat.DirectoryHeader = rootData.withUnsafeBytes { $0.pointee }
-        //print("root:   \(rootHeader)")
+    private static func loadDirectory(atOffset offset: UInt32, in fileSystem: FileSystem) throws -> [HPIItem] {
         
-        var items = [HPIItem]()
-        let entrySize = MemoryLayout<HPIFormat.EntryHeader>.size
-        for entryIndex in 0..<rootHeader.numberOfEntries {
+        let header = fileSystem.bindMemory(to: HPIFormat.DirectoryHeader.self, at: offset).pointee
+        let entries = fileSystem.bindMemoryBuffer(to: TA_HPI_ENTRY.self,
+                                                  capacity: header.numberOfEntries,
+                                                  at: header.entryArrayOffset)
+        
+        // Map each header entry of this directory into an HPIItem.
+        return try entries.map({ (entry) throws -> HPIItem in
             
-            let entryData = file.readAndDecryptData(ofLength: entrySize,
-                                                    offset: rootHeader.entryArrayOffset + (entryIndex * UInt32(entrySize)),
-                                                    key: key)
-            let entry: HPIFormat.EntryHeader = entryData.withUnsafeBytes { $0.pointee }
+            let name = String(cString: fileSystem.at(entry.offsetToName))
+            let flags = HPIFormat.EntryFlags(rawValue: entry.entryFlag)
             
-            var charOffset = entry.nameOffset
-            var name = String()
-            string_read: while(true) {
-                let charData = file.readAndDecryptData(ofLength: 1, offset: charOffset, key: key)
-                let byte: UInt8 = charData.withUnsafeBytes { $0.pointee }
-                let char = UnicodeScalar(byte)
-                if byte != 0 { name.append(String(char)) } else { break string_read }
-                charOffset += 1
-            }
-            //print("- \(name)")
-            
-            let entryOpts = HPIFormat.EntryFlags(rawValue: entry.flags)
-            
-            if entryOpts.contains(.directory) {
-                let items2 = try loadItems(fromTAFile: file, atOffset: entry.dataOffset, withKey: key)
-                items.append(.directory(name: name, items: items2))
+            // An entry is either a subdirectory or a file.
+            if flags.contains(.directory) {
+                // A subdirectory recursively loads its children with loadDirectory()
+                let children = try loadDirectory(atOffset: entry.offsetToEntryData, in: fileSystem)
+                return .directory(name: name, items: children)
             }
             else {
-                let fileEntryData = file.readAndDecryptData(ofLength: MemoryLayout<HPIFormat.FileEntry>.size,
-                                                        offset: entry.dataOffset,
-                                                        key: key)
-                let fileEntry: HPIFormat.FileEntry = fileEntryData.withUnsafeBytes { $0.pointee }
-                
-                items.append(.file(
+                // A file is just a collection of properties; and can be returned immediately.
+                let file = fileSystem.bindMemory(to: HPIFormat.FileEntry.self, at: entry.offsetToEntryData).pointee
+                return .file(
                     name: name,
-                    size: Int(fileEntry.fileSize),
-                    offset: Int(fileEntry.offsetToFileData),
-                    compression: HPIFormat.FileEntryCompression(rawValue: fileEntry.compressionType) ?? .none
-                    ))
+                    size: Int(file.fileSize),
+                    offset: Int(file.offsetToFileData),
+                    compression: HPIFormat.FileEntryCompression(rawValue: file.compressionType) ?? .none
+                )
             }
-        }
-        return items
+            
+        })
     }
     
     enum LoadError: Error {
