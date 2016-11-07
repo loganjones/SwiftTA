@@ -185,6 +185,7 @@ extension HPIItem {
 
 extension HPIItem {
     
+    /// Parse & load an HPI file into a heirarchical set of HPIItems.
     init(withContentsOf url: URL) throws {
         
         guard let file = try? FileHandle(forReadingFrom: url)
@@ -206,63 +207,88 @@ extension HPIItem {
         
     }
     
+    /// Parse & load a Total Annihilation HPI file-system into a heirarchical set of HPIItems.
     private init(withTAFile file: FileHandle) throws {
+        
         let extData = file.readData(ofLength: MemoryLayout<HPIFormat.TAExtendedHeader>.size)
         let ext: HPIFormat.TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
-        let key = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
-        let items = try HPIItem.loadItems(fromTAFile: file, atOffset: ext.directoryOffset, withKey: key)
-        self = .directory(name: "", items: items)
+        
+        // The headerKey is non-zero then this entire HPI file (other than the header, of course)
+        // is enctrypted with a simple key. This keyiteslf must be decoded with some simple bit shifting.
+        let archiveKey = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
+        
+        // Read the entire file-system directory into memory.
+        // Every bit of meta-data about the filesystem should be within this data blob;
+        // everyting remaining in the HPI file is chunked (and optionally compressed) file conetent.
+        let fsData = file.readAndDecryptData(ofLength: Int(ext.directorySize),
+                                             offset: ext.directoryOffset,
+                                             key: archiveKey)
+        
+        // Parse the contents of the file-system directory by recursively iterating
+        // over its contents with loadDirectory(). We start with the root directory
+        // which should be the first item at to beginning of the file-system directory.
+        self = try fsData.withUnsafeBytes { (p: UnsafePointer<UInt8>) throws -> HPIItem in
+            let fileSystem = FileSystem(memory: p, offset: ext.directoryOffset)
+            let rootItems = try HPIItem.loadDirectory(atOffset: ext.directoryOffset, in: fileSystem)
+            return .directory(name: "", items: rootItems)
+        }
     }
     
-    private static func loadItems(fromTAFile file: FileHandle, atOffset offset: UInt32, withKey key: Int32) throws -> [HPIItem] {
+    /// A convenience structure that represents the file-system directory in memory.
+    /// loadDirectory() uses this to seek around the file-system directory and bind
+    /// various HPI structures.
+    private struct FileSystem {
+        var memory: UnsafePointer<UInt8>
+        var offset: UInt32
+        func at(_ offset: UInt32) -> UnsafePointer<UInt8> {
+            return memory + (Int(offset) - Int(self.offset))
+        }
+        func rawMemory(at offset: UInt32) -> UnsafeRawPointer {
+            return UnsafeRawPointer(memory + (Int(offset) - Int(self.offset)))
+        }
+        /// Bind a single instance of T structure in memory.
+        func bindMemory<T>(to type: T.Type, at offset: UInt32) -> UnsafePointer<T> {
+            return UnsafeRawPointer(memory + (Int(offset) - Int(self.offset))).bindMemory(to: type, capacity: 1)
+        }
+        /// Bind a sequence of T structures in memory.
+        public func bindMemoryBuffer<T>(to type: T.Type, capacity count: UInt32, at offset: UInt32) -> UnsafeBufferPointer<T> {
+            let raw = UnsafeRawPointer(memory + (Int(offset) - Int(self.offset)))
+            let p = raw.bindMemory(to: type, capacity: Int(count))
+            return UnsafeBufferPointer<T>(start: p, count: Int(count))
+        }
+    }
     
-        let rootData = file.readAndDecryptData(ofLength: MemoryLayout<HPIFormat.DirectoryHeader>.size,
-                                               offset: offset,
-                                               key: key)
-        let rootHeader: HPIFormat.DirectoryHeader = rootData.withUnsafeBytes { $0.pointee }
-        //print("root:   \(rootHeader)")
+    private static func loadDirectory(atOffset offset: UInt32, in fileSystem: FileSystem) throws -> [HPIItem] {
         
-        var items = [HPIItem]()
-        let entrySize = MemoryLayout<HPIFormat.EntryHeader>.size
-        for entryIndex in 0..<rootHeader.numberOfEntries {
+        let header = fileSystem.bindMemory(to: HPIFormat.DirectoryHeader.self, at: offset).pointee
+        let entries = fileSystem.bindMemoryBuffer(to: TA_HPI_ENTRY.self,
+                                                  capacity: header.numberOfEntries,
+                                                  at: header.entryArrayOffset)
+        
+        // Map each header entry of this directory into an HPIItem.
+        return try entries.map({ (entry) throws -> HPIItem in
             
-            let entryData = file.readAndDecryptData(ofLength: entrySize,
-                                                    offset: rootHeader.entryArrayOffset + (entryIndex * UInt32(entrySize)),
-                                                    key: key)
-            let entry: HPIFormat.EntryHeader = entryData.withUnsafeBytes { $0.pointee }
+            let name = String(cString: fileSystem.at(entry.offsetToName))
+            let flags = HPIFormat.EntryFlags(rawValue: entry.entryFlag)
             
-            var charOffset = entry.nameOffset
-            var name = String()
-            string_read: while(true) {
-                let charData = file.readAndDecryptData(ofLength: 1, offset: charOffset, key: key)
-                let byte: UInt8 = charData.withUnsafeBytes { $0.pointee }
-                let char = UnicodeScalar(byte)
-                if byte != 0 { name.append(String(char)) } else { break string_read }
-                charOffset += 1
-            }
-            //print("- \(name)")
-            
-            let entryOpts = HPIFormat.EntryFlags(rawValue: entry.flags)
-            
-            if entryOpts.contains(.directory) {
-                let items2 = try loadItems(fromTAFile: file, atOffset: entry.dataOffset, withKey: key)
-                items.append(.directory(name: name, items: items2))
+            // An entry is either a subdirectory or a file.
+            if flags.contains(.directory) {
+                // A subdirectory recursively loads its children with loadDirectory()
+                let children = try loadDirectory(atOffset: entry.offsetToEntryData, in: fileSystem)
+                return .directory(name: name, items: children)
             }
             else {
-                let fileEntryData = file.readAndDecryptData(ofLength: MemoryLayout<HPIFormat.FileEntry>.size,
-                                                        offset: entry.dataOffset,
-                                                        key: key)
-                let fileEntry: HPIFormat.FileEntry = fileEntryData.withUnsafeBytes { $0.pointee }
-                
-                items.append(.file(
+                // A file is just a collection of properties; and can be returned immediately.
+                let file = fileSystem.bindMemory(to: HPIFormat.FileEntry.self, at: entry.offsetToEntryData).pointee
+                return .file(
                     name: name,
-                    size: Int(fileEntry.fileSize),
-                    offset: Int(fileEntry.offsetToFileData),
-                    compression: HPIFormat.FileEntryCompression(rawValue: fileEntry.compressionType) ?? .none
-                    ))
+                    size: Int(file.fileSize),
+                    offset: Int(file.offsetToFileData),
+                    compression: HPIFormat.FileEntryCompression(rawValue: file.compressionType) ?? .none
+                )
             }
-        }
-        return items
+            
+        })
     }
     
     enum LoadError: Error {
@@ -345,20 +371,11 @@ extension HPIItem {
                 if let compression = HPIFormat.ChunckCompression(rawValue: chunkHeader.compressionType) {
                     switch compression {
                     case .none:
-                        print("chunk uses no compression")
                         data.append(chunkData)
                     case .lz77:
-                        print("chunk uses LZ77 compression")
-                        let outBytes = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(chunkHeader.decompressedSize))
-                        let outSize = chunkData.withUnsafeBytes { hpi_decompress_LZ77($0, outBytes) }
-                        data.append(outBytes, count: Int(outSize))
-                        outBytes.deallocate(capacity: Int(chunkHeader.decompressedSize))
+                        data.append(chunkData.decompressLZ77(decompressedSize: Int(chunkHeader.decompressedSize)))
                     case .zlib:
-                        print("chunk uses ZLib compression")
-                        let outBytes = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(chunkHeader.decompressedSize))
-                        let outSize = chunkData.withUnsafeBytes { hpi_decompress_ZLib($0, outBytes, chunkHeader.compressedSize, chunkHeader.decompressedSize) }
-                        data.append(outBytes, count: Int(outSize))
-                        outBytes.deallocate(capacity: Int(chunkHeader.decompressedSize))
+                        data.append(chunkData.decompressZLib(decompressedSize: Int(chunkHeader.decompressedSize)))
                     }
                 }
                 else {
@@ -375,68 +392,94 @@ extension HPIItem {
 
 fileprivate extension Data {
     
-    func decompressLZ77() -> Data {
+    func decompressLZ77(decompressedSize: Int? = nil) -> Data {
         
-//        int x;
-//        int work1;
-//        int work2;
-//        int work3;
-//        int inptr;
-//        int outptr;
-//        int count;
-//        int done;
-//        char DBuff[4096];
-//        int DPtr;
+        var out = Data(capacity: decompressedSize ?? self.count)
+        let DBuff = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
+        self.withUnsafeBytes { (_in: UnsafePointer<UInt8>) -> Void in
         
-        var done = false
-        
-        var work1 = 1
-        var work2 = 1
-        var work3 = Int(self[0])
-        var inptr = 1
-        var out = Data()
-        
-        var DBuff = Array<UInt8>(repeating: 0, count: 4096)
-        
-        while !done {
-            if (work2 & work3) == 0 {
-                out.append(self[inptr])
-                DBuff[work1] = self[inptr]
-                work1 = (work1 + 1) & 0xFFF
-                inptr += 1
-            }
-            else {
-                var count: UInt16 = self.withUnsafeBytes { ($0 + inptr).pointee }
-                inptr += 2
-                var DPtr = Int(count >> 4)
-                if DPtr == 0 {
-                    return out
+            var work1 = 1
+            var work2 = 1
+            var work3 = Int(_in[0])
+            var inptr = 1
+            
+            loop: while true {
+                if (work2 & work3) == 0 {
+                    out.append(_in[inptr])
+                    DBuff[work1] = _in[inptr]
+                    work1 = (work1 + 1) & 0xFFF
+                    inptr += 1
                 }
                 else {
-                    count = (count & 0x0F) + 2
-                    if count >= 0 {
-                        for _ in 0..<count {
-                            out.append(DBuff[DPtr])
-                            DBuff[work1] = DBuff[DPtr]
-                            DPtr = (DPtr + 1) & 0xFFF
-                            work1 = (work1 + 1) & 0xFFF
+                    var count = (_in + inptr).withMemoryRebound(to: UInt16.self, capacity: 1) { $0.pointee }
+                    inptr += 2
+                    var DPtr = Int(count >> 4)
+                    if DPtr == 0 {
+                        break loop
+                    }
+                    else {
+                        count = (count & 0x0F) + 2
+                        if count >= 0 {
+                            for _ in 0..<count {
+                                out.append(DBuff[DPtr])
+                                DBuff[work1] = DBuff[DPtr]
+                                DPtr = (DPtr + 1) & 0xFFF
+                                work1 = (work1 + 1) & 0xFFF
+                            }
                         }
-                        
                     }
                 }
+                work2 *= 2
+                if (work2 & 0x0100) != 0 {
+                    work2 = 1
+                    work3 = Int(_in[inptr])
+                    inptr += 1
+                }
             }
-            work2 *= 2
-            if (work2 & 0x0100) != 0 {
-                work2 = 1
-                work3 = Int(self[inptr])
-                inptr += 1
-            }
+        
         }
         
         return out
     }
     
-    func decompressZLIB() -> Data {
-        return self
+    func decompressZLib(decompressedSize: Int) -> Data {
+        
+        let out = UnsafeMutablePointer<UInt8>.allocate(capacity: decompressedSize)
+        defer { out.deallocate(capacity: decompressedSize) }
+        
+        let outBytesWritten = self.withUnsafeBytes { (_in: UnsafePointer<UInt8>) -> Int in
+            var zs = z_stream(
+                next_in: UnsafeMutablePointer(mutating: _in),
+                avail_in: uInt(self.count),
+                total_in: 0,
+                next_out: out,
+                avail_out: uInt(decompressedSize),
+                total_out: 0,
+                msg: nil,
+                state: nil,
+                zalloc: nil,
+                zfree: nil,
+                opaque: nil,
+                data_type: Z_BINARY,
+                adler: 0,
+                reserved: 0)
+            
+            if inflateInit_(&zs, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size)) != Z_OK {
+                return 0
+            }
+            
+            if inflate(&zs, Z_FINISH) != Z_STREAM_END {
+                zs.total_out = 0
+            }
+            
+            if inflateEnd(&zs) != Z_OK {
+                return 0
+            }
+            
+            return Int(zs.total_out)
+        }
+        
+        return Data(bytes: out, count: outBytesWritten)
     }
+    
 }
