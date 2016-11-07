@@ -371,20 +371,11 @@ extension HPIItem {
                 if let compression = HPIFormat.ChunckCompression(rawValue: chunkHeader.compressionType) {
                     switch compression {
                     case .none:
-                        print("chunk uses no compression")
                         data.append(chunkData)
                     case .lz77:
-                        print("chunk uses LZ77 compression")
-                        let outBytes = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(chunkHeader.decompressedSize))
-                        let outSize = chunkData.withUnsafeBytes { hpi_decompress_LZ77($0, outBytes) }
-                        data.append(outBytes, count: Int(outSize))
-                        outBytes.deallocate(capacity: Int(chunkHeader.decompressedSize))
+                        data.append(chunkData.decompressLZ77(decompressedSize: Int(chunkHeader.decompressedSize)))
                     case .zlib:
-                        print("chunk uses ZLib compression")
-                        let outBytes = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(chunkHeader.decompressedSize))
-                        let outSize = chunkData.withUnsafeBytes { hpi_decompress_ZLib($0, outBytes, chunkHeader.compressedSize, chunkHeader.decompressedSize) }
-                        data.append(outBytes, count: Int(outSize))
-                        outBytes.deallocate(capacity: Int(chunkHeader.decompressedSize))
+                        data.append(chunkData.decompressZLib(decompressedSize: Int(chunkHeader.decompressedSize)))
                     }
                 }
                 else {
@@ -401,68 +392,94 @@ extension HPIItem {
 
 fileprivate extension Data {
     
-    func decompressLZ77() -> Data {
+    func decompressLZ77(decompressedSize: Int? = nil) -> Data {
         
-//        int x;
-//        int work1;
-//        int work2;
-//        int work3;
-//        int inptr;
-//        int outptr;
-//        int count;
-//        int done;
-//        char DBuff[4096];
-//        int DPtr;
+        var out = Data(capacity: decompressedSize ?? self.count)
+        let DBuff = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
+        self.withUnsafeBytes { (_in: UnsafePointer<UInt8>) -> Void in
         
-        var done = false
-        
-        var work1 = 1
-        var work2 = 1
-        var work3 = Int(self[0])
-        var inptr = 1
-        var out = Data()
-        
-        var DBuff = Array<UInt8>(repeating: 0, count: 4096)
-        
-        while !done {
-            if (work2 & work3) == 0 {
-                out.append(self[inptr])
-                DBuff[work1] = self[inptr]
-                work1 = (work1 + 1) & 0xFFF
-                inptr += 1
-            }
-            else {
-                var count: UInt16 = self.withUnsafeBytes { ($0 + inptr).pointee }
-                inptr += 2
-                var DPtr = Int(count >> 4)
-                if DPtr == 0 {
-                    return out
+            var work1 = 1
+            var work2 = 1
+            var work3 = Int(_in[0])
+            var inptr = 1
+            
+            loop: while true {
+                if (work2 & work3) == 0 {
+                    out.append(_in[inptr])
+                    DBuff[work1] = _in[inptr]
+                    work1 = (work1 + 1) & 0xFFF
+                    inptr += 1
                 }
                 else {
-                    count = (count & 0x0F) + 2
-                    if count >= 0 {
-                        for _ in 0..<count {
-                            out.append(DBuff[DPtr])
-                            DBuff[work1] = DBuff[DPtr]
-                            DPtr = (DPtr + 1) & 0xFFF
-                            work1 = (work1 + 1) & 0xFFF
+                    var count = (_in + inptr).withMemoryRebound(to: UInt16.self, capacity: 1) { $0.pointee }
+                    inptr += 2
+                    var DPtr = Int(count >> 4)
+                    if DPtr == 0 {
+                        break loop
+                    }
+                    else {
+                        count = (count & 0x0F) + 2
+                        if count >= 0 {
+                            for _ in 0..<count {
+                                out.append(DBuff[DPtr])
+                                DBuff[work1] = DBuff[DPtr]
+                                DPtr = (DPtr + 1) & 0xFFF
+                                work1 = (work1 + 1) & 0xFFF
+                            }
                         }
-                        
                     }
                 }
+                work2 *= 2
+                if (work2 & 0x0100) != 0 {
+                    work2 = 1
+                    work3 = Int(_in[inptr])
+                    inptr += 1
+                }
             }
-            work2 *= 2
-            if (work2 & 0x0100) != 0 {
-                work2 = 1
-                work3 = Int(self[inptr])
-                inptr += 1
-            }
+        
         }
         
         return out
     }
     
-    func decompressZLIB() -> Data {
-        return self
+    func decompressZLib(decompressedSize: Int) -> Data {
+        
+        let out = UnsafeMutablePointer<UInt8>.allocate(capacity: decompressedSize)
+        defer { out.deallocate(capacity: decompressedSize) }
+        
+        let outBytesWritten = self.withUnsafeBytes { (_in: UnsafePointer<UInt8>) -> Int in
+            var zs = z_stream(
+                next_in: UnsafeMutablePointer(mutating: _in),
+                avail_in: uInt(self.count),
+                total_in: 0,
+                next_out: out,
+                avail_out: uInt(decompressedSize),
+                total_out: 0,
+                msg: nil,
+                state: nil,
+                zalloc: nil,
+                zfree: nil,
+                opaque: nil,
+                data_type: Z_BINARY,
+                adler: 0,
+                reserved: 0)
+            
+            if inflateInit_(&zs, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size)) != Z_OK {
+                return 0
+            }
+            
+            if inflate(&zs, Z_FINISH) != Z_STREAM_END {
+                zs.total_out = 0
+            }
+            
+            if inflateEnd(&zs) != Z_OK {
+                return 0
+            }
+            
+            return Int(zs.total_out)
+        }
+        
+        return Data(bytes: out, count: outBytesWritten)
     }
+    
 }

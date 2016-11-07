@@ -7,4 +7,4 @@
 //
 
 #include "ta_HPI.h"
-#include "ta_HPI_decompress.h"
+#include "zlib.h"
