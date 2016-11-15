@@ -14,19 +14,6 @@ import QuickLook
 class Document: NSDocument {
     
     var root: HPIItem?
-    @IBOutlet weak var fileTreeView: NSOutlineView?
-    @IBOutlet weak var previewView: NSView!
-    @IBOutlet weak var quicklookView: QLPreviewView?
-    @IBOutlet weak var contentAttributesView: NSView!
-    @IBOutlet weak var contentTitleField: NSTextField!
-    @IBOutlet weak var contentSizeField: NSTextField!
-    
-    
-    let sizeFormatter: ByteCountFormatter = {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .file
-        return formatter
-    }()
 
     override init() {
         super.init()
@@ -36,11 +23,10 @@ class Document: NSDocument {
     override class func autosavesInPlace() -> Bool {
         return true
     }
-
-    override var windowNibName: String? {
-        // Returns the nib file name of the document
-        // If you need to use a subclass of NSWindowController or if your document supports multiple NSWindowControllers, you should remove this property and override -makeWindowControllers instead.
-        return "Document"
+    
+    override func makeWindowControllers() {
+        let controller = HPIBrowserWindowController(windowNibName: "Document")
+        addWindowController(controller)
     }
 
     override func data(ofType typeName: String) throws -> Data {
@@ -75,11 +61,36 @@ class Document: NSDocument {
 
 }
 
-extension Document: NSOutlineViewDataSource {
+// MARK:- Browser Window
+
+class HPIBrowserWindowController: NSWindowController {
+    
+    @IBOutlet weak var fileTreeView: NSOutlineView?
+    @IBOutlet weak var previewView: NSView!
+    @IBOutlet weak var quicklookView: QLPreviewView?
+    @IBOutlet weak var contentAttributesView: NSView!
+    @IBOutlet weak var contentTitleField: NSTextField!
+    @IBOutlet weak var contentSizeField: NSTextField!
+    
+    let sizeFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
+    
+    var hpiDocument: Document {
+        guard let doc = self.document as? Document
+            else { fatalError("No HPI Document associated with this window!?") }
+        return doc
+    }
+    
+}
+
+extension HPIBrowserWindowController: NSOutlineViewDataSource {
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         if item == nil {
-            return root?.numberOfChildren ?? 0
+            return hpiDocument.root?.numberOfChildren ?? 0
         }
         else {
             guard let hpi = item as? HPIItem
@@ -91,7 +102,7 @@ extension Document: NSOutlineViewDataSource {
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         let hpi: HPIItem
         if item == nil {
-            if let good = root { hpi = good } else { fatalError("Bad Root Item") }
+            if let good = hpiDocument.root { hpi = good } else { fatalError("Bad Root Item") }
         }
         else {
             if let good = item as? HPIItem { hpi = good } else { fatalError("Bad HPI Item") }
@@ -118,7 +129,7 @@ extension Document: NSOutlineViewDataSource {
     
 }
 
-extension Document: NSOutlineViewDelegate {
+extension HPIBrowserWindowController: NSOutlineViewDelegate {
     
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         guard let hpi = item as? HPIItem else { fatalError("Bad HPI Item") }
@@ -173,7 +184,14 @@ extension Document: NSOutlineViewDelegate {
     
 }
 
-extension Document {
+extension HPIBrowserWindowController {
+    
+    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(extract) {
+            return (fileTreeView?.selectedRowIndexes.count ?? 0) > 0
+        }
+        return true
+    }
     
     @IBAction func extract(sender: Any?) {
         
@@ -181,7 +199,7 @@ extension Document {
         guard items.count > 0
             else { Swift.print("No selected items to extract."); return }
         
-        guard let window = windowForSheet
+        guard let window = hpiDocument.windowForSheet
             else { Swift.print("Document has no windowForSheet."); return }
         
         let panel = NSOpenPanel()
@@ -205,13 +223,6 @@ extension Document {
         
     }
     
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
-        if menuItem.action == #selector(extract) {
-            return (fileTreeView?.selectedRowIndexes.count ?? 0) > 0
-        }
-        return true
-    }
-    
     func selectedItems() -> [HPIItem] {
         guard let tree = fileTreeView else { return [] }
         return tree.selectedRowIndexes.flatMap({ tree.item(atRow: $0) as? HPIItem })
@@ -225,7 +236,7 @@ extension Document {
             case .file(let file):
                 do {
                     let fileURL = rootDirectory.appendingPathComponent(file.name)
-                    let data = try HPIItem.extract(item: item, fromFile: self.fileURL!)
+                    let data = try HPIItem.extract(item: item, fromFile: hpiDocument.fileURL!)
                     try data.write(to: fileURL, options: [.atomic])
                 }
                 catch {
@@ -248,7 +259,7 @@ extension Document {
     }
 }
 
-extension Document {
+extension HPIBrowserWindowController {
     
     func clearPreview() {
         contentAttributesView.isHidden = true
@@ -261,7 +272,7 @@ extension Document {
         contentTitleField.stringValue = properties.name
         contentSizeField.stringValue = sizeFormatter.string(fromByteCount: Int64(properties.size))
         
-        guard let archiveURL = self.fileURL
+        guard let archiveURL = hpiDocument.fileURL
             else { return }
         let archiveIdentifier = String(format: "%08X", archiveURL.hashValue)
         
@@ -277,7 +288,7 @@ extension Document {
         let fileURL = archiveContainerURL.appendingPathComponent(hpiPath, isDirectory: false)
         let fileDirectoryURL = fileURL.deletingLastPathComponent()
         try? FileManager.default.createDirectory(at: fileDirectoryURL, withIntermediateDirectories: true)
-        let data = try? HPIItem.extract(item: file, fromFile: self.fileURL!)
+        let data = try? HPIItem.extract(item: file, fromFile: hpiDocument.fileURL!)
         try? data?.write(to: fileURL, options: [.atomic])
         
         let qlv = quicklookView ?? makeQuicklookView()

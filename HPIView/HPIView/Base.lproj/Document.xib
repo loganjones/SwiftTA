@@ -8,7 +8,7 @@
         <capability name="stacking Non-gravity area distributions on NSStackView" minToolsVersion="7.0" minSystemVersion="10.11"/>
     </dependencies>
     <objects>
-        <customObject id="-2" userLabel="File's Owner" customClass="Document" customModule="HPIView" customModuleProvider="target">
+        <customObject id="-2" userLabel="File's Owner" customClass="HPIBrowserWindowController" customModule="HPIView" customModuleProvider="target">
             <connections>
                 <outlet property="contentAttributesView" destination="1zx-5m-Xhb" id="Z2M-nC-7gy"/>
                 <outlet property="contentSizeField" destination="tP6-qQ-PaU" id="kAS-NK-MN5"/>
