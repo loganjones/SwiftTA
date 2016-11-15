@@ -7,11 +7,20 @@
 //
 
 import Cocoa
+import Quartz
+import QuickLook
+
 
 class Document: NSDocument {
     
     var root: HPIItem?
     @IBOutlet weak var fileTreeView: NSOutlineView?
+    @IBOutlet weak var previewView: NSView!
+    @IBOutlet weak var quicklookView: QLPreviewView?
+    @IBOutlet weak var contentAttributesView: NSView!
+    @IBOutlet weak var contentTitleField: NSTextField!
+    @IBOutlet weak var contentSizeField: NSTextField!
+    
     
     let sizeFormatter: ByteCountFormatter = {
         let formatter = ByteCountFormatter()
@@ -140,23 +149,31 @@ extension Document: NSOutlineViewDelegate {
         return ["Foo"]
     }
     
+    func outlineViewSelectionDidChange(_ notification: Notification) {
+        guard let outlineView = notification.object as? NSOutlineView
+            else { return }
+        outlineView.selectedRowIndexes.forEach {
+            let indexPath = outlineView.indexPath(forRow: $0)
+            Swift.print("Selected Path: \(outlineView.hpiPath(for: indexPath))")
+        }
+        let selectedRows = outlineView.selectedRowIndexes
+        let selected = selectedRows.flatMap({ outlineView.item(atRow: $0) as? HPIItem })
+        switch selected.count {
+        case 0: clearPreview()
+        case 1:
+            switch selected[0] {
+            case .file:
+                let indexPath = outlineView.indexPath(forRow: selectedRows.first ?? 0)
+                preview(file: selected[0], hpiPath: outlineView.hpiPath(for: indexPath))
+            case .directory: clearPreview()
+            }
+        default: clearPreview()
+        }
+    }
+    
 }
 
 extension Document {
-    
-    @IBAction func selectBrowserItem(sender: Any?) {
-        guard let browser = sender as? NSBrowser else { return }
-        let col = browser.selectedColumn
-        let rows = browser.selectedRowIndexes(inColumn: col)
-        Swift.print("selected [ \(col), \(rows) ]")
-    }
-    
-    @IBAction func invokeBrowserItem(sender: Any?) {
-        guard let browser = sender as? NSBrowser else { return }
-        let col = browser.selectedColumn
-        let rows = browser.selectedRowIndexes(inColumn: col)
-        Swift.print("invoked [ \(col), \(rows) ]")
-    }
     
     @IBAction func extract(sender: Any?) {
         
@@ -195,6 +212,11 @@ extension Document {
         return true
     }
     
+    func selectedItems() -> [HPIItem] {
+        guard let tree = fileTreeView else { return [] }
+        return tree.selectedRowIndexes.flatMap({ tree.item(atRow: $0) as? HPIItem })
+    }
+    
     func extractItems(_ items: [HPIItem], to rootDirectory: URL) {
         
         for item in items {
@@ -228,36 +250,99 @@ extension Document {
 
 extension Document {
     
-    func selectedItems() -> [HPIItem] {
-        guard let tree = fileTreeView else { return [] }
-        return tree.selectedRowIndexes.flatMap({ tree.item(atRow: $0) as? HPIItem })
+    func clearPreview() {
+        contentAttributesView.isHidden = true
+        previewView.isHidden = true
     }
     
-}
-
-class FooWriter: NSObject {
-    
-    var name = "Foo"
-    
-}
-
-extension FooWriter: NSPasteboardWriting {
-    
-    func writableTypes(for pasteboard: NSPasteboard) -> [String] {
-        print("writableTypes")
-        //return [ kUTTypeData as String ]
-        return [ kUTTypeText as String ]
+    func preview(file: HPIItem, hpiPath: String) {
+        guard case .file(let properties) = file else { return }
+        contentAttributesView.isHidden = false
+        contentTitleField.stringValue = properties.name
+        contentSizeField.stringValue = sizeFormatter.string(fromByteCount: Int64(properties.size))
+        
+        guard let archiveURL = self.fileURL
+            else { return }
+        let archiveIdentifier = String(format: "%08X", archiveURL.hashValue)
+        
+        guard let cachesURL = try? FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            else { return }
+        
+        let archiveContainerURL = cachesURL
+            .appendingPathComponent(Bundle.main.bundleIdentifier!, isDirectory: true)
+            .appendingPathComponent(archiveIdentifier, isDirectory: true)
+        try? FileManager.default.createDirectory(at: archiveContainerURL, withIntermediateDirectories: true)
+        Swift.print("archiveContainer: \(archiveContainerURL)")
+        
+        let fileURL = archiveContainerURL.appendingPathComponent(hpiPath, isDirectory: false)
+        let fileDirectoryURL = fileURL.deletingLastPathComponent()
+        try? FileManager.default.createDirectory(at: fileDirectoryURL, withIntermediateDirectories: true)
+        let data = try? HPIItem.extract(item: file, fromFile: self.fileURL!)
+        try? data?.write(to: fileURL, options: [.atomic])
+        
+        let qlv = quicklookView ?? makeQuicklookView()
+        qlv.previewItem = fileURL as NSURL
+        previewView.isHidden = false
+        qlv.refreshPreviewItem()
     }
     
-    func pasteboardPropertyList(forType type: String) -> Any? {
-        print("pasteboardPropertyList(forType: \(type))")
-        if let data = "Hello \(name)!".data(using: .utf8) {
-            return data as NSData
+    func makeQuicklookView() -> QLPreviewView {
+        let previewView = self.previewView!
+        let qlv = QLPreviewView(frame: previewView.bounds, style: .compact)!
+        
+        previewView.addSubview(qlv)
+        
+        qlv.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
+        qlv.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
+        qlv.topAnchor.constraint(equalTo: previewView.topAnchor).isActive = true
+        qlv.bottomAnchor.constraint(equalTo: previewView.bottomAnchor).isActive = true
+        
+        quicklookView = qlv
+        return qlv
+    }
+    
+    func path(forItem item: HPIItem) -> String {
+        guard let outlineView = fileTreeView else { return "" }
+        
+        if let parent = outlineView.parent(forItem: item) as? HPIItem {
+            return path(forItem: parent) + "/" + item.name
         }
         else {
-            return nil
+            return "/" + item.name
         }
     }
+    
+}
+
+extension NSOutlineView {
+    
+    func hpiPath(for indexPath: IndexPath) -> String {
+        return "/" + indexPath
+            .map({ (self.item(atRow: $0) as? HPIItem)?.name ?? "??" })
+            .joined(separator: "/")
+    }
+    
+    func parentRow(forRow row: Int) -> Int {
+        let rowLevel = self.level(forRow: row)
+        var r = row - 1
+        var l = self.level(forRow: r)
+        while (r >= 0 && l >= rowLevel) {
+            r -= 1
+            l = self.level(forRow: r)
+        }
+        return r
+    }
+    
+    func indexPath(forRow row: Int) -> IndexPath {
+        var path = [Int]()
+        var i = row
+        while (i >= 0) {
+            path.append(i)
+            i = self.parentRow(forRow: i)
+        }
+        return IndexPath(indexes: path.reversed())
+    }
+    
 }
 
 fileprivate extension HPIItem {
