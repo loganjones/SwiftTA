@@ -9,6 +9,7 @@
 import Cocoa
 import Quartz
 import QuickLook
+import CoreGraphics
 
 
 class Document: NSDocument {
@@ -67,7 +68,6 @@ class HPIBrowserWindowController: NSWindowController {
     
     @IBOutlet weak var fileTreeView: NSOutlineView?
     @IBOutlet weak var previewView: NSView!
-    @IBOutlet weak var quicklookView: QLPreviewView?
     @IBOutlet weak var contentAttributesView: NSView!
     @IBOutlet weak var contentTitleField: NSTextField!
     @IBOutlet weak var contentSizeField: NSTextField!
@@ -291,25 +291,37 @@ extension HPIBrowserWindowController {
         let data = try? HPIItem.extract(item: file, fromFile: hpiDocument.fileURL!)
         try? data?.write(to: fileURL, options: [.atomic])
         
-        let qlv = quicklookView ?? makeQuicklookView()
-        qlv.previewItem = fileURL as NSURL
+        let fileExtension = fileURL.pathExtension
+        if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
+            let pcx: PCXView = attachPreviewContentView({ PCXView(frame: $0) })
+            pcx.image = NSImage(pcxContentsOf: fileURL)
+        }
+        else {
+            let qlv: QLPreviewView = attachPreviewContentView({ QLPreviewView(frame: $0, style: .compact)! })
+            qlv.previewItem = fileURL as NSURL
+            qlv.refreshPreviewItem()
+        }
+ 
         previewView.isHidden = false
-        qlv.refreshPreviewItem()
     }
     
-    func makeQuicklookView() -> QLPreviewView {
-        let previewView = self.previewView!
-        let qlv = QLPreviewView(frame: previewView.bounds, style: .compact)!
-        
-        previewView.addSubview(qlv)
-        
-        qlv.leadingAnchor.constraint(equalTo: previewView.leadingAnchor).isActive = true
-        qlv.trailingAnchor.constraint(equalTo: previewView.trailingAnchor).isActive = true
-        qlv.topAnchor.constraint(equalTo: previewView.topAnchor).isActive = true
-        qlv.bottomAnchor.constraint(equalTo: previewView.bottomAnchor).isActive = true
-        
-        quicklookView = qlv
-        return qlv
+    func attachPreviewContentView<VT: NSView>(_ maker: (NSRect)->VT ) -> VT {
+        if let view = previewView.subviews.first as? VT {
+            print("reused view")
+            return view
+        }
+        else {
+            print("new view")
+            previewView.subviews.forEach({ $0.removeFromSuperview() })
+            let view = maker(previewView.bounds)
+            let parent = previewView!
+            parent.addSubview(view)
+            view.leadingAnchor.constraint(equalTo: parent.leadingAnchor).isActive = true
+            view.trailingAnchor.constraint(equalTo: parent.trailingAnchor).isActive = true
+            view.topAnchor.constraint(equalTo: parent.topAnchor).isActive = true
+            view.bottomAnchor.constraint(equalTo: parent.bottomAnchor).isActive = true
+            return view
+        }
     }
     
     func path(forItem item: HPIItem) -> String {
@@ -366,3 +378,8 @@ fileprivate extension HPIItem {
     }
     
 }
+
+class PCXView: NSImageView {
+    
+}
+

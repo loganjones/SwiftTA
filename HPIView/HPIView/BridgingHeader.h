@@ -6,5 +6,6 @@
 //  Copyright © 2016 Logan Jones. All rights reserved.
 //
 
+#include "pcx.h"
 #include "ta_HPI.h"
 #include "zlib.h"
