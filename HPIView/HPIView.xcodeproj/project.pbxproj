@@ -13,6 +13,7 @@
 		B50F6A551D87A54B0016C15B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A541D87A54B0016C15B /* Assets.xcassets */; };
 		B50F6A581D87A54B0016C15B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A561D87A54B0016C15B /* MainMenu.xib */; };
 		B50F6A601D87A8C40016C15B /* HPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6A5F1D87A8C40016C15B /* HPI.swift */; };
+		B553EE361DDFE2270033C70D /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE351DDFE2270033C70D /* ModelView.swift */; };
 		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
 		F04631591DDFCAA8001C884E /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04631581DDFCAA8001C884E /* pcx.swift */; };
 /* End PBXBuildFile section */
@@ -26,11 +27,13 @@
 		B50F6A571D87A54B0016C15B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		B50F6A591D87A54B0016C15B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B50F6A5F1D87A8C40016C15B /* HPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HPI.swift; sourceTree = "<group>"; };
+		B553EE351DDFE2270033C70D /* ModelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelView.swift; sourceTree = "<group>"; };
 		B58ECABA1DC6B35B005F231F /* ta_HPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_HPI.h; sourceTree = "<group>"; };
 		B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		B58ECAC01DC6BE90005F231F /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		F04631571DDFB96A001C884E /* pcx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pcx.h; sourceTree = "<group>"; };
 		F04631581DDFCAA8001C884E /* pcx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pcx.swift; sourceTree = "<group>"; };
+		F046315A1DDFCE9D001C884E /* ta_3DO.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_3DO.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,9 +70,11 @@
 			children = (
 				B50F6A4D1D87A54B0016C15B /* AppDelegate.swift */,
 				B50F6A4F1D87A54B0016C15B /* Document.swift */,
+				B553EE351DDFE2270033C70D /* ModelView.swift */,
 				B50F6A5F1D87A8C40016C15B /* HPI.swift */,
 				F04631581DDFCAA8001C884E /* pcx.swift */,
 				B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */,
+				F046315A1DDFCE9D001C884E /* ta_3DO.h */,
 				B58ECABA1DC6B35B005F231F /* ta_HPI.h */,
 				F04631571DDFB96A001C884E /* pcx.h */,
 				B50F6A511D87A54B0016C15B /* Document.xib */,
@@ -165,6 +170,7 @@
 				B50F6A501D87A54B0016C15B /* Document.swift in Sources */,
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
 				F04631591DDFCAA8001C884E /* pcx.swift in Sources */,
+				B553EE361DDFE2270033C70D /* ModelView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

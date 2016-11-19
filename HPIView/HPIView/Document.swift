@@ -296,6 +296,10 @@ extension HPIBrowserWindowController {
             let pcx: PCXView = attachPreviewContentView({ PCXView(frame: $0) })
             pcx.image = NSImage(pcxContentsOf: fileURL)
         }
+        else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
+            let view: Model3DOView = attachPreviewContentView({ Model3DOView(frame: $0) })
+            try! view.loadModel(contentsOf: fileURL)
+        }
         else {
             let qlv: QLPreviewView = attachPreviewContentView({ QLPreviewView(frame: $0, style: .compact)! })
             qlv.previewItem = fileURL as NSURL
@@ -382,4 +386,3 @@ fileprivate extension HPIItem {
 class PCXView: NSImageView {
     
 }
-

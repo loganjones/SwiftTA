@@ -7,5 +7,6 @@
 //
 
 #include "pcx.h"
+#include "ta_3DO.h"
 #include "ta_HPI.h"
 #include "zlib.h"
