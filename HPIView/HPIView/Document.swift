@@ -39,7 +39,7 @@ class Document: NSDocument {
     override func read(from url: URL, ofType typeName: String) throws {
         
         do {
-            root = try HPIItem(withContentsOf: url)
+            root = try HPIItem(withContentsOf: url).sorted()
         }
         catch {
             Swift.print("ERROR: \(error)")
@@ -379,6 +379,23 @@ fileprivate extension HPIItem {
         case .file: return 0
         case .directory(_, let items): return items.count
         }
+    }
+    
+    func sorted() -> HPIItem {
+        
+        let comp = { (a: HPIItem, b: HPIItem) -> Bool in
+            a.name.caseInsensitiveCompare(b.name) == .orderedAscending
+        }
+        
+        switch self {
+        case .file: return self
+        case .directory(let dir):
+            let items = dir.items
+                .sorted(by: comp)
+                .map({ $0.sorted() })
+            return .directory(name: dir.name, items: items)
+        }
+        
     }
     
 }
