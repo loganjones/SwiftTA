@@ -144,10 +144,7 @@ class FinderView: NSView {
         tierField.frame = NSRect(x: 0, y: 0, width: tier.frame.maxX, height: tierField.frame.size.height)
     }
     
-    fileprivate func preview(for item: FinderViewItem, in tier: Tier) {
-        clear(after: tier)
-        let path = tiers.map({ $0.directory })
-        
+    fileprivate func showPreview(for item: FinderViewItem, in tier: Tier, path: [FinderViewDirectory]) {
         if let view = delegate?.preview(for: item, at: path, of: self) {
             let x = endOfTiers
             let widthAvailable = self.frame.width - x
@@ -160,9 +157,25 @@ class FinderView: NSView {
         }
     }
     
-    fileprivate func context(for tier: Tier) -> [FinderViewDirectory] {
+    fileprivate func path(upTo tier: Tier) -> [FinderViewDirectory] {
         guard let index = tiers.index(of: tier) else { return [] }
         return tiers[0...index].map({ $0.directory })
+    }
+    
+    fileprivate func handleSelection(of item: FinderViewItem, in tier: Tier) {
+        let path = self.path(upTo: tier)
+        if item.isExpandable(in: self, path: path),
+            let subdirectory = item.expand(in: self, path: path) {
+            addTier(for: subdirectory, after: tier)
+        }
+        else {
+            clear(after: tier)
+            showPreview(for: item, in: tier, path: path)
+        }
+    }
+    
+    fileprivate func handleDeselection(in tier: Tier) {
+        clear(after: tier)
     }
     
     fileprivate class FieldView: NSView {
@@ -261,8 +274,8 @@ class FinderView: NSView {
 
 protocol FinderViewItem {
     var name: String { get }
-    func isExpandable(in: FinderView) -> Bool
-    func expand(in: FinderView) -> FinderViewDirectory?
+    func isExpandable(in: FinderView, path: [FinderViewDirectory]) -> Bool
+    func expand(in: FinderView, path: [FinderViewDirectory]) -> FinderViewDirectory?
 }
 
 protocol FinderViewDirectory {
@@ -279,8 +292,8 @@ protocol FinderViewDelegate: class {
 
 extension FinderViewItem {
     
-    func isExpandable(in finder: FinderView) -> Bool {
-        return expand(in: finder) != nil
+    func isExpandable(in finder: FinderView, path: [FinderViewDirectory]) -> Bool {
+        return expand(in: finder, path: path) != nil
     }
     
 }
@@ -307,15 +320,10 @@ extension FinderView.Tier: NSTableViewDelegate {
         let row = tableView.selectedRow
         if row >= 0 {
             let item = directory.item(at: row)
-            if item.isExpandable(in: finder), let subdirectory = item.expand(in: finder) {
-                finder.addTier(for: subdirectory, after: self)
-            }
-            else {
-                finder.preview(for: item, in: self)
-            }
+            finder.handleSelection(of: item, in: self)
         }
         else {
-            finder.clear(after: self)
+            finder.handleDeselection(in: self)
         }
     }
     

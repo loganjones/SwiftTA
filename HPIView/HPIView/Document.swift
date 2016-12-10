@@ -98,16 +98,42 @@ class HPIBrowserWindowController: NSWindowController {
 
 extension HPIItem: FinderViewItem {
     
-    func isExpandable(in finder: FinderView) -> Bool {
+    func isExpandable(in finder: FinderView, path: [FinderViewDirectory]) -> Bool {
         switch self {
-        case .file: return false
-        case .directory: return true
+        case .file(let file):
+            let ext = file.fileExtension
+            if ext.caseInsensitiveCompare("gaf") == .orderedSame {
+                return true
+            }
+            else {
+                return false
+            }
+        case .directory:
+            return true
         }
     }
     
-    func expand(in: FinderView) -> FinderViewDirectory? {
+    func expand(in finder: FinderView, path: [FinderViewDirectory]) -> FinderViewDirectory? {
         switch self {
-        case .file: return nil
+        case .file(let file):
+            let ext = file.fileExtension
+            if ext.caseInsensitiveCompare("gaf") == .orderedSame {
+                guard let hpic = finder.window?.windowController as? HPIBrowserWindowController
+                    else { return nil }
+                
+                let pathString = path.map({ $0.name }).joined(separator: "/") + "/" + file.name
+                print("Selected Path: \(pathString)")
+                do {
+                    let gafURL = try hpic.extractFileForPreview(file, hpiPath: pathString)
+                    return try GafListing(withContentsOf: gafURL)
+                }
+                catch {
+                    return nil
+                }
+            }
+            else {
+                return nil
+            }
         case .directory(let directory): return directory
         }
     }
@@ -132,12 +158,52 @@ extension HPIItem.Directory: FinderViewDirectory {
     
 }
 
+extension GafItem: FinderViewItem {
+    
+    func isExpandable(in finder: FinderView, path: [FinderViewDirectory]) -> Bool {
+        return false
+    }
+    
+    func expand(in: FinderView, path: [FinderViewDirectory]) -> FinderViewDirectory? {
+        return nil
+    }
+    
+}
+
+extension GafListing: FinderViewDirectory {
+    
+    var numberOfItems: Int {
+        return items.count
+    }
+    
+    func item(at index: Int) -> FinderViewItem {
+        return items[index]
+    }
+    
+    func index(of item: FinderViewItem) -> Int? {
+        guard let other = item as? GafItem else { return nil }
+        let i = items.index(where: { $0.name == other.name })
+        return i
+    }
+    
+}
+
 extension HPIBrowserWindowController: FinderViewDelegate {
     
     func rowView(for item: FinderViewItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
-        
-        guard let item = item as? HPIItem
-            else { return nil }
+        switch item {
+        case let item as HPIItem:
+            return rowView(for: item, in: tableView, of: finder)
+        case let item as GafItem:
+            return rowView(for: item, in: tableView, of: finder)
+        default:
+            print("Unknown item type for: \(item)")
+            return nil
+        }
+    }
+    
+    func rowView(for item: HPIItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
+    
         guard let view = tableView.make(withIdentifier: "HPIItem", owner: finder) as? NSTableCellView
             else { return nil }
         
@@ -157,10 +223,33 @@ extension HPIBrowserWindowController: FinderViewDelegate {
         return view
     }
     
-    func preview(for item: FinderViewItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+    func rowView(for item: GafItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
         
-        guard let item = item as? HPIItem
+        guard let view = tableView.make(withIdentifier: "HPIItem", owner: finder) as? NSTableCellView
             else { return nil }
+        
+        view.textField?.stringValue = item.name
+        
+        let icon = NSWorkspace.shared().icon(forFileType: "pcx")
+        view.imageView?.image = icon
+        
+        return view
+    }
+    
+    func preview(for item: FinderViewItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+        switch item {
+        case let item as HPIItem:
+            return preview(for: item, at: pathDirectories, of: finder)
+        case let item as GafItem:
+            return preview(for: item, at: pathDirectories, of: finder)
+        default:
+            print("Unknown item type for: \(item)")
+            return nil
+        }
+    }
+    
+    func preview(for item: HPIItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+    
         guard case .file(let file) = item else { return nil }
         
         let pathString = pathDirectories.map({ $0.name }).joined(separator: "/") + "/" + item.name
@@ -192,6 +281,52 @@ extension HPIBrowserWindowController: FinderViewDelegate {
                 qlv.refreshPreviewItem()
                 subview = qlv
             }
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            preview.contentView.addSubview(subview)
+            NSLayoutConstraint.activate([
+                subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+                subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+                subview.topAnchor.constraint(equalTo: contentView.topAnchor),
+                subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+                ])
+        }
+        catch {
+            
+        }
+        // END TEMP
+        
+        return preview
+    }
+    
+    func preview(for item: GafItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+        
+        // MORE TEMP
+        guard let listing = pathDirectories.last as? GafListing,
+            let parent = pathDirectories[pathDirectories.endIndex-2] as? HPIItem.Directory,
+            let i = parent.items.index(where: { $0.name == listing.name }),
+            case .file(let file) = parent.items[i]
+            else { return nil }
+        
+        let pathString = pathDirectories.map({ $0.name }).joined(separator: "/")
+        print("Selected Path: \(pathString)")
+        
+        guard case .image(let image) = item
+            else { return nil }
+        
+        let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
+        preview.title = item.name
+        preview.size = 13
+        
+        // TEMP
+        do {
+            let fileURL = try extractFileForPreview(file, hpiPath: pathString)
+            let contentView = preview.contentView
+            let subview: NSView
+
+                let gaf = GafView(frame: contentView.bounds)
+                try gaf.load(image: image, from: fileURL)
+                subview = gaf
+
             subview.translatesAutoresizingMaskIntoConstraints = false
             preview.contentView.addSubview(subview)
             NSLayoutConstraint.activate([
@@ -330,6 +465,15 @@ fileprivate extension HPIItem {
             return .directory(HPIItem.Directory(name: directory.name, items: items))
         }
         
+    }
+    
+}
+
+fileprivate extension HPIItem.File {
+    
+    var fileExtension: String {
+        let n = name as NSString
+        return n.pathExtension
     }
     
 }
