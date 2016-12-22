@@ -66,12 +66,6 @@ class Document: NSDocument {
 
 class HPIBrowserWindowController: NSWindowController {
     
-    @IBOutlet weak var fileTreeView: NSOutlineView?
-    @IBOutlet weak var previewView: NSView!
-    @IBOutlet weak var contentAttributesView: NSView!
-    @IBOutlet weak var contentTitleField: NSTextField!
-    @IBOutlet weak var contentSizeField: NSTextField!
-    
     @IBOutlet weak var finder: FinderView!
     
     let sizeFormatter: ByteCountFormatter = {
@@ -247,32 +241,6 @@ extension HPIBrowserWindowController: FinderViewDelegate {
     
 }
 
-extension HPIBrowserWindowController: NSOutlineViewDelegate {
-    
-    func outlineViewSelectionDidChange(_ notification: Notification) {
-        guard let outlineView = notification.object as? NSOutlineView
-            else { return }
-        outlineView.selectedRowIndexes.forEach {
-            let indexPath = outlineView.indexPath(forRow: $0)
-            Swift.print("Selected Path: \(outlineView.hpiPath(for: indexPath))")
-        }
-        let selectedRows = outlineView.selectedRowIndexes
-        let selected = selectedRows.flatMap({ outlineView.item(atRow: $0) as? HPIItem })
-        switch selected.count {
-        case 0: clearPreview()
-        case 1:
-            switch selected[0] {
-            case .file:
-                let indexPath = outlineView.indexPath(forRow: selectedRows.first ?? 0)
-                preview(file: selected[0], hpiPath: outlineView.hpiPath(for: indexPath))
-            case .directory: clearPreview()
-            }
-        default: clearPreview()
-        }
-    }
-    
-}
-
 extension HPIBrowserWindowController {
     
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
@@ -341,119 +309,6 @@ extension HPIBrowserWindowController {
         }
         
     }
-}
-
-extension HPIBrowserWindowController {
-    
-    func clearPreview() {
-        contentAttributesView.isHidden = true
-        previewView.isHidden = true
-    }
-    
-    func preview(file: HPIItem, hpiPath: String) {
-        guard case .file(let properties) = file else { return }
-        contentAttributesView.isHidden = false
-        contentTitleField.stringValue = properties.name
-        contentSizeField.stringValue = sizeFormatter.string(fromByteCount: Int64(properties.size))
-        
-        guard let archiveURL = hpiDocument.fileURL
-            else { return }
-        let archiveIdentifier = String(format: "%08X", archiveURL.hashValue)
-        
-        guard let cachesURL = try? FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-            else { return }
-        
-        let archiveContainerURL = cachesURL
-            .appendingPathComponent(Bundle.main.bundleIdentifier!, isDirectory: true)
-            .appendingPathComponent(archiveIdentifier, isDirectory: true)
-        try? FileManager.default.createDirectory(at: archiveContainerURL, withIntermediateDirectories: true)
-        Swift.print("archiveContainer: \(archiveContainerURL)")
-        
-        let fileURL = archiveContainerURL.appendingPathComponent(hpiPath, isDirectory: false)
-        let fileDirectoryURL = fileURL.deletingLastPathComponent()
-        try? FileManager.default.createDirectory(at: fileDirectoryURL, withIntermediateDirectories: true)
-        let data = try? HPIItem.extract(item: file, fromFile: hpiDocument.fileURL!)
-        try? data?.write(to: fileURL, options: [.atomic])
-        
-        let fileExtension = fileURL.pathExtension
-        if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
-            let pcx: PCXView = attachPreviewContentView({ PCXView(frame: $0) })
-            pcx.image = NSImage(pcxContentsOf: fileURL)
-        }
-        else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
-            let view: Model3DOView = attachPreviewContentView({ Model3DOView(frame: $0) })
-            try! view.loadModel(contentsOf: fileURL)
-        }
-        else {
-            let qlv: QLPreviewView = attachPreviewContentView({ QLPreviewView(frame: $0, style: .compact)! })
-            qlv.previewItem = fileURL as NSURL
-            qlv.refreshPreviewItem()
-        }
- 
-        previewView.isHidden = false
-    }
-    
-    func attachPreviewContentView<VT: NSView>(_ maker: (NSRect)->VT ) -> VT {
-        if let view = previewView.subviews.first as? VT {
-            print("reused view")
-            return view
-        }
-        else {
-            print("new view")
-            previewView.subviews.forEach({ $0.removeFromSuperview() })
-            let view = maker(previewView.bounds)
-            let parent = previewView!
-            parent.addSubview(view)
-            view.leadingAnchor.constraint(equalTo: parent.leadingAnchor).isActive = true
-            view.trailingAnchor.constraint(equalTo: parent.trailingAnchor).isActive = true
-            view.topAnchor.constraint(equalTo: parent.topAnchor).isActive = true
-            view.bottomAnchor.constraint(equalTo: parent.bottomAnchor).isActive = true
-            return view
-        }
-    }
-    
-    func path(forItem item: HPIItem) -> String {
-        guard let outlineView = fileTreeView else { return "" }
-        
-        if let parent = outlineView.parent(forItem: item) as? HPIItem {
-            return path(forItem: parent) + "/" + item.name
-        }
-        else {
-            return "/" + item.name
-        }
-    }
-    
-}
-
-extension NSOutlineView {
-    
-    func hpiPath(for indexPath: IndexPath) -> String {
-        return "/" + indexPath
-            .map({ (self.item(atRow: $0) as? HPIItem)?.name ?? "??" })
-            .joined(separator: "/")
-    }
-    
-    func parentRow(forRow row: Int) -> Int {
-        let rowLevel = self.level(forRow: row)
-        var r = row - 1
-        var l = self.level(forRow: r)
-        while (r >= 0 && l >= rowLevel) {
-            r -= 1
-            l = self.level(forRow: r)
-        }
-        return r
-    }
-    
-    func indexPath(forRow row: Int) -> IndexPath {
-        var path = [Int]()
-        var i = row
-        while (i >= 0) {
-            path.append(i)
-            i = self.parentRow(forRow: i)
-        }
-        return IndexPath(indexes: path.reversed())
-    }
-    
 }
 
 fileprivate extension HPIItem {
