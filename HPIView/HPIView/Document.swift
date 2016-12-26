@@ -14,7 +14,7 @@ import CoreGraphics
 
 class Document: NSDocument {
     
-    var root: HPIItem?
+    var root: HPIItem.Directory?
 
     override init() {
         super.init()
@@ -39,7 +39,11 @@ class Document: NSDocument {
     override func read(from url: URL, ofType typeName: String) throws {
         
         do {
-            root = try HPIItem(withContentsOf: url).sorted()
+            let loaded = try HPIItem(withContentsOf: url).sorted()
+            switch loaded {
+            case .file(let file): throw LoadError.rootIsFile(file)
+            case .directory(let directory): root = directory
+            }
         }
         catch {
             Swift.print("ERROR: \(error)")
@@ -59,7 +63,9 @@ class Document: NSDocument {
         throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
     }
 
-
+    enum LoadError: Error {
+        case rootIsFile(HPIItem.File)
+    }
 }
 
 // MARK:- Browser Window
@@ -92,39 +98,36 @@ class HPIBrowserWindowController: NSWindowController {
 
 extension HPIItem: FinderViewItem {
     
-    var isExpandable: Bool {
+    func isExpandable(in finder: FinderView) -> Bool {
         switch self {
         case .file: return false
         case .directory: return true
         }
     }
     
+    func expand(in: FinderView) -> FinderViewDirectory? {
+        switch self {
+        case .file: return nil
+        case .directory(let directory): return directory
+        }
+    }
+    
 }
 
-extension HPIItem: FinderViewDirectory {
+extension HPIItem.Directory: FinderViewDirectory {
     
     var numberOfItems: Int {
-        switch self {
-        case .file: return 0
-        case .directory(let dir): return dir.items.count
-        }
+        return items.count
     }
     
     func item(at index: Int) -> FinderViewItem {
-        switch self {
-        case .file: fatalError("Bad HPI Directory")
-        case .directory(let dir): return dir.items[index]
-        }
+        return items[index]
     }
     
     func index(of item: FinderViewItem) -> Int? {
-        switch self {
-        case .file: return nil
-        case .directory(let dir):
-            guard let other = item as? HPIItem else { return nil }
-            let i = dir.items.index(where: { $0.name == other.name })
-            return i
-        }
+        guard let other = item as? HPIItem else { return nil }
+        let i = items.index(where: { $0.name == other.name })
+        return i
     }
     
 }
@@ -169,7 +172,7 @@ extension HPIBrowserWindowController: FinderViewDelegate {
         
         // TEMP
         do {
-            let fileURL = try extractItemForPreview(item, hpiPath: pathString)
+            let fileURL = try extractFileForPreview(file, hpiPath: pathString)
             let fileExtension = fileURL.pathExtension
             let contentView = preview.contentView
             let subview: NSView
@@ -208,8 +211,7 @@ extension HPIBrowserWindowController: FinderViewDelegate {
     
     // TEMP
     
-    func extractItemForPreview(_ file: HPIItem, hpiPath: String) throws -> URL {
-        //guard case .file(let properties) = file else { throw PreviewExtractError.badItem }
+    func extractFileForPreview(_ file: HPIItem.File, hpiPath: String) throws -> URL {
         
         guard let archiveURL = hpiDocument.fileURL
             else { throw PreviewExtractError.badDocument }
@@ -227,7 +229,7 @@ extension HPIBrowserWindowController: FinderViewDelegate {
         let fileURL = archiveContainerURL.appendingPathComponent(hpiPath, isDirectory: false)
         let fileDirectoryURL = fileURL.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: fileDirectoryURL, withIntermediateDirectories: true)
-        let data = try HPIItem.extract(item: file, fromFile: hpiDocument.fileURL!)
+        let data = try HPIItem.extract(file: file, fromHPI: hpiDocument.fileURL!)
         try data.write(to: fileURL, options: [.atomic])
         
         return fileURL
@@ -288,21 +290,21 @@ extension HPIBrowserWindowController {
             case .file(let file):
                 do {
                     let fileURL = rootDirectory.appendingPathComponent(file.name)
-                    let data = try HPIItem.extract(item: item, fromFile: hpiDocument.fileURL!)
+                    let data = try HPIItem.extract(file: file, fromHPI: hpiDocument.fileURL!)
                     try data.write(to: fileURL, options: [.atomic])
                 }
                 catch {
                     Swift.print("Failed to write \(file.name) to file: \(error)")
                 }
                 
-            case .directory(let name, let children):
+            case .directory(let directory):
                 do {
-                    let directoryURL = rootDirectory.appendingPathComponent(name)
+                    let directoryURL = rootDirectory.appendingPathComponent(directory.name)
                     try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-                    extractItems(children, to: directoryURL)
+                    extractItems(directory.items, to: directoryURL)
                 }
                 catch {
-                    Swift.print("Failed to create directory \(name): \(error)")
+                    Swift.print("Failed to create directory \(directory.name): \(error)")
                 }
             }
             
@@ -313,13 +315,6 @@ extension HPIBrowserWindowController {
 
 fileprivate extension HPIItem {
     
-    var numberOfChildren: Int {
-        switch self {
-        case .file: return 0
-        case .directory(_, let items): return items.count
-        }
-    }
-    
     func sorted() -> HPIItem {
         
         let comp = { (a: HPIItem, b: HPIItem) -> Bool in
@@ -328,11 +323,11 @@ fileprivate extension HPIItem {
         
         switch self {
         case .file: return self
-        case .directory(let dir):
-            let items = dir.items
+        case .directory(let directory):
+            let items = directory.items
                 .sorted(by: comp)
                 .map({ $0.sorted() })
-            return .directory(name: dir.name, items: items)
+            return .directory(HPIItem.Directory(name: directory.name, items: items))
         }
         
     }
