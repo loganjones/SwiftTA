@@ -102,13 +102,13 @@ class FinderView: NSView {
         }
     }
     
-    var selectedPath: [FinderViewItem] {
-        get {
-            let tierPath = tiers.map({ $0.directory as FinderViewItem }).dropFirst()
-            guard let selected = selectedItems.last else { return Array(tierPath) }
-            return Array(tierPath) + [selected]
-        }
-    }
+//    var selectedPath: [FinderViewItem] {
+//        get {
+//            let tierPath = tiers.map({ $0.directory as FinderViewItem }).dropFirst()
+//            guard let selected = selectedItems.last else { return Array(tierPath) }
+//            return Array(tierPath) + [selected]
+//        }
+//    }
     
     fileprivate func addTier(for directory: FinderViewDirectory) {
         let frame = NSRect(x: 0, y: 0, width: paneWidth, height: tierField.bounds.size.height)
@@ -261,10 +261,12 @@ class FinderView: NSView {
 
 protocol FinderViewItem {
     var name: String { get }
-    var isExpandable: Bool { get }
+    func isExpandable(in: FinderView) -> Bool
+    func expand(in: FinderView) -> FinderViewDirectory?
 }
 
-protocol FinderViewDirectory: FinderViewItem {
+protocol FinderViewDirectory {
+    var name: String { get }
     var numberOfItems: Int { get }
     func item(at index: Int) -> FinderViewItem
     func index(of item: FinderViewItem) -> Int?
@@ -273,6 +275,14 @@ protocol FinderViewDirectory: FinderViewItem {
 protocol FinderViewDelegate: class {
     func rowView(for item: FinderViewItem, in tableView: NSTableView, of finder: FinderView) -> NSView?
     func preview(for item: FinderViewItem, at path: [FinderViewDirectory], of finder: FinderView) -> NSView?
+}
+
+extension FinderViewItem {
+    
+    func isExpandable(in finder: FinderView) -> Bool {
+        return expand(in: finder) != nil
+    }
+    
 }
 
 extension FinderView.Tier: NSTableViewDataSource {
@@ -297,7 +307,7 @@ extension FinderView.Tier: NSTableViewDelegate {
         let row = tableView.selectedRow
         if row >= 0 {
             let item = directory.item(at: row)
-            if let subdirectory = item as? FinderViewDirectory, subdirectory.isExpandable {
+            if item.isExpandable(in: finder), let subdirectory = item.expand(in: finder) {
                 finder.addTier(for: subdirectory, after: self)
             }
             else {

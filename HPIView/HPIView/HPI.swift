@@ -167,17 +167,43 @@ extension FileHandle {
     
 }
 
+/// An HPI archive can be represented as a recursive collection of HPIItems.
+/// A single item can be either a File or a Directory.
+/// A File is a leaf item and can be extracted from the archive.
+/// A Directory is a listing of more HPIItems.
 enum HPIItem {
-    case file(name: String, size: Int, offset: Int, compression: HPIFormat.FileEntryCompression)
-    indirect case directory(name: String, items: [HPIItem])
+    
+    /// A file contained in an HPI archive.
+    case file(File)
+    
+    /// A (sub)directory listing in an HPI archive.
+    indirect case directory(Directory)
+    
+    /// Metadata for a specific File contained in an HPI archive.
+    /// The File entry can be used to fully extract the file's data from the archive.
+    struct File {
+        var name: String
+        var size: Int
+        var offset: Int
+        var compression: HPIFormat.FileEntryCompression
+    }
+    
+    /// A listing of contained HPIItems.
+    /// These may be Files or more Directories.
+    struct Directory {
+        var name: String
+        var items: [HPIItem]
+    }
 }
 
 extension HPIItem {
     
+    /// Every HPIItem has a name.
+    /// This name uniquely identifies the item in its containing Directory.
     var name: String {
         switch self {
-        case .file(let properties): return properties.name
-        case .directory(let properties): return properties.name
+        case .file(let file): return file.name
+        case .directory(let directory): return directory.name
         }
     }
     
@@ -185,11 +211,11 @@ extension HPIItem {
 
 extension HPIItem {
     
-    /// Parse & load an HPI file into a heirarchical set of HPIItems.
+    /// Parse & load an HPI archive into a heirarchical set of HPIItems.
     init(withContentsOf url: URL) throws {
         
         guard let file = try? FileHandle(forReadingFrom: url)
-            else { throw LoadError.failedToOpenFile }
+            else { throw LoadError.failedToOpenHPI }
         
         let headerData = file.readData(ofLength: MemoryLayout<HPIFormat.FileHeader>.size)
         let header: HPIFormat.FileHeader = headerData.withUnsafeBytes { $0.pointee }
@@ -229,8 +255,8 @@ extension HPIItem {
         // which should be the first item at to beginning of the file-system directory.
         self = try fsData.withUnsafeBytes { (p: UnsafePointer<UInt8>) throws -> HPIItem in
             let fileSystem = FileSystem(memory: p, offset: ext.directoryOffset)
-            let rootItems = try HPIItem.loadDirectory(atOffset: ext.directoryOffset, in: fileSystem)
-            return .directory(name: "", items: rootItems)
+            let rootItems = try HPIItem.loadDirectoryItems(atOffset: ext.directoryOffset, in: fileSystem)
+            return .directory(Directory(name: "", items: rootItems))
         }
     }
     
@@ -258,7 +284,7 @@ extension HPIItem {
         }
     }
     
-    private static func loadDirectory(atOffset offset: UInt32, in fileSystem: FileSystem) throws -> [HPIItem] {
+    private static func loadDirectoryItems(atOffset offset: UInt32, in fileSystem: FileSystem) throws -> [HPIItem] {
         
         let header = fileSystem.bindMemory(to: HPIFormat.DirectoryHeader.self, at: offset).pointee
         let entries = fileSystem.bindMemoryBuffer(to: TA_HPI_ENTRY.self,
@@ -274,25 +300,25 @@ extension HPIItem {
             // An entry is either a subdirectory or a file.
             if flags.contains(.directory) {
                 // A subdirectory recursively loads its children with loadDirectory()
-                let children = try loadDirectory(atOffset: entry.offsetToEntryData, in: fileSystem)
-                return .directory(name: name, items: children)
+                let children = try loadDirectoryItems(atOffset: entry.offsetToEntryData, in: fileSystem)
+                return .directory(Directory(name: name, items: children))
             }
             else {
                 // A file is just a collection of properties; and can be returned immediately.
                 let file = fileSystem.bindMemory(to: HPIFormat.FileEntry.self, at: entry.offsetToEntryData).pointee
-                return .file(
+                return .file(File(
                     name: name,
                     size: Int(file.fileSize),
                     offset: Int(file.offsetToFileData),
                     compression: HPIFormat.FileEntryCompression(rawValue: file.compressionType) ?? .none
-                )
+                ))
             }
             
         })
     }
     
     enum LoadError: Error {
-        case failedToOpenFile
+        case failedToOpenHPI
         case badHPIMarker(Int)
         case badHPIType(Int)
         case unsupportedHPIType(Int)
@@ -303,15 +329,12 @@ extension HPIItem {
         case badCompressionType(Int)
     }
     
-    public static func extract(item: HPIItem, fromFile url: URL) throws -> Data {
+    public static func extract(file fileInfo: File, fromHPI hpiURL: URL) throws -> Data {
         
-        guard case .file(let fileInfo) = item
-            else { throw LoadError.cantExtractDirectory }
+        guard let hpiFile = try? FileHandle(forReadingFrom: hpiURL)
+            else { throw LoadError.failedToOpenHPI }
         
-        guard let file = try? FileHandle(forReadingFrom: url)
-            else { throw LoadError.failedToOpenFile }
-        
-        let headerData = file.readData(ofLength: MemoryLayout<HPIFormat.FileHeader>.size)
+        let headerData = hpiFile.readData(ofLength: MemoryLayout<HPIFormat.FileHeader>.size)
         let header: HPIFormat.FileHeader = headerData.withUnsafeBytes { $0.pointee }
         
         guard header.marker == HPIFormat.FileHeaderMarker
@@ -322,16 +345,16 @@ extension HPIItem {
         guard hpiType == .ta
             else { throw LoadError.unsupportedHPIType(Int(header.version)) }
         
-        let extData = file.readData(ofLength: MemoryLayout<HPIFormat.TAExtendedHeader>.size)
+        let extData = hpiFile.readData(ofLength: MemoryLayout<HPIFormat.TAExtendedHeader>.size)
         let ext: HPIFormat.TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
         let key = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
         
         switch fileInfo.compression {
             
         case .none:
-            let data = file.readAndDecryptData(ofLength: fileInfo.size,
-                                               offset: UInt32(fileInfo.offset),
-                                               key: key)
+            let data = hpiFile.readAndDecryptData(ofLength: fileInfo.size,
+                                                  offset: UInt32(fileInfo.offset),
+                                                  key: key)
             return data
             
         case .lz77: fallthrough
@@ -341,25 +364,25 @@ extension HPIItem {
             let chunkCount = (fileInfo.size / Int(HPIFormat.ChunkMaximumSize)) +
                 ( (fileInfo.size % Int(HPIFormat.ChunkMaximumSize)) != 0 ? 1:0 )
             
-            let chunkSizeData = file.readAndDecryptData(ofLength: MemoryLayout<UInt32>.size * chunkCount,
-                                                        offset: UInt32(fileInfo.offset),
-                                                        key: key)
+            let chunkSizeData = hpiFile.readAndDecryptData(ofLength: MemoryLayout<UInt32>.size * chunkCount,
+                                                           offset: UInt32(fileInfo.offset),
+                                                           key: key)
             let chunkSizes = chunkSizeData.withUnsafeBytes {
                 Array(UnsafeBufferPointer<UInt32>(start: $0, count: chunkCount))
             }
             var chunkOffset = UInt32(fileInfo.offset + chunkSizeData.count)
             for chunkSize in chunkSizes {
                 let chunkHeaderSize = UInt32(MemoryLayout<TA_HPI_CHUNK>.size)
-                let chunkHeaderData = file.readAndDecryptData(ofLength: Int(chunkHeaderSize),
-                                                              offset: chunkOffset,
-                                                              key: key)
+                let chunkHeaderData = hpiFile.readAndDecryptData(ofLength: Int(chunkHeaderSize),
+                                                                 offset: chunkOffset,
+                                                                 key: key)
                 let chunkHeader: TA_HPI_CHUNK = chunkHeaderData.withUnsafeBytes { $0.pointee }
                 guard chunkHeader.marker == HPIFormat.ChunkHeaderMarker
                     else { throw ExtractError.badChunkMarker(Int(chunkHeader.marker)) }
                 
-                var chunkData = file.readAndDecryptData(ofLength: Int(chunkSize - chunkHeaderSize),
-                                                              offset: chunkOffset + chunkHeaderSize,
-                                                              key: key)
+                var chunkData = hpiFile.readAndDecryptData(ofLength: Int(chunkSize - chunkHeaderSize),
+                                                           offset: chunkOffset + chunkHeaderSize,
+                                                           key: key)
                 
                 if chunkHeader.encryptionFlag != 0 {
                     for index in 0..<Int(chunkHeader.compressedSize) {
