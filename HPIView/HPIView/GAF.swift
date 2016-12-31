@@ -47,10 +47,10 @@ class GafView: NSImageView {
             Swift.print("    \(frameInfo.width)x\(frameInfo.height)")
             Swift.print("    compression: \(compression)")
             Swift.print("    sub-frames: \(frameInfo.numberOfSubFrames)")
-            Swift.print("    entry.unknown_1: \(frameEntry.unknown_1) | 0x\(String(frameEntry.unknown_1, radix: 16))")
-            Swift.print("    info.unknown_1: \(frameInfo.unknown_1) | 0x\(String(frameInfo.unknown_1, radix: 16))")
+            Swift.print("    entry.unknown_1: \(frameEntry.unknown_1) | \(frameEntry.unknown_1.binaryString)")
+            Swift.print("    info.unknown_1: \(frameInfo.unknown_1) | \(frameInfo.unknown_1.binaryString)")
             Swift.print("    info.unknown_2: \(frameInfo.unknown_2)")
-            Swift.print("    info.unknown_3: \(frameInfo.unknown_3) | 0x\(String(frameInfo.unknown_3, radix: 16))")
+            Swift.print("    info.unknown_3: \(frameInfo.unknown_3) | \(frameInfo.unknown_3.binaryString)")
             
             if frameInfo.numberOfSubFrames > 0 {
                 gaf.seek(toFileOffset: frameInfo.offsetToFrameData)
@@ -64,9 +64,9 @@ class GafView: NSImageView {
                     Swift.print("      \(subframeInfo.width)x\(subframeInfo.height)")
                     Swift.print("      compression: \(compression)")
                     Swift.print("      sub-frames: \(subframeInfo.numberOfSubFrames)")
-                    Swift.print("      info.unknown_1: \(subframeInfo.unknown_1) | 0x\(String(subframeInfo.unknown_1, radix: 16))")
+                    Swift.print("      info.unknown_1: \(subframeInfo.unknown_1) | \(subframeInfo.unknown_1.binaryString)")
                     Swift.print("      info.unknown_2: \(subframeInfo.unknown_2)")
-                    Swift.print("      info.unknown_3: \(subframeInfo.unknown_3) | 0x\(String(subframeInfo.unknown_3, radix: 16))")
+                    Swift.print("      info.unknown_3: \(subframeInfo.unknown_3) | \(subframeInfo.unknown_3.binaryString)")
                     j += 1
                 }
             }

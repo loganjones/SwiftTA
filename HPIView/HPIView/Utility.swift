@@ -69,3 +69,75 @@ public func +<Pointee>(lhs: UnsafePointer<Pointee>, rhs: UInt32) -> UnsafePointe
 extension Array {
     public subscript(index: UInt16) -> Element { return self[Int(index)] }
 }
+
+// MARK:- String Formatters
+
+extension UInt8 {
+    var hexString: String {
+        return "0x"+String(self, radix: 16, uppercase: true).padLeft(with: "0", toLength: 2)
+    }
+}
+extension UInt16 {
+    var hexString: String {
+        return "0x"+String(self, radix: 16, uppercase: true).padLeft(with: "0", toLength: 4)
+    }
+}
+extension UInt32 {
+    var hexString: String {
+        return "0x"+String(self, radix: 16, uppercase: true).padLeft(with: "0", toLength: 8)
+    }
+}
+
+extension UInt8 {
+    var binaryString: String {
+        return "b("
+        + String(self, radix: 2, uppercase: true)
+            .padLeft(with: "0", toLength: 8)
+            .splitEvery(4, with: " ")
+        + ")"
+    }
+}
+extension UInt16 {
+    var binaryString: String {
+        return "b("
+            + String(self, radix: 2, uppercase: true)
+                .padLeft(with: "0", toLength: 16)
+                .splitEvery(4, with: " ")
+            + ")"
+    }
+}
+extension UInt32 {
+    var binaryString: String {
+        return "b("
+            + String(self, radix: 2, uppercase: true)
+                .padLeft(with: "0", toLength: 32)
+                .splitEvery(4, with: " ")
+            + ")"
+    }
+}
+
+extension String {
+    
+    func padLeft(with character: String, toLength length: Int) -> String {
+        let padCount = length - self.characters.count
+        guard padCount > 0 else { return self }
+        return String(repeating: character, count: padCount) + self
+    }
+    
+    func splitEvery(_ stride: Int, with splitter: String) -> String {
+        var out = ""
+        var counter = 0
+        for c in characters {
+            if counter == stride {
+                out.append(splitter)
+                counter = 1
+            }
+            else {
+                counter += 1
+            }
+            out.append(c)
+        }
+        return out
+    }
+    
+}
