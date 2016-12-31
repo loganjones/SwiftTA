@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B503B5E51E17559000CBB149 /* PALETTE.PAL in Resources */ = {isa = PBXBuildFile; fileRef = B5B472121E13A02600FC79E2 /* PALETTE.PAL */; };
+		B503B5E71E177A5E00CBB149 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B503B5E61E177A5E00CBB149 /* Utility.swift */; };
 		B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6A4D1D87A54B0016C15B /* AppDelegate.swift */; };
 		B50F6A501D87A54B0016C15B /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6A4F1D87A54B0016C15B /* Document.swift */; };
 		B50F6A531D87A54B0016C15B /* Document.xib in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A511D87A54B0016C15B /* Document.xib */; };
@@ -23,6 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B503B5E61E177A5E00CBB149 /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		B50F6A4A1D87A54B0016C15B /* HPIView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HPIView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B50F6A4D1D87A54B0016C15B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B50F6A4F1D87A54B0016C15B /* Document.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Document.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 				B50F6A4F1D87A54B0016C15B /* Document.swift */,
 				B553EE371DE004AB0033C70D /* FinderView.swift */,
 				B553EE351DDFE2270033C70D /* ModelView.swift */,
+				B503B5E61E177A5E00CBB149 /* Utility.swift */,
 				B5D4B6D81DF5135800ADBE65 /* GAF.swift */,
 				B50F6A5F1D87A8C40016C15B /* HPI.swift */,
 				F04631581DDFCAA8001C884E /* pcx.swift */,
@@ -186,6 +189,7 @@
 				B50F6A601D87A8C40016C15B /* HPI.swift in Sources */,
 				B50F6A501D87A54B0016C15B /* Document.swift in Sources */,
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
+				B503B5E71E177A5E00CBB149 /* Utility.swift in Sources */,
 				B553EE381DE004AB0033C70D /* FinderView.swift in Sources */,
 				F04631591DDFCAA8001C884E /* pcx.swift in Sources */,
 				B553EE361DDFE2270033C70D /* ModelView.swift in Sources */,

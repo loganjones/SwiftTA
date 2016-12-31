@@ -38,9 +38,8 @@ class GafView: NSImageView {
         var i = 1
         for frameEntry in image.frames {
             
-            gaf.seek(toFileOffset: UInt64(frameEntry.offsetToFrameData))
-            let frameInfoData = gaf.readData(ofLength: MemoryLayout<TA_GAF_FRAME_DATA>.size)
-            let frameInfo: TA_GAF_FRAME_DATA = frameInfoData.withUnsafeBytes { $0.pointee }
+            gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
+            let frameInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
             
             let compression = GafFrameCompressionMethod(rawValue: frameInfo.compressionMethod) ?? .uncompressed
             
@@ -54,25 +53,21 @@ class GafView: NSImageView {
             Swift.print("    info.unknown_3: \(frameInfo.unknown_3) | 0x\(String(frameInfo.unknown_3, radix: 16))")
             
             if frameInfo.numberOfSubFrames > 0 {
+                gaf.seek(toFileOffset: frameInfo.offsetToFrameData)
+                let subframeOffsets = gaf.readArray(ofType: UInt32.self, count: Int(frameInfo.numberOfSubFrames))
                 
-                gaf.seek(toFileOffset: UInt64(frameInfo.offsetToFrameData))
-                let subframeOffsetData = gaf.readData(ofLength: MemoryLayout<UInt32>.size * Int(frameInfo.numberOfSubFrames))
-                subframeOffsetData.withUnsafeBytes { (p: UnsafePointer<UInt8>)->Void in
-                    let subframeOffsets = UnsafeBufferPointer<UInt32>(rebinding: p, capacity: Int(frameInfo.numberOfSubFrames))
-                    var j = 1
-                    for offset in subframeOffsets {
-                        gaf.seek(toFileOffset: UInt64(offset))
-                        let subframeInfoData = gaf.readData(ofLength: MemoryLayout<TA_GAF_FRAME_DATA>.size)
-                        let subframeInfo: TA_GAF_FRAME_DATA = subframeInfoData.withUnsafeBytes { $0.pointee }
-                        Swift.print("    subframe \(j):")
-                        Swift.print("      \(subframeInfo.width)x\(subframeInfo.height)")
-                        Swift.print("      compression: \(compression)")
-                        Swift.print("      sub-frames: \(subframeInfo.numberOfSubFrames)")
-                        Swift.print("      info.unknown_1: \(subframeInfo.unknown_1) | 0x\(String(subframeInfo.unknown_1, radix: 16))")
-                        Swift.print("      info.unknown_2: \(subframeInfo.unknown_2)")
-                        Swift.print("      info.unknown_3: \(subframeInfo.unknown_3) | 0x\(String(subframeInfo.unknown_3, radix: 16))")
-                        j += 1
-                    }
+                var j = 1
+                for offset in subframeOffsets {
+                    gaf.seek(toFileOffset: offset)
+                    let subframeInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
+                    Swift.print("    subframe \(j):")
+                    Swift.print("      \(subframeInfo.width)x\(subframeInfo.height)")
+                    Swift.print("      compression: \(compression)")
+                    Swift.print("      sub-frames: \(subframeInfo.numberOfSubFrames)")
+                    Swift.print("      info.unknown_1: \(subframeInfo.unknown_1) | 0x\(String(subframeInfo.unknown_1, radix: 16))")
+                    Swift.print("      info.unknown_2: \(subframeInfo.unknown_2)")
+                    Swift.print("      info.unknown_3: \(subframeInfo.unknown_3) | 0x\(String(subframeInfo.unknown_3, radix: 16))")
+                    j += 1
                 }
             }
             
@@ -82,9 +77,8 @@ class GafView: NSImageView {
         self.image = nil
         if let frameEntry = image.frames.first {
             
-            gaf.seek(toFileOffset: UInt64(frameEntry.offsetToFrameData))
-            let frameInfoData = gaf.readData(ofLength: MemoryLayout<TA_GAF_FRAME_DATA>.size)
-            let frameInfo: TA_GAF_FRAME_DATA = frameInfoData.withUnsafeBytes { $0.pointee }
+            gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
+            let frameInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
             
             if frameInfo.numberOfSubFrames == 0,
                 let frameData = try? GafImage.read(frame: frameInfo, from: gaf) {
@@ -103,21 +97,6 @@ class GafView: NSImageView {
     
 }
 
-extension UnsafePointer {
-    init<T>(rebinding p: UnsafePointer<T>) {
-        let raw = UnsafeRawPointer(p)
-        self.init(raw.assumingMemoryBound(to: Pointee.self))
-    }
-}
-
-extension UnsafeBufferPointer {
-    init<T>(rebinding p: UnsafePointer<T>, capacity count: Int) {
-        let raw = UnsafeRawPointer(p)
-        let rebound = raw.assumingMemoryBound(to: Element.self)
-        self.init(start: rebound, count: count)
-    }
-}
-
 struct GafListing {
     
     // TEMP
@@ -132,30 +111,15 @@ struct GafListing {
         guard let gaf = try? FileHandle(forReadingFrom: gafURL)
             else { throw LoadError.failedToOpenGAF }
         
-        let fileHeaderData = gaf.readData(ofLength: MemoryLayout<TA_GAF_HEADER>.size)
-        let fileHeader: TA_GAF_HEADER = fileHeaderData.withUnsafeBytes { $0.pointee }
+        let fileHeader = gaf.readValue(ofType: TA_GAF_HEADER.self)
         guard fileHeader.version == TA_GAF_VERSION_STANDARD else { throw LoadError.badGafVersion(fileHeader.version) }
         
-        let entryOffsetData = gaf.readData(ofLength: MemoryLayout<UInt32>.size * Int(fileHeader.numberOfEntries))
-        items = try entryOffsetData.withUnsafeBytes { (entryOffsetPointer: UnsafePointer<UInt32>) throws -> [GafItem] in
-            let entryOffsets = UnsafeBufferPointer<UInt32>(rebinding: entryOffsetPointer,
-                                                           capacity: Int(fileHeader.numberOfEntries))
-            return entryOffsets.map { entryOffset -> GafItem in
-                gaf.seek(toFileOffset: UInt64(entryOffset))
-                let entryHeaderData = gaf.readData(ofLength: MemoryLayout<TA_GAF_ENTRY>.size + Int(TA_GAF_ENTRY_NAME_FIELD_SIZE))
-                let (entryHeader, name) = entryHeaderData.withUnsafeBytes { (p: UnsafePointer<UInt8>) -> (TA_GAF_ENTRY, String) in
-                    return (UnsafePointer<TA_GAF_ENTRY>(rebinding: p).pointee,
-                            String(cString: p + MemoryLayout<TA_GAF_ENTRY>.size))
-                }
-                
-                let frameEntriesData = gaf.readData(ofLength: MemoryLayout<TA_GAF_FRAME_ENTRY>.size + Int(entryHeader.numberOfFrames))
-                let frameEntries = frameEntriesData.withUnsafeBytes { (p: UnsafePointer<UInt8>) -> [TA_GAF_FRAME_ENTRY] in
-                    let buffer = UnsafeBufferPointer<TA_GAF_FRAME_ENTRY>(rebinding: p, capacity: Int(entryHeader.numberOfFrames))
-                    return Array(buffer)
-                }
-                
-                return .image(GafImage(name: name, frames: frameEntries))
-            }
+        let entryOffsets = gaf.readArray(ofType: UInt32.self, count: Int(fileHeader.numberOfEntries))
+        items = entryOffsets.map { entryOffset -> GafItem in
+            gaf.seek(toFileOffset: entryOffset)
+            let entryHeader = gaf.readValue(ofType: TA_GAF_ENTRY.self)
+            let frameEntries = gaf.readArray(ofType: TA_GAF_FRAME_ENTRY.self, count: Int(entryHeader.numberOfFrames))
+            return .image(GafImage(name: entryHeader.name, frames: frameEntries))
         }
     }
     
@@ -184,7 +148,7 @@ extension GafImage {
             else { throw GafLoadError.unknownFrameCompression(frame.compressionMethod) }
         let size = ImageSize(width: Int(frame.width), height: Int(frame.height))
         
-        gaf.seek(toFileOffset: UInt64(frame.offsetToFrameData))
+        gaf.seek(toFileOffset: frame.offsetToFrameData)
         switch compression {
         case .uncompressed:
             return gaf.readData(ofLength: size.width * size.height)
@@ -273,6 +237,13 @@ extension GafItem {
         }
     }
     
+}
+
+extension TA_GAF_ENTRY {
+    var name: String {
+        let p = UnsafeRawPointer([nameBuffer]).assumingMemoryBound(to: CChar.self)
+        return String(cString: p)
+    }
 }
 
 extension NSImage {
