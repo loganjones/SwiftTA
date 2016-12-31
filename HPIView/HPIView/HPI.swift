@@ -415,10 +415,15 @@ extension HPIItem {
 
 fileprivate extension Data {
     
-    func decompressLZ77(decompressedSize: Int? = nil) -> Data {
+    func decompressLZ77(decompressedSize: Int) -> Data {
         
-        var out = Data(capacity: decompressedSize ?? self.count)
+        var outptr = 0
+        var out = UnsafeMutablePointer<UInt8>.allocate(capacity:  decompressedSize)
+        defer { out.deallocate(capacity: decompressedSize) }
+        
         let DBuff = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
+        defer { DBuff.deallocate(capacity: decompressedSize) }
+        
         self.withUnsafeBytes { (_in: UnsafePointer<UInt8>) -> Void in
         
             var work1 = 1
@@ -428,10 +433,11 @@ fileprivate extension Data {
             
             loop: while true {
                 if (work2 & work3) == 0 {
-                    out.append(_in[inptr])
+                    out[outptr] = _in[inptr]
                     DBuff[work1] = _in[inptr]
                     work1 = (work1 + 1) & 0xFFF
                     inptr += 1
+                    outptr += 1
                 }
                 else {
                     var count = (_in + inptr).withMemoryRebound(to: UInt16.self, capacity: 1) { $0.pointee }
@@ -444,10 +450,11 @@ fileprivate extension Data {
                         count = (count & 0x0F) + 2
                         if count >= 0 {
                             for _ in 0..<count {
-                                out.append(DBuff[DPtr])
+                                out[outptr] = DBuff[DPtr]
                                 DBuff[work1] = DBuff[DPtr]
                                 DPtr = (DPtr + 1) & 0xFFF
                                 work1 = (work1 + 1) & 0xFFF
+                                outptr += 1
                             }
                         }
                     }
@@ -462,7 +469,7 @@ fileprivate extension Data {
         
         }
         
-        return out
+        return Data(bytes: out, count: outptr)
     }
     
     func decompressZLib(decompressedSize: Int) -> Data {
