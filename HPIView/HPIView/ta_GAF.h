@@ -49,7 +49,7 @@ typedef struct TA_GAF_ENTRY
 	uint32_t		unknown_2;
 
     /// The unique name of this entry, always padded to 32 characters long with 0
-	//uint8_t		name[32];
+	uint8_t         nameBuffer[32];
 
     // Immediately following an entry is an array of frame entries
     //TA_GAF_FRAME_ENTRY    FrameEntries[ NumberOfFrames ];

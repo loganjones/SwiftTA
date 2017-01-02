@@ -151,7 +151,7 @@ public enum HPIFormat {
 extension FileHandle {
     
     func readAndDecryptData(ofLength size: Int, offset: UInt32, key: Int32) -> Data {
-        seek(toFileOffset: UInt64(offset))
+        seek(toFileOffset: offset)
         var data = readData(ofLength: size)
         if data.count < size { print("read less data than requested! (wanted \(size) bytes, read \(data.count) bytes)") }
         let koffset = Int32(offset)
@@ -163,6 +163,11 @@ extension FileHandle {
             }
         }
         return data
+    }
+    
+    func readAndDecryptValue<T>(ofType type: T.Type, offset: UInt32, key: Int32) -> T {
+        let data = readAndDecryptData(ofLength: MemoryLayout<T>.size, offset: offset, key: key)
+        return data.withUnsafeBytes { $0.pointee }
     }
     
 }
@@ -217,8 +222,7 @@ extension HPIItem {
         guard let file = try? FileHandle(forReadingFrom: url)
             else { throw LoadError.failedToOpenHPI }
         
-        let headerData = file.readData(ofLength: MemoryLayout<HPIFormat.FileHeader>.size)
-        let header: HPIFormat.FileHeader = headerData.withUnsafeBytes { $0.pointee }
+        let header = file.readValue(ofType: HPIFormat.FileHeader.self)
         
         guard header.marker == HPIFormat.FileHeaderMarker
             else { throw LoadError.badHPIMarker(Int(header.marker)) }
@@ -236,8 +240,7 @@ extension HPIItem {
     /// Parse & load a Total Annihilation HPI file-system into a heirarchical set of HPIItems.
     private init(withTAFile file: FileHandle) throws {
         
-        let extData = file.readData(ofLength: MemoryLayout<HPIFormat.TAExtendedHeader>.size)
-        let ext: HPIFormat.TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
+        let ext = file.readValue(ofType: HPIFormat.TAExtendedHeader.self)
         
         // The headerKey is non-zero then this entire HPI file (other than the header, of course)
         // is enctrypted with a simple key. This keyiteslf must be decoded with some simple bit shifting.
@@ -334,8 +337,7 @@ extension HPIItem {
         guard let hpiFile = try? FileHandle(forReadingFrom: hpiURL)
             else { throw LoadError.failedToOpenHPI }
         
-        let headerData = hpiFile.readData(ofLength: MemoryLayout<HPIFormat.FileHeader>.size)
-        let header: HPIFormat.FileHeader = headerData.withUnsafeBytes { $0.pointee }
+        let header = hpiFile.readValue(ofType: HPIFormat.FileHeader.self)
         
         guard header.marker == HPIFormat.FileHeaderMarker
             else { throw LoadError.badHPIMarker(Int(header.marker)) }
@@ -345,8 +347,7 @@ extension HPIItem {
         guard hpiType == .ta
             else { throw LoadError.unsupportedHPIType(Int(header.version)) }
         
-        let extData = hpiFile.readData(ofLength: MemoryLayout<HPIFormat.TAExtendedHeader>.size)
-        let ext: HPIFormat.TAExtendedHeader = extData.withUnsafeBytes { $0.pointee }
+        let ext = hpiFile.readValue(ofType: HPIFormat.TAExtendedHeader.self)
         let key = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
         
         switch fileInfo.compression {
@@ -372,14 +373,13 @@ extension HPIItem {
             }
             var chunkOffset = UInt32(fileInfo.offset + chunkSizeData.count)
             for chunkSize in chunkSizes {
-                let chunkHeaderSize = UInt32(MemoryLayout<TA_HPI_CHUNK>.size)
-                let chunkHeaderData = hpiFile.readAndDecryptData(ofLength: Int(chunkHeaderSize),
-                                                                 offset: chunkOffset,
-                                                                 key: key)
-                let chunkHeader: TA_HPI_CHUNK = chunkHeaderData.withUnsafeBytes { $0.pointee }
+                let chunkHeader = hpiFile.readAndDecryptValue(ofType: TA_HPI_CHUNK.self,
+                                                              offset: chunkOffset,
+                                                              key: key)
                 guard chunkHeader.marker == HPIFormat.ChunkHeaderMarker
                     else { throw ExtractError.badChunkMarker(Int(chunkHeader.marker)) }
                 
+                let chunkHeaderSize = UInt32(MemoryLayout.size(ofValue: chunkHeader))
                 var chunkData = hpiFile.readAndDecryptData(ofLength: Int(chunkSize - chunkHeaderSize),
                                                            offset: chunkOffset + chunkHeaderSize,
                                                            key: key)
@@ -415,10 +415,15 @@ extension HPIItem {
 
 fileprivate extension Data {
     
-    func decompressLZ77(decompressedSize: Int? = nil) -> Data {
+    func decompressLZ77(decompressedSize: Int) -> Data {
         
-        var out = Data(capacity: decompressedSize ?? self.count)
+        var outptr = 0
+        var out = UnsafeMutablePointer<UInt8>.allocate(capacity:  decompressedSize)
+        defer { out.deallocate(capacity: decompressedSize) }
+        
         let DBuff = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
+        defer { DBuff.deallocate(capacity: decompressedSize) }
+        
         self.withUnsafeBytes { (_in: UnsafePointer<UInt8>) -> Void in
         
             var work1 = 1
@@ -428,10 +433,11 @@ fileprivate extension Data {
             
             loop: while true {
                 if (work2 & work3) == 0 {
-                    out.append(_in[inptr])
+                    out[outptr] = _in[inptr]
                     DBuff[work1] = _in[inptr]
                     work1 = (work1 + 1) & 0xFFF
                     inptr += 1
+                    outptr += 1
                 }
                 else {
                     var count = (_in + inptr).withMemoryRebound(to: UInt16.self, capacity: 1) { $0.pointee }
@@ -444,10 +450,11 @@ fileprivate extension Data {
                         count = (count & 0x0F) + 2
                         if count >= 0 {
                             for _ in 0..<count {
-                                out.append(DBuff[DPtr])
+                                out[outptr] = DBuff[DPtr]
                                 DBuff[work1] = DBuff[DPtr]
                                 DPtr = (DPtr + 1) & 0xFFF
                                 work1 = (work1 + 1) & 0xFFF
+                                outptr += 1
                             }
                         }
                     }
@@ -462,7 +469,7 @@ fileprivate extension Data {
         
         }
         
-        return out
+        return Data(bytes: out, count: outptr)
     }
     
     func decompressZLib(decompressedSize: Int) -> Data {

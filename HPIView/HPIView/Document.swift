@@ -73,6 +73,7 @@ class Document: NSDocument {
 class HPIBrowserWindowController: NSWindowController {
     
     @IBOutlet weak var finder: FinderView!
+    fileprivate var cache: HpiFileCache?
     
     let sizeFormatter: ByteCountFormatter = {
         let formatter = ByteCountFormatter()
@@ -91,6 +92,9 @@ class HPIBrowserWindowController: NSWindowController {
         finder.delegate = self
         if let root = hpiDocument.root {
             finder.setRoot(directory: root)
+        }
+        if let url = hpiDocument.fileURL {
+            cache = try? HpiFileCache(hpiURL: url)
         }
     }
     
@@ -120,11 +124,13 @@ extension HPIItem: FinderViewItem {
             if ext.caseInsensitiveCompare("gaf") == .orderedSame {
                 guard let hpic = finder.window?.windowController as? HPIBrowserWindowController
                     else { return nil }
+                guard let cache = hpic.cache
+                    else { return nil }
                 
                 let pathString = path.map({ $0.name }).joined(separator: "/") + "/" + file.name
                 print("Selected Path: \(pathString)")
                 do {
-                    let gafURL = try hpic.extractFileForPreview(file, hpiPath: pathString)
+                    let gafURL = try cache.url(for: file, atHpiPath: pathString)
                     return try GafListing(withContentsOf: gafURL)
                 }
                 catch {
@@ -255,44 +261,41 @@ extension HPIBrowserWindowController: FinderViewDelegate {
         let pathString = pathDirectories.map({ $0.name }).joined(separator: "/") + "/" + item.name
         print("Selected Path: \(pathString)")
         
+        guard let _fileURL = try? cache?.url(for: file, atHpiPath: pathString), let fileURL = _fileURL
+            else { return nil }
+        
         let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
         preview.title = file.name
         preview.size = file.size
         
         // TEMP
-        do {
-            let fileURL = try extractFileForPreview(file, hpiPath: pathString)
-            let fileExtension = fileURL.pathExtension
-            let contentView = preview.contentView
-            let subview: NSView
-            if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
-                let pcx = PCXView(frame: contentView.bounds)
-                pcx.image = NSImage(pcxContentsOf: fileURL)
-                subview = pcx
-            }
-            else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
-                let model = Model3DOView(frame: contentView.bounds)
-                try! model.loadModel(contentsOf: fileURL)
-                subview = model
-            }
-            else {
-                let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
-                qlv.previewItem = fileURL as NSURL
-                qlv.refreshPreviewItem()
-                subview = qlv
-            }
-            subview.translatesAutoresizingMaskIntoConstraints = false
-            preview.contentView.addSubview(subview)
-            NSLayoutConstraint.activate([
-                subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-                subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-                subview.topAnchor.constraint(equalTo: contentView.topAnchor),
-                subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-                ])
+        let fileExtension = fileURL.pathExtension
+        let contentView = preview.contentView
+        let subview: NSView
+        if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
+            let pcx = PCXView(frame: contentView.bounds)
+            pcx.image = NSImage(pcxContentsOf: fileURL)
+            subview = pcx
         }
-        catch {
-            
+        else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
+            let model = Model3DOView(frame: contentView.bounds)
+            try! model.loadModel(contentsOf: fileURL)
+            subview = model
         }
+        else {
+            let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
+            qlv.previewItem = fileURL as NSURL
+            qlv.refreshPreviewItem()
+            subview = qlv
+        }
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        preview.contentView.addSubview(subview)
+        NSLayoutConstraint.activate([
+            subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            subview.topAnchor.constraint(equalTo: contentView.topAnchor),
+            subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            ])
         // END TEMP
         
         return preview
@@ -313,13 +316,15 @@ extension HPIBrowserWindowController: FinderViewDelegate {
         guard case .image(let image) = item
             else { return nil }
         
+        guard let _fileURL = try? cache?.url(for: file, atHpiPath: pathString), let fileURL = _fileURL
+            else { return nil }
+        
         let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
         preview.title = item.name
         preview.size = 13
         
         // TEMP
         do {
-            let fileURL = try extractFileForPreview(file, hpiPath: pathString)
             let contentView = preview.contentView
             let subview: NSView
 
@@ -342,38 +347,6 @@ extension HPIBrowserWindowController: FinderViewDelegate {
         // END TEMP
         
         return preview
-    }
-    
-    // TEMP
-    
-    func extractFileForPreview(_ file: HPIItem.File, hpiPath: String) throws -> URL {
-        
-        guard let archiveURL = hpiDocument.fileURL
-            else { throw PreviewExtractError.badDocument }
-        let archiveIdentifier = String(format: "%08X", archiveURL.hashValue)
-        
-        guard let cachesURL = try? FileManager.default.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-            else { throw PreviewExtractError.badCachesURL }
-        
-        let archiveContainerURL = cachesURL
-            .appendingPathComponent(Bundle.main.bundleIdentifier!, isDirectory: true)
-            .appendingPathComponent(archiveIdentifier, isDirectory: true)
-        try FileManager.default.createDirectory(at: archiveContainerURL, withIntermediateDirectories: true)
-        Swift.print("archiveContainer: \(archiveContainerURL)")
-        
-        let fileURL = archiveContainerURL.appendingPathComponent(hpiPath, isDirectory: false)
-        let fileDirectoryURL = fileURL.deletingLastPathComponent()
-        try FileManager.default.createDirectory(at: fileDirectoryURL, withIntermediateDirectories: true)
-        let data = try HPIItem.extract(file: file, fromHPI: hpiDocument.fileURL!)
-        try data.write(to: fileURL, options: [.atomic])
-        
-        return fileURL
-    }
-    
-    enum PreviewExtractError: Error {
-        case badItem
-        case badDocument
-        case badCachesURL
     }
     
 }

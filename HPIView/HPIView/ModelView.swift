@@ -181,23 +181,6 @@ enum ModelGL {
     
 }
 
-// MARK:- Memory Extensions
-
-public func +<Pointee>(lhs: UnsafePointer<Pointee>, rhs: UInt32) -> UnsafePointer<Pointee> {
-    return lhs + Int(rhs)
-}
-
-extension UnsafeRawPointer {
-    public func bindMemoryBuffer<T>(to type: T.Type, capacity count: Int) -> UnsafeBufferPointer<T> {
-        let p = self.bindMemory(to: type, capacity: count)
-        return UnsafeBufferPointer<T>(start: p, count: count)
-    }
-}
-
-extension Array {
-    public subscript(index: UInt16) -> Element { return self[Int(index)] }
-}
-
 // MARK:- Geometry
 
 let LINEAR_CONSTANT = 163840.0 / 2.5
