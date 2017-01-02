@@ -18,6 +18,7 @@
 		B553EE361DDFE2270033C70D /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE351DDFE2270033C70D /* ModelView.swift */; };
 		B553EE381DE004AB0033C70D /* FinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE371DE004AB0033C70D /* FinderView.swift */; };
 		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
+		B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */; };
 		B5D4B6D91DF5135800ADBE65 /* GAF.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D4B6D81DF5135800ADBE65 /* GAF.swift */; };
 		B5D4B6DB1E04E5F200ADBE65 /* HPIFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5D4B6DA1E04E5F200ADBE65 /* HPIFinderRow.xib */; };
 		F04631591DDFCAA8001C884E /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04631581DDFCAA8001C884E /* pcx.swift */; };
@@ -38,6 +39,7 @@
 		B58ECABA1DC6B35B005F231F /* ta_HPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_HPI.h; sourceTree = "<group>"; };
 		B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		B58ECAC01DC6BE90005F231F /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HpiFileCache.swift; sourceTree = "<group>"; };
 		B5B472121E13A02600FC79E2 /* PALETTE.PAL */ = {isa = PBXFileReference; lastKnownFileType = file; path = PALETTE.PAL; sourceTree = "<group>"; };
 		B5D4B6D71DF5108800ADBE65 /* ta_GAF.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_GAF.h; sourceTree = "<group>"; };
 		B5D4B6D81DF5135800ADBE65 /* GAF.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GAF.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 			children = (
 				B50F6A4D1D87A54B0016C15B /* AppDelegate.swift */,
 				B50F6A4F1D87A54B0016C15B /* Document.swift */,
+				B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */,
 				B553EE371DE004AB0033C70D /* FinderView.swift */,
 				B553EE351DDFE2270033C70D /* ModelView.swift */,
 				B503B5E61E177A5E00CBB149 /* Utility.swift */,
@@ -192,6 +195,7 @@
 				B503B5E71E177A5E00CBB149 /* Utility.swift in Sources */,
 				B553EE381DE004AB0033C70D /* FinderView.swift in Sources */,
 				F04631591DDFCAA8001C884E /* pcx.swift in Sources */,
+				B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */,
 				B553EE361DDFE2270033C70D /* ModelView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
