@@ -7,17 +7,14 @@
 //
 
 import Cocoa
+import Quartz
+import QuickLook
+import CoreGraphics
+
 
 class Document: NSDocument {
     
-    var root: HPIItem?
-    @IBOutlet weak var fileTreeView: NSOutlineView?
-    
-    let sizeFormatter: ByteCountFormatter = {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .file
-        return formatter
-    }()
+    var root: HPIItem.Directory?
 
     override init() {
         super.init()
@@ -27,11 +24,10 @@ class Document: NSDocument {
     override class func autosavesInPlace() -> Bool {
         return true
     }
-
-    override var windowNibName: String? {
-        // Returns the nib file name of the document
-        // If you need to use a subclass of NSWindowController or if your document supports multiple NSWindowControllers, you should remove this property and override -makeWindowControllers instead.
-        return "Document"
+    
+    override func makeWindowControllers() {
+        let controller = HPIBrowserWindowController(windowNibName: "Document")
+        addWindowController(controller)
     }
 
     override func data(ofType typeName: String) throws -> Data {
@@ -43,7 +39,11 @@ class Document: NSDocument {
     override func read(from url: URL, ofType typeName: String) throws {
         
         do {
-            root = try HPIItem(withContentsOf: url)
+            let loaded = try HPIItem(withContentsOf: url).sorted()
+            switch loaded {
+            case .file(let file): throw LoadError.rootIsFile(file)
+            case .directory(let directory): root = directory
+            }
         }
         catch {
             Swift.print("ERROR: \(error)")
@@ -63,108 +63,310 @@ class Document: NSDocument {
         throw NSError(domain: NSOSStatusErrorDomain, code: unimpErr, userInfo: nil)
     }
 
-
+    enum LoadError: Error {
+        case rootIsFile(HPIItem.File)
+    }
 }
 
-extension Document: NSOutlineViewDataSource {
+// MARK:- Browser Window
+
+class HPIBrowserWindowController: NSWindowController {
     
-    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        if item == nil {
-            return root?.numberOfChildren ?? 0
-        }
-        else {
-            guard let hpi = item as? HPIItem
-                else { return 0 }
-            return hpi.numberOfChildren
-        }
+    @IBOutlet weak var finder: FinderView!
+    fileprivate var cache: HpiFileCache?
+    
+    let sizeFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
+    
+    var hpiDocument: Document {
+        guard let doc = self.document as? Document
+            else { fatalError("No HPI Document associated with this window!?") }
+        return doc
     }
     
-    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        let hpi: HPIItem
-        if item == nil {
-            if let good = root { hpi = good } else { fatalError("Bad Root Item") }
+    override func awakeFromNib() {
+        finder.register(NSNib(nibNamed: "HPIFinderRow", bundle: nil), forIdentifier: "HPIItem")
+        finder.delegate = self
+        if let root = hpiDocument.root {
+            finder.setRoot(directory: root)
         }
-        else {
-            if let good = item as? HPIItem { hpi = good } else { fatalError("Bad HPI Item") }
+        if let url = hpiDocument.fileURL {
+            cache = try? HpiFileCache(hpiURL: url)
         }
-        switch hpi {
-        case .file: fatalError("Bad HPI Item")
-        case .directory(_, let items): return items[index]
-        }
-    }
-    
-    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        guard let hpi = item as? HPIItem else { fatalError("Bad HPI Item") }
-        return hpi.numberOfChildren > 0
-    }
-    
-    func outlineView(_ outlineView: NSOutlineView, writeItems items: [Any], to pasteboard: NSPasteboard) -> Bool {
-        
-        pasteboard.declareTypes([NSFilesPromisePboardType], owner: nil)
-        pasteboard.setPropertyList(["txt"], forType: NSFilesPromisePboardType)
-        
-        return true
-        
     }
     
 }
 
-extension Document: NSOutlineViewDelegate {
+extension HPIItem: FinderViewItem {
     
-    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
-        guard let hpi = item as? HPIItem else { fatalError("Bad HPI Item") }
-        
-        switch tableColumn?.identifier {
-            
-        case .some("FileColumn"):
-            let view = outlineView.make(withIdentifier: "FileCell", owner: self) as? NSTableCellView
-            view?.textField?.stringValue = hpi.name
-            return view
-            
-        case .some("SizeColumn"):
-            let view = outlineView.make(withIdentifier: "SizeCell", owner: self) as? NSTableCellView
-            switch hpi {
-            case .file(let properties): view?.textField?.stringValue = sizeFormatter.string(fromByteCount: Int64(properties.size))
-            case .directory: view?.textField?.stringValue = ""
+    func isExpandable(in finder: FinderView, path: [FinderViewDirectory]) -> Bool {
+        switch self {
+        case .file(let file):
+            let ext = file.fileExtension
+            if ext.caseInsensitiveCompare("gaf") == .orderedSame {
+                return true
             }
-            return view
-            
-        default:
-            return nil
-            
+            else {
+                return false
+            }
+        case .directory:
+            return true
         }
     }
     
-    func outlineView(_ outlineView: NSOutlineView, namesOfPromisedFilesDroppedAtDestination dropDestination: URL, forDraggedItems items: [Any]) -> [String] {
-    
-        return ["Foo"]
+    func expand(in finder: FinderView, path: [FinderViewDirectory]) -> FinderViewDirectory? {
+        switch self {
+        case .file(let file):
+            let ext = file.fileExtension
+            if ext.caseInsensitiveCompare("gaf") == .orderedSame {
+                guard let hpic = finder.window?.windowController as? HPIBrowserWindowController
+                    else { return nil }
+                guard let cache = hpic.cache
+                    else { return nil }
+                
+                let pathString = path.map({ $0.name }).joined(separator: "/") + "/" + file.name
+                print("Selected Path: \(pathString)")
+                do {
+                    let gafURL = try cache.url(for: file, atHpiPath: pathString)
+                    return try GafListing(withContentsOf: gafURL)
+                }
+                catch {
+                    return nil
+                }
+            }
+            else {
+                return nil
+            }
+        case .directory(let directory): return directory
+        }
     }
     
 }
 
-extension Document {
+extension HPIItem.Directory: FinderViewDirectory {
     
-    @IBAction func selectBrowserItem(sender: Any?) {
-        guard let browser = sender as? NSBrowser else { return }
-        let col = browser.selectedColumn
-        let rows = browser.selectedRowIndexes(inColumn: col)
-        Swift.print("selected [ \(col), \(rows) ]")
+    var numberOfItems: Int {
+        return items.count
     }
     
-    @IBAction func invokeBrowserItem(sender: Any?) {
-        guard let browser = sender as? NSBrowser else { return }
-        let col = browser.selectedColumn
-        let rows = browser.selectedRowIndexes(inColumn: col)
-        Swift.print("invoked [ \(col), \(rows) ]")
+    func item(at index: Int) -> FinderViewItem {
+        return items[index]
+    }
+    
+    func index(of item: FinderViewItem) -> Int? {
+        guard let other = item as? HPIItem else { return nil }
+        let i = items.index(where: { $0.name == other.name })
+        return i
+    }
+    
+}
+
+extension GafItem: FinderViewItem {
+    
+    func isExpandable(in finder: FinderView, path: [FinderViewDirectory]) -> Bool {
+        return false
+    }
+    
+    func expand(in: FinderView, path: [FinderViewDirectory]) -> FinderViewDirectory? {
+        return nil
+    }
+    
+}
+
+extension GafListing: FinderViewDirectory {
+    
+    var numberOfItems: Int {
+        return items.count
+    }
+    
+    func item(at index: Int) -> FinderViewItem {
+        return items[index]
+    }
+    
+    func index(of item: FinderViewItem) -> Int? {
+        guard let other = item as? GafItem else { return nil }
+        let i = items.index(where: { $0.name == other.name })
+        return i
+    }
+    
+}
+
+extension HPIBrowserWindowController: FinderViewDelegate {
+    
+    func rowView(for item: FinderViewItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
+        switch item {
+        case let item as HPIItem:
+            return rowView(for: item, in: tableView, of: finder)
+        case let item as GafItem:
+            return rowView(for: item, in: tableView, of: finder)
+        default:
+            print("Unknown item type for: \(item)")
+            return nil
+        }
+    }
+    
+    func rowView(for item: HPIItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
+    
+        guard let view = tableView.make(withIdentifier: "HPIItem", owner: finder) as? NSTableCellView
+            else { return nil }
+        
+        view.textField?.stringValue = item.name
+        
+        switch item {
+            
+        case .file:
+            let ext = URL(fileURLWithPath: item.name, isDirectory: false).pathExtension.lowercased()
+            let icon = NSWorkspace.shared().icon(forFileType: ext)
+            view.imageView?.image = icon
+            
+        case .directory:
+            view.imageView?.image = NSImage(named: NSImageNameFolder)
+        }
+        
+        return view
+    }
+    
+    func rowView(for item: GafItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
+        
+        guard let view = tableView.make(withIdentifier: "HPIItem", owner: finder) as? NSTableCellView
+            else { return nil }
+        
+        view.textField?.stringValue = item.name
+        
+        let icon = NSWorkspace.shared().icon(forFileType: "pcx")
+        view.imageView?.image = icon
+        
+        return view
+    }
+    
+    func preview(for item: FinderViewItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+        switch item {
+        case let item as HPIItem:
+            return preview(for: item, at: pathDirectories, of: finder)
+        case let item as GafItem:
+            return preview(for: item, at: pathDirectories, of: finder)
+        default:
+            print("Unknown item type for: \(item)")
+            return nil
+        }
+    }
+    
+    func preview(for item: HPIItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+    
+        guard case .file(let file) = item else { return nil }
+        
+        let pathString = pathDirectories.map({ $0.name }).joined(separator: "/") + "/" + item.name
+        print("Selected Path: \(pathString)")
+        
+        guard let _fileURL = try? cache?.url(for: file, atHpiPath: pathString), let fileURL = _fileURL
+            else { return nil }
+        
+        let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
+        preview.title = file.name
+        preview.size = file.size
+        
+        // TEMP
+        let fileExtension = fileURL.pathExtension
+        let contentView = preview.contentView
+        let subview: NSView
+        if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
+            let pcx = PCXView(frame: contentView.bounds)
+            pcx.image = NSImage(pcxContentsOf: fileURL)
+            subview = pcx
+        }
+        else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
+            let model = Model3DOView(frame: contentView.bounds)
+            try! model.loadModel(contentsOf: fileURL)
+            subview = model
+        }
+        else {
+            let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
+            qlv.previewItem = fileURL as NSURL
+            qlv.refreshPreviewItem()
+            subview = qlv
+        }
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        preview.contentView.addSubview(subview)
+        NSLayoutConstraint.activate([
+            subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            subview.topAnchor.constraint(equalTo: contentView.topAnchor),
+            subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            ])
+        // END TEMP
+        
+        return preview
+    }
+    
+    func preview(for item: GafItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+        
+        // MORE TEMP
+        guard let listing = pathDirectories.last as? GafListing,
+            let parent = pathDirectories[pathDirectories.endIndex-2] as? HPIItem.Directory,
+            let i = parent.items.index(where: { $0.name == listing.name }),
+            case .file(let file) = parent.items[i]
+            else { return nil }
+        
+        let pathString = pathDirectories.map({ $0.name }).joined(separator: "/")
+        print("Selected Path: \(pathString)")
+        
+        guard case .image(let image) = item
+            else { return nil }
+        
+        guard let _fileURL = try? cache?.url(for: file, atHpiPath: pathString), let fileURL = _fileURL
+            else { return nil }
+        
+        let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
+        preview.title = item.name
+        preview.size = 13
+        
+        // TEMP
+        do {
+            let contentView = preview.contentView
+            let subview: NSView
+
+                let gaf = GafView(frame: contentView.bounds)
+                try gaf.load(image: image, from: fileURL)
+                subview = gaf
+
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            preview.contentView.addSubview(subview)
+            NSLayoutConstraint.activate([
+                subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+                subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+                subview.topAnchor.constraint(equalTo: contentView.topAnchor),
+                subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+                ])
+        }
+        catch {
+            
+        }
+        // END TEMP
+        
+        return preview
+    }
+    
+}
+
+extension HPIBrowserWindowController {
+    
+    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(extract) {
+            return finder.selectedItems.count > 0
+        }
+        return true
     }
     
     @IBAction func extract(sender: Any?) {
         
-        let items = selectedItems()
+        let items = finder.selectedItems.flatMap({ $0 as? HPIItem })
         guard items.count > 0
             else { Swift.print("No selected items to extract."); return }
         
-        guard let window = windowForSheet
+        guard let window = hpiDocument.windowForSheet
             else { Swift.print("Document has no windowForSheet."); return }
         
         let panel = NSOpenPanel()
@@ -188,13 +390,6 @@ extension Document {
         
     }
     
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
-        if menuItem.action == #selector(extract) {
-            return (fileTreeView?.selectedRowIndexes.count ?? 0) > 0
-        }
-        return true
-    }
-    
     func extractItems(_ items: [HPIItem], to rootDirectory: URL) {
         
         for item in items {
@@ -203,21 +398,21 @@ extension Document {
             case .file(let file):
                 do {
                     let fileURL = rootDirectory.appendingPathComponent(file.name)
-                    let data = try HPIItem.extract(item: item, fromFile: self.fileURL!)
+                    let data = try HPIItem.extract(file: file, fromHPI: hpiDocument.fileURL!)
                     try data.write(to: fileURL, options: [.atomic])
                 }
                 catch {
                     Swift.print("Failed to write \(file.name) to file: \(error)")
                 }
                 
-            case .directory(let name, let children):
+            case .directory(let directory):
                 do {
-                    let directoryURL = rootDirectory.appendingPathComponent(name)
+                    let directoryURL = rootDirectory.appendingPathComponent(directory.name)
                     try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-                    extractItems(children, to: directoryURL)
+                    extractItems(directory.items, to: directoryURL)
                 }
                 catch {
-                    Swift.print("Failed to create directory \(name): \(error)")
+                    Swift.print("Failed to create directory \(directory.name): \(error)")
                 }
             }
             
@@ -226,47 +421,106 @@ extension Document {
     }
 }
 
-extension Document {
-    
-    func selectedItems() -> [HPIItem] {
-        guard let tree = fileTreeView else { return [] }
-        return tree.selectedRowIndexes.flatMap({ tree.item(atRow: $0) as? HPIItem })
-    }
-    
-}
-
-class FooWriter: NSObject {
-    
-    var name = "Foo"
-    
-}
-
-extension FooWriter: NSPasteboardWriting {
-    
-    func writableTypes(for pasteboard: NSPasteboard) -> [String] {
-        print("writableTypes")
-        //return [ kUTTypeData as String ]
-        return [ kUTTypeText as String ]
-    }
-    
-    func pasteboardPropertyList(forType type: String) -> Any? {
-        print("pasteboardPropertyList(forType: \(type))")
-        if let data = "Hello \(name)!".data(using: .utf8) {
-            return data as NSData
-        }
-        else {
-            return nil
-        }
-    }
-}
-
 fileprivate extension HPIItem {
     
-    var numberOfChildren: Int {
+    func sorted() -> HPIItem {
+        
+        let comp = { (a: HPIItem, b: HPIItem) -> Bool in
+            a.name.caseInsensitiveCompare(b.name) == .orderedAscending
+        }
+        
         switch self {
-        case .file: return 0
-        case .directory(_, let items): return items.count
+        case .file: return self
+        case .directory(let directory):
+            let items = directory.items
+                .sorted(by: comp)
+                .map({ $0.sorted() })
+            return .directory(HPIItem.Directory(name: directory.name, items: items))
+        }
+        
+    }
+    
+}
+
+fileprivate extension HPIItem.File {
+    
+    var fileExtension: String {
+        let n = name as NSString
+        return n.pathExtension
+    }
+    
+}
+
+class PCXView: NSImageView {
+    
+}
+
+class PreviewContainerView: NSView {
+    
+    private unowned let titleLabel: NSTextField
+    private unowned let sizeLabel: NSTextField
+    unowned let contentView: NSView
+
+    override init(frame frameRect: NSRect) {
+        let titleLabel = NSTextField(labelWithString: "Title")
+        titleLabel.font = NSFont.systemFont(ofSize: 18)
+        titleLabel.textColor = NSColor.labelColor
+        let sizeLabel = NSTextField(labelWithString: "Empty")
+        sizeLabel.font = NSFont.systemFont(ofSize: 12)
+        sizeLabel.textColor = NSColor.secondaryLabelColor
+        let contentBox = NSView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
+        
+        self.titleLabel = titleLabel
+        self.sizeLabel = sizeLabel
+        self.contentView = contentBox
+        super.init(frame: frameRect)
+        
+        addSubview(contentBox)
+        addSubview(titleLabel)
+        addSubview(sizeLabel)
+        
+        contentBox.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        sizeLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            contentBox.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8),
+            contentBox.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8),
+            contentBox.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),
+            contentBox.heightAnchor.constraint(equalTo: self.heightAnchor, multiplier: 0.61803398875),
+            
+            titleLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            titleLabel.topAnchor.constraint(equalTo: contentBox.bottomAnchor, constant: 8),
+            
+            sizeLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            sizeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 0),
+            ])
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    var title: String {
+        get { return titleLabel.stringValue }
+        set(new) { titleLabel.stringValue = new }
+    }
+    
+    var size: Int {
+        get { return sizeValue }
+        set(new) { sizeValue = new }
+    }
+    
+    private var sizeValue: Int = 0 {
+        didSet {
+            sizeLabel.stringValue = sizeFormatter.string(fromByteCount: Int64(sizeValue))
         }
     }
+    
+    private let sizeFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
     
 }
