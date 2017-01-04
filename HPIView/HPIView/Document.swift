@@ -257,12 +257,19 @@ extension HPIBrowserWindowController: FinderViewDelegate {
     func preview(for item: HPIItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
     
         guard case .file(let file) = item else { return nil }
+        guard let cache = cache else { return nil }
         
         let pathString = pathDirectories.map({ $0.name }).joined(separator: "/") + "/" + item.name
         print("Selected Path: \(pathString)")
         
-        guard let _fileURL = try? cache?.url(for: file, atHpiPath: pathString), let fileURL = _fileURL
-            else { return nil }
+        let fileURL: URL
+        do {
+            fileURL = try cache.url(for: file, atHpiPath: pathString)
+        }
+        catch {
+            print("Failed to extract \(file.name) for preview: \(error)")
+            return nil
+        }
         
         let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
         preview.title = file.name
