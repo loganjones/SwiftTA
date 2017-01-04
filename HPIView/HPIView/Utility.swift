@@ -28,11 +28,22 @@ extension FileHandle {
             return Array(buffer)
         }
     }
+    @nonobjc func readData(ofLength length: UInt32) -> Data {
+        return readData(ofLength: Int(length))
+    }
     @nonobjc func seek(toFileOffset offset: UInt32) {
         seek(toFileOffset: UInt64(offset))
     }
     @nonobjc func seek(toFileOffset offset: Int) {
         seek(toFileOffset: UInt64(offset))
+    }
+}
+
+// MARK:- Data Extensions
+
+extension Data {
+    func withUnsafeRawBytes<ResultType>(_ body: (UnsafeRawPointer) throws -> ResultType) rethrows -> ResultType {
+        return try self.withUnsafeBytes { return try body(UnsafeRawPointer($0)) }
     }
 }
 
@@ -58,9 +69,15 @@ extension UnsafeRawPointer {
         let p = self.bindMemory(to: type, capacity: count)
         return UnsafeBufferPointer<T>(start: p, count: count)
     }
+    public func bindMemoryBuffer<T>(to type: T.Type, capacity count: UInt32) -> UnsafeBufferPointer<T> {
+        return bindMemoryBuffer(to: type, capacity: Int(count))
+    }
 }
 
 public func +<Pointee>(lhs: UnsafePointer<Pointee>, rhs: UInt32) -> UnsafePointer<Pointee> {
+    return lhs + Int(rhs)
+}
+public func +(lhs: UnsafeRawPointer, rhs: UInt32) -> UnsafeRawPointer {
     return lhs + Int(rhs)
 }
 

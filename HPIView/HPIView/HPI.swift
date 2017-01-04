@@ -148,30 +148,6 @@ public enum HPIFormat {
     
 }
 
-extension FileHandle {
-    
-    func readAndDecryptData(ofLength size: Int, offset: UInt32, key: Int32) -> Data {
-        seek(toFileOffset: offset)
-        var data = readData(ofLength: size)
-        if data.count < size { print("read less data than requested! (wanted \(size) bytes, read \(data.count) bytes)") }
-        let koffset = Int32(offset)
-        if key != 0 {
-            for index in 0..<data.count {
-                let tkey = (koffset &+ Int32(index)) ^ key
-                let inv = Int32(~data[index])
-                data[index] = UInt8(truncatingBitPattern: tkey ^ inv)
-            }
-        }
-        return data
-    }
-    
-    func readAndDecryptValue<T>(ofType type: T.Type, offset: UInt32, key: Int32) -> T {
-        let data = readAndDecryptData(ofLength: MemoryLayout<T>.size, offset: offset, key: key)
-        return data.withUnsafeBytes { $0.pointee }
-    }
-    
-}
-
 /// An HPI archive can be represented as a recursive collection of HPIItems.
 /// A single item can be either a File or a Directory.
 /// A File is a leaf item and can be extracted from the archive.
@@ -189,8 +165,9 @@ enum HPIItem {
     struct File {
         var name: String
         var size: Int
-        var offset: Int
-        var compression: HPIFormat.FileEntryCompression
+        fileprivate var offset: Int
+        fileprivate var compression: HPIFormat.FileEntryCompression
+        fileprivate var compressedSize: Int
     }
     
     /// A listing of contained HPIItems.
@@ -231,14 +208,51 @@ extension HPIItem {
         
         switch hpiType {
         case .ta: self = try HPIItem(withTAFile: file)
-        case .tak: throw LoadError.unsupportedHPIType(Int(header.version))
+        case .tak: self = try HPIItem(withTAKFile: file)
         case .savegame: throw LoadError.unsupportedHPIType(Int(header.version))
         }
         
     }
     
+    public static func extract(file fileInfo: File, fromHPI hpiURL: URL) throws -> Data {
+        
+        guard let hpiFile = try? FileHandle(forReadingFrom: hpiURL)
+            else { throw LoadError.failedToOpenHPI }
+        
+        let header = hpiFile.readValue(ofType: HPIFormat.FileHeader.self)
+        
+        guard header.marker == HPIFormat.FileHeaderMarker
+            else { throw LoadError.badHPIMarker(Int(header.marker)) }
+        guard let hpiType = HPIFormat.FileHeaderVersion(rawValue: header.version)
+            else { throw LoadError.badHPIType(Int(header.version)) }
+        
+        switch hpiType {
+        case .ta: return try extract(taFile: fileInfo, fromHPI: hpiFile)
+        case .tak: return try extract(takFile: fileInfo, fromHPI: hpiFile)
+        default: throw LoadError.unsupportedHPIType(Int(header.version))
+            
+        }
+    }
+    
+    enum LoadError: Error {
+        case failedToOpenHPI
+        case badHPIMarker(Int)
+        case badHPIType(Int)
+        case unsupportedHPIType(Int)
+        case cantExtractDirectory
+    }
+    enum ExtractError: Error {
+        case badChunkMarker(Int)
+        case badCompressionType(Int)
+    }
+}
+
+// MARK: - Total Annihilation
+
+extension HPIItem {
+    
     /// Parse & load a Total Annihilation HPI file-system into a heirarchical set of HPIItems.
-    private init(withTAFile file: FileHandle) throws {
+    fileprivate init(withTAFile file: FileHandle) throws {
         
         let ext = file.readValue(ofType: HPIFormat.TAExtendedHeader.self)
         
@@ -313,39 +327,15 @@ extension HPIItem {
                     name: name,
                     size: Int(file.fileSize),
                     offset: Int(file.offsetToFileData),
-                    compression: HPIFormat.FileEntryCompression(rawValue: file.compressionType) ?? .none
+                    compression: HPIFormat.FileEntryCompression(rawValue: file.compressionType) ?? .none,
+                    compressedSize: 0
                 ))
             }
             
         })
     }
     
-    enum LoadError: Error {
-        case failedToOpenHPI
-        case badHPIMarker(Int)
-        case badHPIType(Int)
-        case unsupportedHPIType(Int)
-        case cantExtractDirectory
-    }
-    enum ExtractError: Error {
-        case badChunkMarker(Int)
-        case badCompressionType(Int)
-    }
-    
-    public static func extract(file fileInfo: File, fromHPI hpiURL: URL) throws -> Data {
-        
-        guard let hpiFile = try? FileHandle(forReadingFrom: hpiURL)
-            else { throw LoadError.failedToOpenHPI }
-        
-        let header = hpiFile.readValue(ofType: HPIFormat.FileHeader.self)
-        
-        guard header.marker == HPIFormat.FileHeaderMarker
-            else { throw LoadError.badHPIMarker(Int(header.marker)) }
-        guard let hpiType = HPIFormat.FileHeaderVersion(rawValue: header.version)
-            else { throw LoadError.badHPIType(Int(header.version)) }
-        
-        guard hpiType == .ta
-            else { throw LoadError.unsupportedHPIType(Int(header.version)) }
+    fileprivate static func extract(taFile fileInfo: File, fromHPI hpiFile: FileHandle) throws -> Data {
         
         let ext = hpiFile.readValue(ofType: HPIFormat.TAExtendedHeader.self)
         let key = ext.headerKey != 0 ? ~( (ext.headerKey * 4) | (ext.headerKey >> 6) ) : 0
@@ -373,143 +363,264 @@ extension HPIItem {
             }
             var chunkOffset = UInt32(fileInfo.offset + chunkSizeData.count)
             for chunkSize in chunkSizes {
-                let chunkHeader = hpiFile.readAndDecryptValue(ofType: TA_HPI_CHUNK.self,
-                                                              offset: chunkOffset,
-                                                              key: key)
-                guard chunkHeader.marker == HPIFormat.ChunkHeaderMarker
-                    else { throw ExtractError.badChunkMarker(Int(chunkHeader.marker)) }
-                
-                let chunkHeaderSize = UInt32(MemoryLayout.size(ofValue: chunkHeader))
-                var chunkData = hpiFile.readAndDecryptData(ofLength: Int(chunkSize - chunkHeaderSize),
-                                                           offset: chunkOffset + chunkHeaderSize,
+                let chunkData = hpiFile.readAndDecryptData(ofLength: Int(chunkSize),
+                                                           offset: chunkOffset,
                                                            key: key)
-                
-                if chunkHeader.encryptionFlag != 0 {
-                    for index in 0..<Int(chunkHeader.compressedSize) {
-                        let x = UInt8(truncatingBitPattern: index)
-                        chunkData[index] = (chunkData[index] &- x) ^ x
-                    }
-                }
-                
-                if let compression = HPIFormat.ChunckCompression(rawValue: chunkHeader.compressionType) {
-                    switch compression {
-                    case .none:
-                        data.append(chunkData)
-                    case .lz77:
-                        data.append(chunkData.decompressLZ77(decompressedSize: Int(chunkHeader.decompressedSize)))
-                    case .zlib:
-                        data.append(chunkData.decompressZLib(decompressedSize: Int(chunkHeader.decompressedSize)))
-                    }
-                }
-                else {
-                    throw ExtractError.badCompressionType(Int(chunkHeader.compressionType))
-                }
-                
+                let decompressed = try deSQSH(chunk: chunkData)
+                data.append(decompressed)
                 chunkOffset += chunkSize
             }
             
             return data
         }
     }
+    
 }
 
-fileprivate extension Data {
+private extension FileHandle {
     
-    func decompressLZ77(decompressedSize: Int) -> Data {
-        
-        var outptr = 0
-        var out = UnsafeMutablePointer<UInt8>.allocate(capacity:  decompressedSize)
-        defer { out.deallocate(capacity: decompressedSize) }
-        
-        let DBuff = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
-        defer { DBuff.deallocate(capacity: decompressedSize) }
-        
-        self.withUnsafeBytes { (_in: UnsafePointer<UInt8>) -> Void in
-        
-            var work1 = 1
-            var work2 = 1
-            var work3 = Int(_in[0])
-            var inptr = 1
-            
-            loop: while true {
-                if (work2 & work3) == 0 {
-                    out[outptr] = _in[inptr]
-                    DBuff[work1] = _in[inptr]
-                    work1 = (work1 + 1) & 0xFFF
-                    inptr += 1
-                    outptr += 1
-                }
-                else {
-                    var count = (_in + inptr).withMemoryRebound(to: UInt16.self, capacity: 1) { $0.pointee }
-                    inptr += 2
-                    var DPtr = Int(count >> 4)
-                    if DPtr == 0 {
-                        break loop
-                    }
-                    else {
-                        count = (count & 0x0F) + 2
-                        if count >= 0 {
-                            for _ in 0..<count {
-                                out[outptr] = DBuff[DPtr]
-                                DBuff[work1] = DBuff[DPtr]
-                                DPtr = (DPtr + 1) & 0xFFF
-                                work1 = (work1 + 1) & 0xFFF
-                                outptr += 1
-                            }
-                        }
-                    }
-                }
-                work2 *= 2
-                if (work2 & 0x0100) != 0 {
-                    work2 = 1
-                    work3 = Int(_in[inptr])
-                    inptr += 1
-                }
+    func readAndDecryptData(ofLength size: Int, offset: UInt32, key: Int32) -> Data {
+        seek(toFileOffset: offset)
+        var data = readData(ofLength: size)
+        if data.count < size { print("read less data than requested! (wanted \(size) bytes, read \(data.count) bytes)") }
+        let koffset = Int32(offset)
+        if key != 0 {
+            for index in 0..<data.count {
+                let tkey = (koffset &+ Int32(index)) ^ key
+                let inv = Int32(~data[index])
+                data[index] = UInt8(truncatingBitPattern: tkey ^ inv)
             }
-        
         }
-        
-        return Data(bytes: out, count: outptr)
+        return data
     }
     
-    func decompressZLib(decompressedSize: Int) -> Data {
-        
-        let out = UnsafeMutablePointer<UInt8>.allocate(capacity: decompressedSize)
-        defer { out.deallocate(capacity: decompressedSize) }
-        
-        let outBytesWritten = self.withUnsafeBytes { (_in: UnsafePointer<UInt8>) -> Int in
-            var zs = z_stream(
-                next_in: UnsafeMutablePointer(mutating: _in),
-                avail_in: uInt(self.count),
-                total_in: 0,
-                next_out: out,
-                avail_out: uInt(decompressedSize),
-                total_out: 0,
-                msg: nil,
-                state: nil,
-                zalloc: nil,
-                zfree: nil,
-                opaque: nil,
-                data_type: Z_BINARY,
-                adler: 0,
-                reserved: 0)
-            
-            if inflateInit_(&zs, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size)) != Z_OK {
-                return 0
-            }
-            
-            if inflate(&zs, Z_FINISH) != Z_STREAM_END {
-                zs.total_out = 0
-            }
-            
-            if inflateEnd(&zs) != Z_OK {
-                return 0
-            }
-            
-            return Int(zs.total_out)
-        }
-        
-        return Data(bytes: out, count: outBytesWritten)
+    func readAndDecryptValue<T>(ofType type: T.Type, offset: UInt32, key: Int32) -> T {
+        let data = readAndDecryptData(ofLength: MemoryLayout<T>.size, offset: offset, key: key)
+        return data.withUnsafeBytes { $0.pointee }
     }
     
+}
+
+// MARK: - Total Annihilation: Kingdoms
+
+extension HPIItem {
+    
+    /// Parse & load a Total Annihilation: Kingdoms HPI file-system into a heirarchical set of HPIItems.
+    fileprivate init(withTAKFile file: FileHandle) throws {
+        
+        let ext = file.readValue(ofType: TAK_HPI_EXT_HEADER.self)
+        
+        file.seek(toFileOffset: ext.offsetToDirectory)
+        let rawFsData = file.readData(ofLength: ext.directorySize)
+        let fsData = HPIItem.isSQSH(chunk: rawFsData) ? try HPIItem.deSQSH(chunk: rawFsData) : rawFsData
+        
+        file.seek(toFileOffset: ext.offsetToFileNames)
+        let rawNamesData = file.readData(ofLength: ext.fileNameSize)
+        let namesData = HPIItem.isSQSH(chunk: rawNamesData) ? try HPIItem.deSQSH(chunk: rawNamesData) : rawNamesData
+        
+        let rootItems = try fsData.withUnsafeRawBytes { (fs: UnsafeRawPointer) throws -> [HPIItem] in
+            return try namesData.withUnsafeBytes { (names: UnsafePointer<UInt8>) throws -> [HPIItem] in
+                return try HPIItem.loadTakDirectoryItems(atOffset: 0, in: fs, with: names)
+            }
+        }
+        
+        self = .directory(Directory(name: "", items: rootItems))
+    }
+    
+    private static func loadTakDirectoryItems(atOffset offset: UInt32,
+                                              in fileSystem: UnsafeRawPointer,
+                                              with names: UnsafePointer<UInt8>) throws -> [HPIItem] {
+        
+        let header = (fileSystem + offset).bindMemory(to: TAK_HPI_DIR_ENTRY.self, capacity: 1)
+        
+        let files: [HPIItem]
+        if header.pointee.numberOfFileEntries > 0 {
+            files = try (fileSystem + header.pointee.offsetToFileEntryArray)
+                .bindMemoryBuffer(to: TAK_HPI_FILE_ENTRY.self, capacity: header.pointee.numberOfFileEntries)
+                .map { (file: TAK_HPI_FILE_ENTRY) throws -> HPIItem in
+                    .file(File(
+                        name: String(cString: names + file.offsetToFileName),
+                        size: Int(file.decompressedSize),
+                        offset: Int(file.offsetToFileData),
+                        compression: file.compressedSize == 0 ? .none : .zlib,
+                        compressedSize: Int(file.compressedSize)
+                    ))
+            }
+        }
+        else {
+            files = []
+        }
+        
+        var subdirectories: [HPIItem] = []
+        var subOffset = header.pointee.offsetToSubDirectoryArray
+        for _ in 0..<header.pointee.numberOfSubDirectories {
+            let subheader = (fileSystem + subOffset).bindMemory(to: TAK_HPI_DIR_ENTRY.self, capacity: 1)
+            let name = String(cString: names + subheader.pointee.offsetToDirectoryName)
+            let children = try loadTakDirectoryItems(atOffset: subOffset, in: fileSystem, with: names)
+            subdirectories.append(.directory(Directory(name: name, items: children)))
+            subOffset += UInt32(MemoryLayout<TAK_HPI_DIR_ENTRY>.size)
+        }
+        
+        return subdirectories + files
+    }
+    
+    fileprivate static func extract(takFile fileInfo: File, fromHPI hpiFile: FileHandle) throws -> Data {
+        switch fileInfo.compression {
+            
+        case .none:
+            hpiFile.seek(toFileOffset: fileInfo.offset)
+            return hpiFile.readData(ofLength: fileInfo.size)
+            
+        case .lz77: fallthrough
+        case .zlib:
+            hpiFile.seek(toFileOffset: fileInfo.offset)
+            let chunkData = hpiFile.readData(ofLength: fileInfo.compressedSize)
+            return try deSQSH(chunk: chunkData)
+        }
+    }
+    
+}
+
+// MARK: - Chunk Decompression
+
+extension HPIItem {
+    
+    fileprivate static func isSQSH(chunk rawData: Data) -> Bool {
+        return rawData.withUnsafeBytes { (p: UnsafePointer<UInt8>) -> Bool in
+            let chunkHeader = UnsafePointer<TA_HPI_CHUNK>(rebinding: p)
+            return chunkHeader.pointee.marker == TA_HPI_CHUNK_MARKER
+        }
+    }
+    
+    fileprivate static func deSQSH(chunk rawData: Data) throws -> Data {
+        return try rawData.withUnsafeBytes { (p: UnsafePointer<UInt8>) throws -> Data in
+            let chunkHeader = UnsafePointer<TA_HPI_CHUNK>(rebinding: p)
+            guard chunkHeader.pointee.marker == TA_HPI_CHUNK_MARKER
+                else { throw ExtractError.badChunkMarker(Int(chunkHeader.pointee.marker)) }
+            guard let compression = HPIFormat.ChunckCompression(rawValue: chunkHeader.pointee.compressionType)
+                else { throw ExtractError.badCompressionType(Int(chunkHeader.pointee.compressionType)) }
+            
+            if chunkHeader.pointee.encryptionFlag == 0 && compression == .none {
+                let start = MemoryLayout<TA_HPI_CHUNK>.size
+                let end = start + Int(chunkHeader.pointee.decompressedSize)
+                return rawData.subdata(in: start..<end)
+            }
+            
+            let compressedSize = Int(chunkHeader.pointee.compressedSize)
+            let raw: UnsafePointer<UInt8>
+            
+            var toRealease: UnsafeMutablePointer<UInt8>? = nil
+            defer { if let r = toRealease { r.deallocate(capacity: compressedSize) } }
+            
+            if chunkHeader.pointee.encryptionFlag != 0 {
+                let enecrypted = p + MemoryLayout<TA_HPI_CHUNK>.size
+                let decrypted = UnsafeMutablePointer<UInt8>.allocate(capacity: compressedSize)
+                for index in 0..<compressedSize {
+                    let x = UInt8(truncatingBitPattern: index)
+                    decrypted[index] = (enecrypted[index] &- x) ^ x
+                }
+                raw = UnsafePointer<UInt8>(decrypted)
+                toRealease = decrypted
+            }
+            else {
+                raw = p + MemoryLayout<TA_HPI_CHUNK>.size
+            }
+            
+            switch compression {
+            case .none: return Data(bytes: raw, count: Int(chunkHeader.pointee.decompressedSize))
+            case .lz77: return decompressLZ77(bytes: raw, decompressedSize: Int(chunkHeader.pointee.decompressedSize))
+            case .zlib: return decompressZLib(bytes: raw, compressedSize: compressedSize, decompressedSize: Int(chunkHeader.pointee.decompressedSize))
+            }
+        }
+    }
+    
+}
+
+private func decompressLZ77(bytes _in:UnsafePointer<UInt8>, decompressedSize: Int) -> Data {
+    
+    var outptr = 0
+    var out = UnsafeMutablePointer<UInt8>.allocate(capacity:  decompressedSize)
+    defer { out.deallocate(capacity: decompressedSize) }
+    
+    let DBuff = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
+    defer { DBuff.deallocate(capacity: decompressedSize) }
+        
+    var work1 = 1
+    var work2 = 1
+    var work3 = Int(_in[0])
+    var inptr = 1
+    
+    loop: while true {
+        if (work2 & work3) == 0 {
+            out[outptr] = _in[inptr]
+            DBuff[work1] = _in[inptr]
+            work1 = (work1 + 1) & 0xFFF
+            inptr += 1
+            outptr += 1
+        }
+        else {
+            var count = (_in + inptr).withMemoryRebound(to: UInt16.self, capacity: 1) { $0.pointee }
+            inptr += 2
+            var DPtr = Int(count >> 4)
+            if DPtr == 0 {
+                break loop
+            }
+            else {
+                count = (count & 0x0F) + 2
+                if count >= 0 {
+                    for _ in 0..<count {
+                        out[outptr] = DBuff[DPtr]
+                        DBuff[work1] = DBuff[DPtr]
+                        DPtr = (DPtr + 1) & 0xFFF
+                        work1 = (work1 + 1) & 0xFFF
+                        outptr += 1
+                    }
+                }
+            }
+        }
+        work2 *= 2
+        if (work2 & 0x0100) != 0 {
+            work2 = 1
+            work3 = Int(_in[inptr])
+            inptr += 1
+        }
+    }
+    
+    return Data(bytes: out, count: outptr)
+}
+
+private func decompressZLib(bytes _in:UnsafePointer<UInt8>, compressedSize: Int, decompressedSize: Int) -> Data {
+    
+    let out = UnsafeMutablePointer<UInt8>.allocate(capacity: decompressedSize)
+    defer { out.deallocate(capacity: decompressedSize) }
+    
+    var zs = z_stream(
+        next_in: UnsafeMutablePointer(mutating: _in),
+        avail_in: uInt(compressedSize),
+        total_in: 0,
+        next_out: out,
+        avail_out: uInt(decompressedSize),
+        total_out: 0,
+        msg: nil,
+        state: nil,
+        zalloc: nil,
+        zfree: nil,
+        opaque: nil,
+        data_type: Z_BINARY,
+        adler: 0,
+        reserved: 0)
+    
+    if inflateInit_(&zs, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size)) != Z_OK {
+        return Data()
+    }
+    
+    if inflate(&zs, Z_FINISH) != Z_STREAM_END {
+        zs.total_out = 0
+    }
+    
+    if inflateEnd(&zs) != Z_OK {
+        return Data()
+    }
+    
+    return Data(bytes: out, count: Int(zs.total_out))
 }
