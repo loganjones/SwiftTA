@@ -110,6 +110,38 @@ class FinderView: NSView {
 //        }
 //    }
     
+    
+    func selectPath(string: String) {
+        var identifiers = string.components(separatedBy: "/")
+        if identifiers.first == "" { identifiers.removeFirst() }
+        self.select(pathIdentifiers: identifiers)
+    }
+    
+    private func select(pathIdentifiers identifiers: [String]) {
+        for (index, identifier) in identifiers.enumerated() {
+            if !select(identifier: identifier, inTierWithIndex: index) {
+                break
+            }
+        }
+    }
+    
+    private func select(identifier: String, inTierWithIndex tierIndex: Int) -> Bool {
+        
+        guard tierIndex >= 0 && tierIndex < tiers.count else { return false }
+        let tier = tiers[tierIndex]
+        
+        if let itemIndex = tier.directory.index(where: { $0.name == identifier }) {
+            tier.tableView.selectRowIndexes([itemIndex], byExtendingSelection: false)
+            tier.tableView.scrollRowToVisible(itemIndex)
+            let item = tier.directory.item(at: itemIndex)
+            handleSelection(of: item, in: tier)
+            return true
+        }
+        else {
+            return false
+        }
+    }
+    
     fileprivate func addTier(for directory: FinderViewDirectory) {
         let frame = NSRect(x: 0, y: 0, width: paneWidth, height: tierField.bounds.size.height)
         let tier = Tier(directory: directory, frame: frame, in: self)
@@ -283,6 +315,7 @@ protocol FinderViewDirectory {
     var numberOfItems: Int { get }
     func item(at index: Int) -> FinderViewItem
     func index(of item: FinderViewItem) -> Int?
+    func index(where: (FinderViewItem) -> Bool) -> Int?
 }
 
 protocol FinderViewDelegate: class {
