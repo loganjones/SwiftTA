@@ -162,6 +162,10 @@ extension HPIItem.Directory: FinderViewDirectory {
         return i
     }
     
+    func index(where predicate: (FinderViewItem) -> Bool) -> Int? {
+        return items.index(where: predicate)
+    }
+    
 }
 
 extension GafItem: FinderViewItem {
@@ -190,6 +194,10 @@ extension GafListing: FinderViewDirectory {
         guard let other = item as? GafItem else { return nil }
         let i = items.index(where: { $0.name == other.name })
         return i
+    }
+    
+    func index(where predicate: (FinderViewItem) -> Bool) -> Int? {
+        return items.index(where: predicate)
     }
     
 }
