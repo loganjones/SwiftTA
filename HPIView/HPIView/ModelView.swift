@@ -15,11 +15,41 @@ class Model3DOView: NSOpenGLView {
     var displayList: GLuint?
     var wireframe: GLuint?
     
+    enum DrawMode: Int {
+        case solid
+        case wireframe
+        case outlined
+    }
+    var drawMode = DrawMode.outlined
+    
+    private var trackingMouse = false
+    private var rotateZ: GLfloat = 160
+    private var rotateX: GLfloat = 0
+    private var rotateY: GLfloat = 0
+    
+    private let showAxes = false
+    
+    override init(frame frameRect: NSRect) {
+        let attributes : [NSOpenGLPixelFormatAttribute] = [
+            UInt32(NSOpenGLPFAMinimumPolicy),
+            UInt32(NSOpenGLPFADepthSize), UInt32(24),
+            UInt32(NSOpenGLPFAAlphaSize), UInt32(8),
+        ]
+        let format = NSOpenGLPixelFormat(attributes: attributes)
+        super.init(frame: frameRect, pixelFormat: format)!
+        wantsBestResolutionOpenGLSurface = true
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    
     override func draw(_ dirtyRect: NSRect) {
-        reshape(width: Int(bounds.size.width), height: Int(bounds.size.height))
+        reshape(viewport: convertToBacking(bounds).size)
         initScene()
         
-        glClearColor(0.95, 0.95, 0.95, 1)
+        glClearColor(1, 1, 1, 1)
         glClear(GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT))
         glPushMatrix()
         
@@ -30,20 +60,48 @@ class Model3DOView: NSOpenGLView {
              0,   0,   0,   1
         ]
         glMultMatrixf(perspective)
-        glRotatef(-90, 0.0, 0.0, 1.0)
-//        glRotatef(65, 1.0, 0.0, 0.0)
-//        glRotatef(30, 0.0, 1.0, 0.0)
         
-        glPolygonMode(GLenum(GL_FRONT), GLenum(GL_FILL))
-        glEnable(GLenum(GL_LIGHTING))
-        glDepthFunc(GLenum(GL_LESS))
-        if let model = displayList { glCallList(model) }
+        glRotatef(-rotateZ, 0.0, 0.0, 1.0)
         
-        //glPolygonMode(GLenum(GL_FRONT), GLenum(GL_LINE))
-        glDisable(GLenum(GL_LIGHTING))
-        glDepthFunc(GLenum(GL_LEQUAL))
-        glColor3dv([0.3, 0.3, 0.3, 1])
-        if let model = wireframe { glCallList(model) }
+        glRotatef(rotateX, 1.0, 0.0, 0.0)
+        glRotatef(rotateY, 0.0, 1.0, 0.0)
+        
+        switch drawMode {
+        case .solid:
+            glEnable(GLenum(GL_LIGHTING))
+            if let model = displayList { glCallList(model) }
+        case .wireframe:
+            glDisable(GLenum(GL_LIGHTING))
+            glColor3dv([0.3, 0.3, 0.3, 1])
+            if let model = wireframe { glCallList(model) }
+        case .outlined:
+            glEnable(GLenum(GL_LIGHTING))
+            glMaterialfv(GLenum(GL_FRONT), GLenum(GL_AMBIENT), [0.50, 0.40, 0.35, 1])
+            glMaterialfv(GLenum(GL_FRONT), GLenum(GL_DIFFUSE), [0.45, 0.45, 0.45, 1])
+            glEnable(GLenum(GL_POLYGON_OFFSET_FILL))
+            glPolygonOffset(1.0, 1.0)
+            if let model = displayList { glCallList(model) }
+            glDisable(GLenum(GL_POLYGON_OFFSET_FILL))
+            
+            glDisable(GLenum(GL_LIGHTING))
+            glColor3dv([0.3, 0.3, 0.3, 1])
+            if let model = wireframe { glCallList(model) }
+        }
+        
+        if showAxes {
+            glDisable(GLenum(GL_LIGHTING))
+            glBegin(GLenum(GL_LINES))
+            glColor3f(0, 0, 1)
+            glVertex3f(0, 0, 0)
+            glVertex3f(100, 0, 0)
+            glColor3f(0, 1, 0)
+            glVertex3f(0, 0, 0)
+            glVertex3f(0, 100, 0)
+            glColor3f(1, 0, 0)
+            glVertex3f(0, 0, 0)
+            glVertex3f(0, 0, 100)
+            glEnd()
+        }
         
         glPopMatrix()
         glFlush()
@@ -69,8 +127,7 @@ class Model3DOView: NSOpenGLView {
     }
     
     func initScene() {
-        let pos: [GLfloat] = [ 5.0, 5.0, 10.0, 0.0 ]
-        glLightfv(GLenum(GL_LIGHT0), GLenum(GL_POSITION), pos)
+        glLightfv(GLenum(GL_LIGHT0), GLenum(GL_POSITION), [ 5.0, 5.0, 10.0, 0.0 ])
         glLightfv(GLenum(GL_LIGHT0), GLenum(GL_AMBIENT), [ 0.8, 0.8, 0.8, 1 ])
         glLightfv(GLenum(GL_LIGHT0), GLenum(GL_DIFFUSE), [ 0.5, 0.5, 0.5, 1 ])
         glEnable(GLenum(GL_CULL_FACE))
@@ -78,15 +135,21 @@ class Model3DOView: NSOpenGLView {
         glEnable(GLenum(GL_LIGHT0))
         glEnable(GLenum(GL_DEPTH_TEST))
         glEnable(GLenum(GL_NORMALIZE))
+        glEnable(GLenum(GL_LINE_SMOOTH))
+        glEnable(GLenum(GL_POLYGON_SMOOTH))
+        glHint(GLenum(GL_LINE_SMOOTH_HINT), GLenum(GL_NICEST))
+        glHint(GLenum(GL_POLYGON_SMOOTH_HINT), GLenum(GL_NICEST))
+        glBlendFunc(GLenum(GL_SRC_ALPHA), GLenum(GL_ONE_MINUS_SRC_ALPHA))
+        glEnable(GLenum(GL_BLEND))
     }
     
-    func reshape(width: Int, height: Int) {
-        glViewport(0, 0, GLsizei(width), GLsizei(height))
+    func reshape(viewport: CGSize) {
+        glViewport(0, 0, GLsizei(viewport.width), GLsizei(viewport.height))
         
         glMatrixMode(GLenum(GL_PROJECTION))
         glLoadIdentity()
         
-        let aspectRatio = GLdouble(height) / GLdouble(width)
+        let aspectRatio = GLdouble(viewport.height) / GLdouble(viewport.width)
         let w: GLdouble = 160
         let scene = (width: w, height: w * aspectRatio)
         glOrtho(0, scene.width, scene.height, 0, -1024, 256)
@@ -96,6 +159,38 @@ class Model3DOView: NSOpenGLView {
         glTranslated(scene.width / 2, scene.height / 2, 0.0)
     }
     
+    override func mouseDown(with event: NSEvent) {
+        trackingMouse = true
+    }
+    
+    override func mouseUp(with event: NSEvent) {
+        trackingMouse = false
+    }
+    
+    override func mouseDragged(with event: NSEvent) {
+        if trackingMouse {
+            if event.modifierFlags.contains(.shift) { rotateX += GLfloat(event.deltaX) }
+            else if event.modifierFlags.contains(.option) { rotateY += GLfloat(event.deltaX) }
+            else { rotateZ += GLfloat(event.deltaX) }
+            setNeedsDisplay(bounds)
+        }
+    }
+    
+    override func keyDown(with event: NSEvent) {
+        switch event.characters {
+        case .some("w"):
+            let i = drawMode.rawValue
+            if let mode = DrawMode(rawValue: i+1) { drawMode = mode }
+            else { drawMode = .solid }
+            setNeedsDisplay(bounds)
+        default:
+            ()
+        }
+    }
+    
+    override var acceptsFirstResponder: Bool {
+        return true
+    }
 }
 
 
@@ -161,7 +256,7 @@ enum ModelGL {
         glTranslate(object.offsetFromParent)
         
         let primitives = UnsafeRawPointer(memory + object.offsetToPrimitiveArray).bindMemoryBuffer(to: TA_3DO_PRIMITIVE.self, capacity: Int(object.numberOfPrimitives))
-        for (index, primitive) in primitives.enumerated() {
+        for (index, primitive) in primitives.enumerated().reversed() {
             guard index != Int(object.groundPlateIndex) else { continue }
             let indices = UnsafeRawPointer(memory + primitive.offsetToVertexIndexArray).bindMemoryBuffer(to: UInt16.self, capacity: Int(primitive.numberOfVertexIndexes))
             draw( indices.map({ vertices[$0] }) )
