@@ -14,35 +14,28 @@ import CoreGraphics
 
 class Document: NSDocument {
     
-    var root: HPIItem.Directory?
+    var root: HpiItem.Directory?
     
     override func makeWindowControllers() {
-        let controller = HPIBrowserWindowController(windowNibName: "Document")
+        let controller = HpiBrowserWindowController(windowNibName: "Document")
         addWindowController(controller)
     }
     
     override func read(from url: URL, ofType typeName: String) throws {
         do {
-            let loaded = try HPIItem(withContentsOf: url).sorted()
-            switch loaded {
-            case .file(let file): throw LoadError.rootIsFile(file)
-            case .directory(let directory): root = directory
-            }
+            root = try HpiItem.loadFromArchive(contentsOf: url).sorted()
         }
         catch {
-            Swift.print("ERROR: \(error)")
+            Swift.print("Failed to read HPI archive (\(url)): \(error)")
             throw NSError(domain: NSOSStatusErrorDomain, code: readErr, userInfo: nil)
         }
     }
-
-    enum LoadError: Error {
-        case rootIsFile(HPIItem.File)
-    }
+    
 }
 
 // MARK:- Browser Window
 
-class HPIBrowserWindowController: NSWindowController {
+class HpiBrowserWindowController: NSWindowController {
     
     @IBOutlet weak var finder: FinderView!
     fileprivate var cache: HpiFileCache?
@@ -60,7 +53,7 @@ class HPIBrowserWindowController: NSWindowController {
     }
     
     override func awakeFromNib() {
-        finder.register(NSNib(nibNamed: "HPIFinderRow", bundle: nil), forIdentifier: "HPIItem")
+        finder.register(NSNib(nibNamed: "HpiFinderRow", bundle: nil), forIdentifier: "HpiItem")
         finder.delegate = self
         if let root = hpiDocument.root {
             finder.setRoot(directory: root)
@@ -72,7 +65,7 @@ class HPIBrowserWindowController: NSWindowController {
     
 }
 
-extension HPIItem: FinderViewItem {
+extension HpiItem: FinderViewItem {
     
     func isExpandable(in finder: FinderView, path: [FinderViewDirectory]) -> Bool {
         switch self {
@@ -94,7 +87,7 @@ extension HPIItem: FinderViewItem {
         case .file(let file):
             let ext = file.fileExtension
             if ext.caseInsensitiveCompare("gaf") == .orderedSame {
-                guard let hpic = finder.window?.windowController as? HPIBrowserWindowController
+                guard let hpic = finder.window?.windowController as? HpiBrowserWindowController
                     else { return nil }
                 guard let cache = hpic.cache
                     else { return nil }
@@ -118,7 +111,7 @@ extension HPIItem: FinderViewItem {
     
 }
 
-extension HPIItem.Directory: FinderViewDirectory {
+extension HpiItem.Directory: FinderViewDirectory {
     
     var numberOfItems: Int {
         return items.count
@@ -129,7 +122,7 @@ extension HPIItem.Directory: FinderViewDirectory {
     }
     
     func index(of item: FinderViewItem) -> Int? {
-        guard let other = item as? HPIItem else { return nil }
+        guard let other = item as? HpiItem else { return nil }
         let i = items.index(where: { $0.name == other.name })
         return i
     }
@@ -174,11 +167,11 @@ extension GafListing: FinderViewDirectory {
     
 }
 
-extension HPIBrowserWindowController: FinderViewDelegate {
+extension HpiBrowserWindowController: FinderViewDelegate {
     
     func rowView(for item: FinderViewItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
         switch item {
-        case let item as HPIItem:
+        case let item as HpiItem:
             return rowView(for: item, in: tableView, of: finder)
         case let item as GafItem:
             return rowView(for: item, in: tableView, of: finder)
@@ -188,9 +181,9 @@ extension HPIBrowserWindowController: FinderViewDelegate {
         }
     }
     
-    func rowView(for item: HPIItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
+    func rowView(for item: HpiItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
     
-        guard let view = tableView.make(withIdentifier: "HPIItem", owner: finder) as? NSTableCellView
+        guard let view = tableView.make(withIdentifier: "HpiItem", owner: finder) as? NSTableCellView
             else { return nil }
         
         view.textField?.stringValue = item.name
@@ -211,7 +204,7 @@ extension HPIBrowserWindowController: FinderViewDelegate {
     
     func rowView(for item: GafItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
         
-        guard let view = tableView.make(withIdentifier: "HPIItem", owner: finder) as? NSTableCellView
+        guard let view = tableView.make(withIdentifier: "HpiItem", owner: finder) as? NSTableCellView
             else { return nil }
         
         view.textField?.stringValue = item.name
@@ -224,7 +217,7 @@ extension HPIBrowserWindowController: FinderViewDelegate {
     
     func preview(for item: FinderViewItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
         switch item {
-        case let item as HPIItem:
+        case let item as HpiItem:
             return preview(for: item, at: pathDirectories, of: finder)
         case let item as GafItem:
             return preview(for: item, at: pathDirectories, of: finder)
@@ -234,7 +227,7 @@ extension HPIBrowserWindowController: FinderViewDelegate {
         }
     }
     
-    func preview(for item: HPIItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+    func preview(for item: HpiItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
     
         guard case .file(let file) = item else { return nil }
         guard let cache = cache else { return nil }
@@ -292,7 +285,7 @@ extension HPIBrowserWindowController: FinderViewDelegate {
         
         // MORE TEMP
         guard let listing = pathDirectories.last as? GafListing,
-            let parent = pathDirectories[pathDirectories.endIndex-2] as? HPIItem.Directory,
+            let parent = pathDirectories[pathDirectories.endIndex-2] as? HpiItem.Directory,
             let i = parent.items.index(where: { $0.name == listing.name }),
             case .file(let file) = parent.items[i]
             else { return nil }
@@ -338,7 +331,7 @@ extension HPIBrowserWindowController: FinderViewDelegate {
     
 }
 
-extension HPIBrowserWindowController {
+extension HpiBrowserWindowController {
     
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.action == #selector(extract) {
@@ -349,7 +342,7 @@ extension HPIBrowserWindowController {
     
     @IBAction func extract(sender: Any?) {
         
-        let items = finder.selectedItems.flatMap({ $0 as? HPIItem })
+        let items = finder.selectedItems.flatMap({ $0 as? HpiItem })
         guard items.count > 0
             else { Swift.print("No selected items to extract."); return }
         
@@ -377,7 +370,7 @@ extension HPIBrowserWindowController {
         
     }
     
-    func extractItems(_ items: [HPIItem], to rootDirectory: URL) {
+    func extractItems(_ items: [HpiItem], to rootDirectory: URL) {
         
         for item in items {
             
@@ -385,7 +378,7 @@ extension HPIBrowserWindowController {
             case .file(let file):
                 do {
                     let fileURL = rootDirectory.appendingPathComponent(file.name)
-                    let data = try HPIItem.extract(file: file, fromHPI: hpiDocument.fileURL!)
+                    let data = try HpiItem.extract(file: file, fromHPI: hpiDocument.fileURL!)
                     try data.write(to: fileURL, options: [.atomic])
                 }
                 catch {
@@ -408,28 +401,34 @@ extension HPIBrowserWindowController {
     }
 }
 
-fileprivate extension HPIItem {
+fileprivate extension HpiItem {
     
-    func sorted() -> HPIItem {
-        
-        let comp = { (a: HPIItem, b: HPIItem) -> Bool in
-            a.name.caseInsensitiveCompare(b.name) == .orderedAscending
-        }
-        
+    func sorted() -> HpiItem {
         switch self {
-        case .file: return self
+        case .file:
+            return self
         case .directory(let directory):
-            let items = directory.items
-                .sorted(by: comp)
-                .map({ $0.sorted() })
-            return .directory(HPIItem.Directory(name: directory.name, items: items))
+            return .directory(directory.sorted())
         }
-        
     }
     
 }
 
-fileprivate extension HPIItem.File {
+fileprivate extension HpiItem.Directory {
+    
+    func sorted() -> HpiItem.Directory {
+        let comp = { (a: HpiItem, b: HpiItem) -> Bool in
+            a.name.caseInsensitiveCompare(b.name) == .orderedAscending
+        }
+        let items = self.items
+            .sorted(by: comp)
+            .map({ $0.sorted() })
+        return HpiItem.Directory(name: self.name, items: items)
+    }
+    
+}
+
+fileprivate extension HpiItem.File {
     
     var fileExtension: String {
         let n = name as NSString

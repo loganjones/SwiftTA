@@ -29,7 +29,7 @@ class HpiFileCache {
             }
         }
         catch {
-            throw InitError.failedToReadFromHmi(error)
+            throw InitError.failedToReadFromHpi(error)
         }
         
         let archiveIdentifier = String(format: "%08X", hpiURL.hashValue)
@@ -76,13 +76,13 @@ class HpiFileCache {
     }
     
     enum InitError: Error {
-        case failedToReadFromHmi(Error)
+        case failedToReadFromHpi(Error)
         case badBundleIdentifier
         case badCachesURL
         case failedToReadFromContainer(Error)
     }
     
-    func url(for file: HPIItem.File, atHpiPath hpiPath: String) throws -> URL {
+    func url(for file: HpiItem.File, atHpiPath hpiPath: String) throws -> URL {
         
         let fileURL = containerURL.appendingPathComponent(hpiPath, isDirectory: false)
         let fm = FileManager.default
@@ -101,7 +101,7 @@ class HpiFileCache {
         let fileDirectoryURL = fileURL.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: fileDirectoryURL, withIntermediateDirectories: true)
         
-        let data = try HPIItem.extract(file: file, fromHPI: hpiURL)
+        let data = try HpiItem.extract(file: file, fromHPI: hpiURL)
         try data.write(to: fileURL, options: [.atomic])
         return fileURL
     }
@@ -109,4 +109,5 @@ class HpiFileCache {
     private static func makeContainer(_ url: URL) throws {
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }
+    
 }

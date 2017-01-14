@@ -20,7 +20,7 @@
 		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
 		B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */; };
 		B5D4B6D91DF5135800ADBE65 /* GAF.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D4B6D81DF5135800ADBE65 /* GAF.swift */; };
-		B5D4B6DB1E04E5F200ADBE65 /* HPIFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5D4B6DA1E04E5F200ADBE65 /* HPIFinderRow.xib */; };
+		B5D4B6DB1E04E5F200ADBE65 /* HpiFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */; };
 		F04631591DDFCAA8001C884E /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04631581DDFCAA8001C884E /* pcx.swift */; };
 /* End PBXBuildFile section */
 
@@ -43,7 +43,7 @@
 		B5B472121E13A02600FC79E2 /* PALETTE.PAL */ = {isa = PBXFileReference; lastKnownFileType = file; path = PALETTE.PAL; sourceTree = "<group>"; };
 		B5D4B6D71DF5108800ADBE65 /* ta_GAF.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_GAF.h; sourceTree = "<group>"; };
 		B5D4B6D81DF5135800ADBE65 /* GAF.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GAF.swift; sourceTree = "<group>"; };
-		B5D4B6DA1E04E5F200ADBE65 /* HPIFinderRow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HPIFinderRow.xib; sourceTree = "<group>"; };
+		B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HpiFinderRow.xib; sourceTree = "<group>"; };
 		F04631571DDFB96A001C884E /* pcx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pcx.h; sourceTree = "<group>"; };
 		F04631581DDFCAA8001C884E /* pcx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pcx.swift; sourceTree = "<group>"; };
 		F046315A1DDFCE9D001C884E /* ta_3DO.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_3DO.h; sourceTree = "<group>"; };
@@ -96,7 +96,7 @@
 				B58ECABA1DC6B35B005F231F /* ta_HPI.h */,
 				F04631571DDFB96A001C884E /* pcx.h */,
 				B50F6A511D87A54B0016C15B /* Document.xib */,
-				B5D4B6DA1E04E5F200ADBE65 /* HPIFinderRow.xib */,
+				B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */,
 				B50F6A541D87A54B0016C15B /* Assets.xcassets */,
 				B50F6A561D87A54B0016C15B /* MainMenu.xib */,
 				B50F6A591D87A54B0016C15B /* Info.plist */,
@@ -176,7 +176,7 @@
 				B50F6A551D87A54B0016C15B /* Assets.xcassets in Resources */,
 				B50F6A531D87A54B0016C15B /* Document.xib in Resources */,
 				B503B5E51E17559000CBB149 /* PALETTE.PAL in Resources */,
-				B5D4B6DB1E04E5F200ADBE65 /* HPIFinderRow.xib in Resources */,
+				B5D4B6DB1E04E5F200ADBE65 /* HpiFinderRow.xib in Resources */,
 				B50F6A581D87A54B0016C15B /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
