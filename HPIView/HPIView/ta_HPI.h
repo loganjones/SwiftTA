@@ -51,7 +51,7 @@ typedef struct TA_HPI_EXT_HEADER
 
     // This is the decrytion key for the rest of the file.
     // If it is zero, the file is not encrypted.
-	uint32_t		headerKey;
+	int32_t			headerKey;
 
     // Specifies the offset in the file where the directory tree resides
 	uint32_t		offsetToDirectory;
