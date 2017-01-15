@@ -59,7 +59,7 @@ class HpiFileCache {
         catch {
             let cocoaError = error as NSError
             if cocoaError.domain == NSCocoaErrorDomain && cocoaError.code == NSFileReadNoSuchFileError {
-                try HpiFileCache.makeContainer(containerURL)
+                try makeContainer(containerURL)
                 containerDate = Date()
             }
             else {
@@ -69,7 +69,7 @@ class HpiFileCache {
         
         if containerDate < sourceDate {
             try fm.removeItem(at: containerURL)
-            try HpiFileCache.makeContainer(containerURL)
+            try makeContainer(containerURL)
         }
         
         self.containerURL = containerURL
@@ -106,8 +106,8 @@ class HpiFileCache {
         return fileURL
     }
     
-    private static func makeContainer(_ url: URL) throws {
-        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-    }
-    
+}
+
+private func makeContainer(_ url: URL) throws {
+    try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
 }

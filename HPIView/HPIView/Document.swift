@@ -248,14 +248,23 @@ extension HpiBrowserWindowController: FinderViewDelegate {
         preview.title = file.name
         preview.size = file.size
         
-        // TEMP
         let fileExtension = fileURL.pathExtension
         let contentView = preview.contentView
         let subview: NSView
         if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
-            let pcx = PCXView(frame: contentView.bounds)
-            pcx.image = NSImage(pcxContentsOf: fileURL)
-            subview = pcx
+            do {
+                let pcxImage = try NSImage(pcxContentsOf: fileURL)
+                let pcxView = NSImageView(frame: contentView.bounds)
+                pcxView.image = pcxImage
+                subview = pcxView
+            }
+            catch {
+                print("Faile to load image from \(file.name): \(error)")
+                let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
+                qlv.previewItem = fileURL as NSURL
+                qlv.refreshPreviewItem()
+                subview = qlv
+            }
         }
         else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
             let model = Model3DOView(frame: contentView.bounds)
@@ -268,6 +277,7 @@ extension HpiBrowserWindowController: FinderViewDelegate {
             qlv.refreshPreviewItem()
             subview = qlv
         }
+        
         subview.translatesAutoresizingMaskIntoConstraints = false
         preview.contentView.addSubview(subview)
         NSLayoutConstraint.activate([
@@ -276,7 +286,6 @@ extension HpiBrowserWindowController: FinderViewDelegate {
             subview.topAnchor.constraint(equalTo: contentView.topAnchor),
             subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
             ])
-        // END TEMP
         
         return preview
     }
@@ -434,10 +443,6 @@ fileprivate extension HpiItem.File {
         let n = name as NSString
         return n.pathExtension
     }
-    
-}
-
-class PCXView: NSImageView {
     
 }
 
