@@ -25,7 +25,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>NSDocumentClass</key>
-			<string>$(PRODUCT_MODULE_NAME).Document</string>
+			<string>$(PRODUCT_MODULE_NAME).HpiDocument</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>

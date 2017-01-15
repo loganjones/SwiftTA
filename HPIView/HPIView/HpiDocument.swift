@@ -1,5 +1,5 @@
 //
-//  Document.swift
+//  HpiDocument.swift
 //  HPIView
 //
 //  Created by Logan Jones on 9/12/16.
@@ -12,12 +12,12 @@ import QuickLook
 import CoreGraphics
 
 
-class Document: NSDocument {
+class HpiDocument: NSDocument {
     
     var root: HpiItem.Directory?
     
     override func makeWindowControllers() {
-        let controller = HpiBrowserWindowController(windowNibName: "Document")
+        let controller = HpiBrowserWindowController(windowNibName: "HpiBrowserWindow")
         addWindowController(controller)
     }
     
@@ -46,8 +46,8 @@ class HpiBrowserWindowController: NSWindowController {
         return formatter
     }()
     
-    var hpiDocument: Document {
-        guard let doc = self.document as? Document
+    var hpiDocument: HpiDocument {
+        guard let doc = self.document as? HpiDocument
             else { fatalError("No HPI Document associated with this window!?") }
         return doc
     }
