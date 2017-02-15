@@ -68,7 +68,7 @@ enum HpiItem {
     case file(File)
     
     /// A (sub)directory listing in an HPI archive.
-    indirect case directory(Directory)
+    case directory(Directory)
     
     /**
      Metadata for a specific `File` contained in an HPI archive.
