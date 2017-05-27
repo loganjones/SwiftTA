@@ -8,24 +8,34 @@
 
 /* Begin PBXBuildFile section */
 		B503B5E51E17559000CBB149 /* PALETTE.PAL in Resources */ = {isa = PBXBuildFile; fileRef = B5B472121E13A02600FC79E2 /* PALETTE.PAL */; };
-		B503B5E71E177A5E00CBB149 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B503B5E61E177A5E00CBB149 /* Utility.swift */; };
 		B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6A4D1D87A54B0016C15B /* AppDelegate.swift */; };
 		B50F6A501D87A54B0016C15B /* HpiDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6A4F1D87A54B0016C15B /* HpiDocument.swift */; };
 		B50F6A531D87A54B0016C15B /* HpiBrowserWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A511D87A54B0016C15B /* HpiBrowserWindow.xib */; };
 		B50F6A551D87A54B0016C15B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A541D87A54B0016C15B /* Assets.xcassets */; };
 		B50F6A581D87A54B0016C15B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A561D87A54B0016C15B /* MainMenu.xib */; };
-		B50F6A601D87A8C40016C15B /* hpi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6A5F1D87A8C40016C15B /* hpi.swift */; };
 		B553EE361DDFE2270033C70D /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE351DDFE2270033C70D /* ModelView.swift */; };
 		B553EE381DE004AB0033C70D /* FinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE371DE004AB0033C70D /* FinderView.swift */; };
 		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
 		B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */; };
-		B5D4B6D91DF5135800ADBE65 /* gaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D4B6D81DF5135800ADBE65 /* gaf.swift */; };
 		B5D4B6DB1E04E5F200ADBE65 /* HpiFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */; };
-		F04631591DDFCAA8001C884E /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04631581DDFCAA8001C884E /* pcx.swift */; };
+		B5E26F231ED9EB80006C329B /* gaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F111ED9EB80006C329B /* gaf.swift */; };
+		B5E26F241ED9EB80006C329B /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F121ED9EB80006C329B /* Geometry.swift */; };
+		B5E26F251ED9EB80006C329B /* hpi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F131ED9EB80006C329B /* hpi.swift */; };
+		B5E26F271ED9EB80006C329B /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F161ED9EB80006C329B /* pcx.swift */; };
+		B5E26F281ED9EB80006C329B /* UnitData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1C1ED9EB80006C329B /* UnitData.swift */; };
+		B5E26F291ED9EB80006C329B /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */; };
+		B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1E1ED9EB80006C329B /* UnitModel.swift */; };
+		B5E26F2B1ED9EB80006C329B /* UnitObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1F1ED9EB80006C329B /* UnitObject.swift */; };
+		B5E26F2C1ED9EB80006C329B /* UnitScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F201ED9EB80006C329B /* UnitScript.swift */; };
+		B5E26F2D1ED9EB80006C329B /* UnitScriptVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F211ED9EB80006C329B /* UnitScriptVM.swift */; };
+		B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F221ED9EB80006C329B /* Utility.swift */; };
+		B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F2F1ED9ECE9006C329B /* CobView.swift */; };
+		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
+		B5E26F341ED9EECC006C329B /* PcxImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F331ED9EECC006C329B /* PcxImage.swift */; };
+		B5E26F361ED9EFE6006C329B /* CocoaUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F351ED9EFE6006C329B /* CocoaUtility.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B503B5E61E177A5E00CBB149 /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		B50F6A4A1D87A54B0016C15B /* HPIView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HPIView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B50F6A4D1D87A54B0016C15B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B50F6A4F1D87A54B0016C15B /* HpiDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HpiDocument.swift; sourceTree = "<group>"; };
@@ -33,20 +43,35 @@
 		B50F6A541D87A54B0016C15B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B50F6A571D87A54B0016C15B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		B50F6A591D87A54B0016C15B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B50F6A5F1D87A8C40016C15B /* hpi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = hpi.swift; sourceTree = "<group>"; };
 		B553EE351DDFE2270033C70D /* ModelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelView.swift; sourceTree = "<group>"; };
 		B553EE371DE004AB0033C70D /* FinderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FinderView.swift; sourceTree = "<group>"; };
-		B58ECABA1DC6B35B005F231F /* ta_HPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_HPI.h; sourceTree = "<group>"; };
 		B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		B58ECAC01DC6BE90005F231F /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HpiFileCache.swift; sourceTree = "<group>"; };
 		B5B472121E13A02600FC79E2 /* PALETTE.PAL */ = {isa = PBXFileReference; lastKnownFileType = file; path = PALETTE.PAL; sourceTree = "<group>"; };
-		B5D4B6D71DF5108800ADBE65 /* ta_GAF.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_GAF.h; sourceTree = "<group>"; };
-		B5D4B6D81DF5135800ADBE65 /* gaf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = gaf.swift; sourceTree = "<group>"; };
 		B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HpiFinderRow.xib; sourceTree = "<group>"; };
-		F04631571DDFB96A001C884E /* pcx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pcx.h; sourceTree = "<group>"; };
-		F04631581DDFCAA8001C884E /* pcx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pcx.swift; sourceTree = "<group>"; };
-		F046315A1DDFCE9D001C884E /* ta_3DO.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_3DO.h; sourceTree = "<group>"; };
+		B5E26F111ED9EB80006C329B /* gaf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = gaf.swift; sourceTree = "<group>"; };
+		B5E26F121ED9EB80006C329B /* Geometry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
+		B5E26F131ED9EB80006C329B /* hpi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = hpi.swift; sourceTree = "<group>"; };
+		B5E26F141ED9EB80006C329B /* ModelTexturePack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelTexturePack.swift; sourceTree = "<group>"; };
+		B5E26F151ED9EB80006C329B /* pcx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pcx.h; sourceTree = "<group>"; };
+		B5E26F161ED9EB80006C329B /* pcx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pcx.swift; sourceTree = "<group>"; };
+		B5E26F171ED9EB80006C329B /* ta_3DO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_3DO.h; sourceTree = "<group>"; };
+		B5E26F181ED9EB80006C329B /* ta_COB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB.h; sourceTree = "<group>"; };
+		B5E26F191ED9EB80006C329B /* ta_COB_Instructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB_Instructions.h; sourceTree = "<group>"; };
+		B5E26F1A1ED9EB80006C329B /* ta_GAF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_GAF.h; sourceTree = "<group>"; };
+		B5E26F1B1ED9EB80006C329B /* ta_HPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_HPI.h; sourceTree = "<group>"; };
+		B5E26F1C1ED9EB80006C329B /* UnitData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitData.swift; sourceTree = "<group>"; };
+		B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitInfo.swift; sourceTree = "<group>"; };
+		B5E26F1E1ED9EB80006C329B /* UnitModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitModel.swift; sourceTree = "<group>"; };
+		B5E26F1F1ED9EB80006C329B /* UnitObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitObject.swift; sourceTree = "<group>"; };
+		B5E26F201ED9EB80006C329B /* UnitScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitScript.swift; sourceTree = "<group>"; };
+		B5E26F211ED9EB80006C329B /* UnitScriptVM.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitScriptVM.swift; sourceTree = "<group>"; };
+		B5E26F221ED9EB80006C329B /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
+		B5E26F2F1ED9ECE9006C329B /* CobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CobView.swift; sourceTree = "<group>"; };
+		B5E26F311ED9EDD7006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GafView.swift; sourceTree = "<group>"; };
+		B5E26F331ED9EECC006C329B /* PcxImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PcxImage.swift; sourceTree = "<group>"; };
+		B5E26F351ED9EFE6006C329B /* CocoaUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaUtility.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +89,7 @@
 		B50F6A411D87A54B0016C15B = {
 			isa = PBXGroup;
 			children = (
+				B5E26F101ED9EB80006C329B /* Common */,
 				B50F6A4C1D87A54B0016C15B /* HPIView */,
 				B50F6A4B1D87A54B0016C15B /* Products */,
 				B58ECABF1DC6BE90005F231F /* Frameworks */,
@@ -82,19 +108,15 @@
 			isa = PBXGroup;
 			children = (
 				B50F6A4D1D87A54B0016C15B /* AppDelegate.swift */,
+				B5E26F351ED9EFE6006C329B /* CocoaUtility.swift */,
 				B50F6A4F1D87A54B0016C15B /* HpiDocument.swift */,
 				B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */,
 				B553EE371DE004AB0033C70D /* FinderView.swift */,
+				B5E26F2F1ED9ECE9006C329B /* CobView.swift */,
+				B5E26F311ED9EDD7006C329B /* GafView.swift */,
 				B553EE351DDFE2270033C70D /* ModelView.swift */,
-				B503B5E61E177A5E00CBB149 /* Utility.swift */,
-				B5D4B6D81DF5135800ADBE65 /* gaf.swift */,
-				B50F6A5F1D87A8C40016C15B /* hpi.swift */,
-				F04631581DDFCAA8001C884E /* pcx.swift */,
+				B5E26F331ED9EECC006C329B /* PcxImage.swift */,
 				B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */,
-				F046315A1DDFCE9D001C884E /* ta_3DO.h */,
-				B5D4B6D71DF5108800ADBE65 /* ta_GAF.h */,
-				B58ECABA1DC6B35B005F231F /* ta_HPI.h */,
-				F04631571DDFB96A001C884E /* pcx.h */,
 				B50F6A511D87A54B0016C15B /* HpiBrowserWindow.xib */,
 				B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */,
 				B50F6A541D87A54B0016C15B /* Assets.xcassets */,
@@ -111,6 +133,32 @@
 				B58ECAC01DC6BE90005F231F /* libz.tbd */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B5E26F101ED9EB80006C329B /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				B5E26F111ED9EB80006C329B /* gaf.swift */,
+				B5E26F121ED9EB80006C329B /* Geometry.swift */,
+				B5E26F131ED9EB80006C329B /* hpi.swift */,
+				B5E26F141ED9EB80006C329B /* ModelTexturePack.swift */,
+				B5E26F151ED9EB80006C329B /* pcx.h */,
+				B5E26F161ED9EB80006C329B /* pcx.swift */,
+				B5E26F171ED9EB80006C329B /* ta_3DO.h */,
+				B5E26F181ED9EB80006C329B /* ta_COB.h */,
+				B5E26F191ED9EB80006C329B /* ta_COB_Instructions.h */,
+				B5E26F1A1ED9EB80006C329B /* ta_GAF.h */,
+				B5E26F1B1ED9EB80006C329B /* ta_HPI.h */,
+				B5E26F1C1ED9EB80006C329B /* UnitData.swift */,
+				B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */,
+				B5E26F1E1ED9EB80006C329B /* UnitModel.swift */,
+				B5E26F1F1ED9EB80006C329B /* UnitObject.swift */,
+				B5E26F201ED9EB80006C329B /* UnitScript.swift */,
+				B5E26F211ED9EB80006C329B /* UnitScriptVM.swift */,
+				B5E26F221ED9EB80006C329B /* Utility.swift */,
+			);
+			name = Common;
+			path = ../Common;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -188,15 +236,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5D4B6D91DF5135800ADBE65 /* gaf.swift in Sources */,
-				B50F6A601D87A8C40016C15B /* hpi.swift in Sources */,
+				B5E26F241ED9EB80006C329B /* Geometry.swift in Sources */,
+				B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */,
+				B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */,
+				B5E26F251ED9EB80006C329B /* hpi.swift in Sources */,
+				B5E26F281ED9EB80006C329B /* UnitData.swift in Sources */,
+				B5E26F271ED9EB80006C329B /* pcx.swift in Sources */,
+				B5E26F341ED9EECC006C329B /* PcxImage.swift in Sources */,
+				B5E26F2D1ED9EB80006C329B /* UnitScriptVM.swift in Sources */,
+				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,
+				B5E26F291ED9EB80006C329B /* UnitInfo.swift in Sources */,
+				B5E26F231ED9EB80006C329B /* gaf.swift in Sources */,
 				B50F6A501D87A54B0016C15B /* HpiDocument.swift in Sources */,
+				B5E26F2B1ED9EB80006C329B /* UnitObject.swift in Sources */,
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
-				B503B5E71E177A5E00CBB149 /* Utility.swift in Sources */,
 				B553EE381DE004AB0033C70D /* FinderView.swift in Sources */,
-				F04631591DDFCAA8001C884E /* pcx.swift in Sources */,
 				B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */,
+				B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */,
 				B553EE361DDFE2270033C70D /* ModelView.swift in Sources */,
+				B5E26F361ED9EFE6006C329B /* CocoaUtility.swift in Sources */,
+				B5E26F2C1ED9EB80006C329B /* UnitScript.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

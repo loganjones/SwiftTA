@@ -271,6 +271,11 @@ extension HpiBrowserWindowController: FinderViewDelegate {
             try! model.loadModel(contentsOf: fileURL)
             subview = model
         }
+        else if fileExtension.caseInsensitiveCompare("cob") == .orderedSame {
+            let model = CobView(frame: contentView.bounds)
+            try! model.load(contentsOf: fileURL)
+            subview = model
+        }
         else {
             let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
             qlv.previewItem = fileURL as NSURL

@@ -134,6 +134,11 @@ extension FileBrowserViewController: FinderViewDelegate {
             try! model.loadModel(contentsOf: fileURL)
             subview = model
         }
+        else if fileExtension.caseInsensitiveCompare("cob") == .orderedSame {
+            let view = CobView(frame: contentView.bounds)
+            try! view.load(contentsOf: fileURL)
+            subview = view
+        }
         else {
             let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
             qlv.previewItem = fileURL as NSURL

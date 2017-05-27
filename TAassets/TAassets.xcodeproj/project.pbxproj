@@ -7,71 +7,72 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B52A67471EC3F35900698DEF /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A67461EC3F35900698DEF /* CobView.swift */; };
 		B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556491E2C86A2001BEFAB /* AppDelegate.swift */; };
 		B5C5564E1E2C86A2001BEFAB /* TaassetsDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5564D1E2C86A2001BEFAB /* TaassetsDocument.swift */; };
 		B5C556501E2C86A2001BEFAB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5C5564F1E2C86A2001BEFAB /* Assets.xcassets */; };
 		B5C556531E2C86A2001BEFAB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5C556511E2C86A2001BEFAB /* Main.storyboard */; };
-		B5C5565E1E2C86A2001BEFAB /* TAassetsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5565D1E2C86A2001BEFAB /* TAassetsTests.swift */; };
-		B5C556691E2C86A2001BEFAB /* TAassetsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556681E2C86A2001BEFAB /* TAassetsUITests.swift */; };
-		B5C556781E2D5C0A001BEFAB /* hpi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556761E2D5C0A001BEFAB /* hpi.swift */; };
-		B5C5567A1E2D5C36001BEFAB /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556791E2D5C36001BEFAB /* Utility.swift */; };
 		B5C5567E1E2D5CF1001BEFAB /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B5C5567D1E2D5CF1001BEFAB /* libz.tbd */; };
 		B5C556801E2F1262001BEFAB /* FileBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5567F1E2F1262001BEFAB /* FileBrowser.swift */; };
 		B5C556821E2F1747001BEFAB /* FinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556811E2F1747001BEFAB /* FinderView.swift */; };
 		B5C556841E3058A9001BEFAB /* HpiFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5C556831E3058A9001BEFAB /* HpiFinderRow.xib */; };
-		B5C556861E319D69001BEFAB /* gaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556851E319D69001BEFAB /* gaf.swift */; };
-		B5C556881E319D74001BEFAB /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556871E319D74001BEFAB /* pcx.swift */; };
 		B5C5568D1E31B788001BEFAB /* HpiFileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5568C1E31B788001BEFAB /* HpiFileCache.swift */; };
 		B5C5568F1E3437EF001BEFAB /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5568E1E3437EF001BEFAB /* ModelView.swift */; };
 		B5C556911E353FC1001BEFAB /* UnitBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556901E353FC1001BEFAB /* UnitBrowser.swift */; };
+		B5E26F031ED9EB05006C329B /* gaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EF01ED9EB05006C329B /* gaf.swift */; };
+		B5E26F041ED9EB05006C329B /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EF11ED9EB05006C329B /* Geometry.swift */; };
+		B5E26F051ED9EB05006C329B /* hpi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EF21ED9EB05006C329B /* hpi.swift */; };
+		B5E26F061ED9EB05006C329B /* ModelTexturePack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EF31ED9EB05006C329B /* ModelTexturePack.swift */; };
+		B5E26F071ED9EB05006C329B /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EF51ED9EB05006C329B /* pcx.swift */; };
+		B5E26F091ED9EB05006C329B /* UnitData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EFC1ED9EB05006C329B /* UnitData.swift */; };
+		B5E26F0A1ED9EB05006C329B /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EFD1ED9EB05006C329B /* UnitInfo.swift */; };
+		B5E26F0B1ED9EB05006C329B /* UnitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EFE1ED9EB05006C329B /* UnitModel.swift */; };
+		B5E26F0C1ED9EB05006C329B /* UnitObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EFF1ED9EB05006C329B /* UnitObject.swift */; };
+		B5E26F0D1ED9EB05006C329B /* UnitScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F001ED9EB05006C329B /* UnitScript.swift */; };
+		B5E26F0E1ED9EB05006C329B /* UnitScriptVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F011ED9EB05006C329B /* UnitScriptVM.swift */; };
+		B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F021ED9EB05006C329B /* Utility.swift */; };
+		B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F371ED9F0ED006C329B /* GafView.swift */; };
+		B5E26F3A1ED9F104006C329B /* PcxImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F391ED9F104006C329B /* PcxImage.swift */; };
+		B5E26F3C1ED9F11E006C329B /* CocoaUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F3B1ED9F11E006C329B /* CocoaUtility.swift */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		B5C5565A1E2C86A2001BEFAB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B5C5563E1E2C86A2001BEFAB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = B5C556451E2C86A2001BEFAB;
-			remoteInfo = TAassets;
-		};
-		B5C556651E2C86A2001BEFAB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B5C5563E1E2C86A2001BEFAB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = B5C556451E2C86A2001BEFAB;
-			remoteInfo = TAassets;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
+		B52A67461EC3F35900698DEF /* CobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CobView.swift; path = ../../HPIView/HPIView/CobView.swift; sourceTree = "<group>"; };
 		B5C556461E2C86A2001BEFAB /* TAassets.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TAassets.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5C556491E2C86A2001BEFAB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B5C5564D1E2C86A2001BEFAB /* TaassetsDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaassetsDocument.swift; sourceTree = "<group>"; };
 		B5C5564F1E2C86A2001BEFAB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B5C556521E2C86A2001BEFAB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B5C556541E2C86A2001BEFAB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B5C556591E2C86A2001BEFAB /* TAassetsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TAassetsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B5C5565D1E2C86A2001BEFAB /* TAassetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAassetsTests.swift; sourceTree = "<group>"; };
-		B5C5565F1E2C86A2001BEFAB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B5C556641E2C86A2001BEFAB /* TAassetsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TAassetsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B5C556681E2C86A2001BEFAB /* TAassetsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TAassetsUITests.swift; sourceTree = "<group>"; };
-		B5C5566A1E2C86A2001BEFAB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B5C556761E2D5C0A001BEFAB /* hpi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = hpi.swift; path = ../../HPIView/HPIView/hpi.swift; sourceTree = "<group>"; };
-		B5C556771E2D5C0A001BEFAB /* ta_HPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ta_HPI.h; path = ../../HPIView/HPIView/ta_HPI.h; sourceTree = "<group>"; };
-		B5C556791E2D5C36001BEFAB /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Utility.swift; path = ../../HPIView/HPIView/Utility.swift; sourceTree = "<group>"; };
 		B5C5567B1E2D5C75001BEFAB /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		B5C5567D1E2D5CF1001BEFAB /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		B5C5567F1E2F1262001BEFAB /* FileBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileBrowser.swift; sourceTree = "<group>"; };
 		B5C556811E2F1747001BEFAB /* FinderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FinderView.swift; path = ../../HPIView/HPIView/FinderView.swift; sourceTree = "<group>"; };
 		B5C556831E3058A9001BEFAB /* HpiFinderRow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = HpiFinderRow.xib; path = ../../HPIView/HPIView/HpiFinderRow.xib; sourceTree = "<group>"; };
-		B5C556851E319D69001BEFAB /* gaf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = gaf.swift; path = ../../HPIView/HPIView/gaf.swift; sourceTree = "<group>"; };
-		B5C556871E319D74001BEFAB /* pcx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = pcx.swift; path = ../../HPIView/HPIView/pcx.swift; sourceTree = "<group>"; };
-		B5C556891E319D8A001BEFAB /* ta_3DO.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ta_3DO.h; path = ../../HPIView/HPIView/ta_3DO.h; sourceTree = "<group>"; };
-		B5C5568A1E319D8A001BEFAB /* ta_GAF.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ta_GAF.h; path = ../../HPIView/HPIView/ta_GAF.h; sourceTree = "<group>"; };
-		B5C5568B1E319D96001BEFAB /* pcx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pcx.h; path = ../../HPIView/HPIView/pcx.h; sourceTree = "<group>"; };
 		B5C5568C1E31B788001BEFAB /* HpiFileCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HpiFileCache.swift; path = ../../HPIView/HPIView/HpiFileCache.swift; sourceTree = "<group>"; };
 		B5C5568E1E3437EF001BEFAB /* ModelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ModelView.swift; path = ../../HPIView/HPIView/ModelView.swift; sourceTree = "<group>"; };
 		B5C556901E353FC1001BEFAB /* UnitBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitBrowser.swift; sourceTree = "<group>"; };
+		B5E26EF01ED9EB05006C329B /* gaf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = gaf.swift; sourceTree = "<group>"; };
+		B5E26EF11ED9EB05006C329B /* Geometry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
+		B5E26EF21ED9EB05006C329B /* hpi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = hpi.swift; sourceTree = "<group>"; };
+		B5E26EF31ED9EB05006C329B /* ModelTexturePack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelTexturePack.swift; sourceTree = "<group>"; };
+		B5E26EF41ED9EB05006C329B /* pcx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pcx.h; sourceTree = "<group>"; };
+		B5E26EF51ED9EB05006C329B /* pcx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pcx.swift; sourceTree = "<group>"; };
+		B5E26EF61ED9EB05006C329B /* ta_3DO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_3DO.h; sourceTree = "<group>"; };
+		B5E26EF71ED9EB05006C329B /* ta_COB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB.h; sourceTree = "<group>"; };
+		B5E26EF81ED9EB05006C329B /* ta_COB_Instructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB_Instructions.h; sourceTree = "<group>"; };
+		B5E26EF91ED9EB05006C329B /* ta_GAF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_GAF.h; sourceTree = "<group>"; };
+		B5E26EFA1ED9EB05006C329B /* ta_HPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_HPI.h; sourceTree = "<group>"; };
+		B5E26EFC1ED9EB05006C329B /* UnitData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitData.swift; sourceTree = "<group>"; };
+		B5E26EFD1ED9EB05006C329B /* UnitInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitInfo.swift; sourceTree = "<group>"; };
+		B5E26EFE1ED9EB05006C329B /* UnitModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitModel.swift; sourceTree = "<group>"; };
+		B5E26EFF1ED9EB05006C329B /* UnitObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitObject.swift; sourceTree = "<group>"; };
+		B5E26F001ED9EB05006C329B /* UnitScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitScript.swift; sourceTree = "<group>"; };
+		B5E26F011ED9EB05006C329B /* UnitScriptVM.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitScriptVM.swift; sourceTree = "<group>"; };
+		B5E26F021ED9EB05006C329B /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
+		B5E26F371ED9F0ED006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GafView.swift; path = ../../HPIView/HPIView/GafView.swift; sourceTree = "<group>"; };
+		B5E26F391ED9F104006C329B /* PcxImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PcxImage.swift; path = ../../HPIView/HPIView/PcxImage.swift; sourceTree = "<group>"; };
+		B5E26F3B1ED9F11E006C329B /* CocoaUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CocoaUtility.swift; path = ../../HPIView/HPIView/CocoaUtility.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,29 +84,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B5C556561E2C86A2001BEFAB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		B5C556611E2C86A2001BEFAB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		B5C5563D1E2C86A2001BEFAB = {
 			isa = PBXGroup;
 			children = (
+				B5E26EEF1ED9EB05006C329B /* Common */,
 				B5C556481E2C86A2001BEFAB /* TAassets */,
-				B5C5565C1E2C86A2001BEFAB /* TAassetsTests */,
-				B5C556671E2C86A2001BEFAB /* TAassetsUITests */,
 				B5C556471E2C86A2001BEFAB /* Products */,
 				B5C5567C1E2D5CF1001BEFAB /* Frameworks */,
 			);
@@ -115,8 +101,6 @@
 			isa = PBXGroup;
 			children = (
 				B5C556461E2C86A2001BEFAB /* TAassets.app */,
-				B5C556591E2C86A2001BEFAB /* TAassetsTests.xctest */,
-				B5C556641E2C86A2001BEFAB /* TAassetsUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -125,20 +109,16 @@
 			isa = PBXGroup;
 			children = (
 				B5C556491E2C86A2001BEFAB /* AppDelegate.swift */,
+				B5E26F3B1ED9F11E006C329B /* CocoaUtility.swift */,
+				B5C5568C1E31B788001BEFAB /* HpiFileCache.swift */,
 				B5C5564D1E2C86A2001BEFAB /* TaassetsDocument.swift */,
 				B5C556901E353FC1001BEFAB /* UnitBrowser.swift */,
 				B5C5567F1E2F1262001BEFAB /* FileBrowser.swift */,
-				B5C556791E2D5C36001BEFAB /* Utility.swift */,
 				B5C556811E2F1747001BEFAB /* FinderView.swift */,
+				B52A67461EC3F35900698DEF /* CobView.swift */,
+				B5E26F371ED9F0ED006C329B /* GafView.swift */,
 				B5C5568E1E3437EF001BEFAB /* ModelView.swift */,
-				B5C5568C1E31B788001BEFAB /* HpiFileCache.swift */,
-				B5C556851E319D69001BEFAB /* gaf.swift */,
-				B5C556761E2D5C0A001BEFAB /* hpi.swift */,
-				B5C556871E319D74001BEFAB /* pcx.swift */,
-				B5C556891E319D8A001BEFAB /* ta_3DO.h */,
-				B5C5568A1E319D8A001BEFAB /* ta_GAF.h */,
-				B5C556771E2D5C0A001BEFAB /* ta_HPI.h */,
-				B5C5568B1E319D96001BEFAB /* pcx.h */,
+				B5E26F391ED9F104006C329B /* PcxImage.swift */,
 				B5C5567B1E2D5C75001BEFAB /* BridgingHeader.h */,
 				B5C5564F1E2C86A2001BEFAB /* Assets.xcassets */,
 				B5C556511E2C86A2001BEFAB /* Main.storyboard */,
@@ -148,30 +128,38 @@
 			path = TAassets;
 			sourceTree = "<group>";
 		};
-		B5C5565C1E2C86A2001BEFAB /* TAassetsTests */ = {
-			isa = PBXGroup;
-			children = (
-				B5C5565D1E2C86A2001BEFAB /* TAassetsTests.swift */,
-				B5C5565F1E2C86A2001BEFAB /* Info.plist */,
-			);
-			path = TAassetsTests;
-			sourceTree = "<group>";
-		};
-		B5C556671E2C86A2001BEFAB /* TAassetsUITests */ = {
-			isa = PBXGroup;
-			children = (
-				B5C556681E2C86A2001BEFAB /* TAassetsUITests.swift */,
-				B5C5566A1E2C86A2001BEFAB /* Info.plist */,
-			);
-			path = TAassetsUITests;
-			sourceTree = "<group>";
-		};
 		B5C5567C1E2D5CF1001BEFAB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				B5C5567D1E2D5CF1001BEFAB /* libz.tbd */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B5E26EEF1ED9EB05006C329B /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				B5E26EF01ED9EB05006C329B /* gaf.swift */,
+				B5E26EF11ED9EB05006C329B /* Geometry.swift */,
+				B5E26EF21ED9EB05006C329B /* hpi.swift */,
+				B5E26EF31ED9EB05006C329B /* ModelTexturePack.swift */,
+				B5E26EF41ED9EB05006C329B /* pcx.h */,
+				B5E26EF51ED9EB05006C329B /* pcx.swift */,
+				B5E26EF61ED9EB05006C329B /* ta_3DO.h */,
+				B5E26EF71ED9EB05006C329B /* ta_COB.h */,
+				B5E26EF81ED9EB05006C329B /* ta_COB_Instructions.h */,
+				B5E26EF91ED9EB05006C329B /* ta_GAF.h */,
+				B5E26EFA1ED9EB05006C329B /* ta_HPI.h */,
+				B5E26EFC1ED9EB05006C329B /* UnitData.swift */,
+				B5E26EFD1ED9EB05006C329B /* UnitInfo.swift */,
+				B5E26EFE1ED9EB05006C329B /* UnitModel.swift */,
+				B5E26EFF1ED9EB05006C329B /* UnitObject.swift */,
+				B5E26F001ED9EB05006C329B /* UnitScript.swift */,
+				B5E26F011ED9EB05006C329B /* UnitScriptVM.swift */,
+				B5E26F021ED9EB05006C329B /* Utility.swift */,
+			);
+			name = Common;
+			path = ../Common;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -194,42 +182,6 @@
 			productReference = B5C556461E2C86A2001BEFAB /* TAassets.app */;
 			productType = "com.apple.product-type.application";
 		};
-		B5C556581E2C86A2001BEFAB /* TAassetsTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = B5C556701E2C86A2001BEFAB /* Build configuration list for PBXNativeTarget "TAassetsTests" */;
-			buildPhases = (
-				B5C556551E2C86A2001BEFAB /* Sources */,
-				B5C556561E2C86A2001BEFAB /* Frameworks */,
-				B5C556571E2C86A2001BEFAB /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				B5C5565B1E2C86A2001BEFAB /* PBXTargetDependency */,
-			);
-			name = TAassetsTests;
-			productName = TAassetsTests;
-			productReference = B5C556591E2C86A2001BEFAB /* TAassetsTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		B5C556631E2C86A2001BEFAB /* TAassetsUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = B5C556731E2C86A2001BEFAB /* Build configuration list for PBXNativeTarget "TAassetsUITests" */;
-			buildPhases = (
-				B5C556601E2C86A2001BEFAB /* Sources */,
-				B5C556611E2C86A2001BEFAB /* Frameworks */,
-				B5C556621E2C86A2001BEFAB /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				B5C556661E2C86A2001BEFAB /* PBXTargetDependency */,
-			);
-			name = TAassetsUITests;
-			productName = TAassetsUITests;
-			productReference = B5C556641E2C86A2001BEFAB /* TAassetsUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -243,16 +195,6 @@
 					B5C556451E2C86A2001BEFAB = {
 						CreatedOnToolsVersion = 8.2.1;
 						ProvisioningStyle = Automatic;
-					};
-					B5C556581E2C86A2001BEFAB = {
-						CreatedOnToolsVersion = 8.2.1;
-						ProvisioningStyle = Automatic;
-						TestTargetID = B5C556451E2C86A2001BEFAB;
-					};
-					B5C556631E2C86A2001BEFAB = {
-						CreatedOnToolsVersion = 8.2.1;
-						ProvisioningStyle = Automatic;
-						TestTargetID = B5C556451E2C86A2001BEFAB;
 					};
 				};
 			};
@@ -270,8 +212,6 @@
 			projectRoot = "";
 			targets = (
 				B5C556451E2C86A2001BEFAB /* TAassets */,
-				B5C556581E2C86A2001BEFAB /* TAassetsTests */,
-				B5C556631E2C86A2001BEFAB /* TAassetsUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -287,20 +227,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B5C556571E2C86A2001BEFAB /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		B5C556621E2C86A2001BEFAB /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -308,50 +234,33 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5C5567A1E2D5C36001BEFAB /* Utility.swift in Sources */,
-				B5C556781E2D5C0A001BEFAB /* hpi.swift in Sources */,
+				B5E26F061ED9EB05006C329B /* ModelTexturePack.swift in Sources */,
+				B5E26F0E1ED9EB05006C329B /* UnitScriptVM.swift in Sources */,
+				B5E26F0A1ED9EB05006C329B /* UnitInfo.swift in Sources */,
+				B5E26F3C1ED9F11E006C329B /* CocoaUtility.swift in Sources */,
+				B5E26F041ED9EB05006C329B /* Geometry.swift in Sources */,
+				B5E26F0D1ED9EB05006C329B /* UnitScript.swift in Sources */,
 				B5C556911E353FC1001BEFAB /* UnitBrowser.swift in Sources */,
+				B5E26F051ED9EB05006C329B /* hpi.swift in Sources */,
+				B5E26F3A1ED9F104006C329B /* PcxImage.swift in Sources */,
+				B5E26F0C1ED9EB05006C329B /* UnitObject.swift in Sources */,
 				B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */,
+				B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */,
+				B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */,
+				B5E26F091ED9EB05006C329B /* UnitData.swift in Sources */,
+				B52A67471EC3F35900698DEF /* CobView.swift in Sources */,
 				B5C5564E1E2C86A2001BEFAB /* TaassetsDocument.swift in Sources */,
 				B5C5568F1E3437EF001BEFAB /* ModelView.swift in Sources */,
 				B5C556821E2F1747001BEFAB /* FinderView.swift in Sources */,
-				B5C556861E319D69001BEFAB /* gaf.swift in Sources */,
 				B5C556801E2F1262001BEFAB /* FileBrowser.swift in Sources */,
 				B5C5568D1E31B788001BEFAB /* HpiFileCache.swift in Sources */,
-				B5C556881E319D74001BEFAB /* pcx.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		B5C556551E2C86A2001BEFAB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B5C5565E1E2C86A2001BEFAB /* TAassetsTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		B5C556601E2C86A2001BEFAB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B5C556691E2C86A2001BEFAB /* TAassetsUITests.swift in Sources */,
+				B5E26F0B1ED9EB05006C329B /* UnitModel.swift in Sources */,
+				B5E26F031ED9EB05006C329B /* gaf.swift in Sources */,
+				B5E26F071ED9EB05006C329B /* pcx.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		B5C5565B1E2C86A2001BEFAB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = B5C556451E2C86A2001BEFAB /* TAassets */;
-			targetProxy = B5C5565A1E2C86A2001BEFAB /* PBXContainerItemProxy */;
-		};
-		B5C556661E2C86A2001BEFAB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = B5C556451E2C86A2001BEFAB /* TAassets */;
-			targetProxy = B5C556651E2C86A2001BEFAB /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		B5C556511E2C86A2001BEFAB /* Main.storyboard */ = {
@@ -483,64 +392,6 @@
 			};
 			name = Release;
 		};
-		B5C556711E2C86A2001BEFAB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = TAassetsTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = Toasty.TAassetsTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TAassets.app/Contents/MacOS/TAassets";
-			};
-			name = Debug;
-		};
-		B5C556721E2C86A2001BEFAB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = TAassetsTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = Toasty.TAassetsTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TAassets.app/Contents/MacOS/TAassets";
-			};
-			name = Release;
-		};
-		B5C556741E2C86A2001BEFAB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = TAassetsUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = Toasty.TAassetsUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
-				TEST_TARGET_NAME = TAassets;
-			};
-			name = Debug;
-		};
-		B5C556751E2C86A2001BEFAB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = TAassetsUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = Toasty.TAassetsUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
-				TEST_TARGET_NAME = TAassets;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -560,22 +411,7 @@
 				B5C5566F1E2C86A2001BEFAB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-		};
-		B5C556701E2C86A2001BEFAB /* Build configuration list for PBXNativeTarget "TAassetsTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				B5C556711E2C86A2001BEFAB /* Debug */,
-				B5C556721E2C86A2001BEFAB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-		};
-		B5C556731E2C86A2001BEFAB /* Build configuration list for PBXNativeTarget "TAassetsUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				B5C556741E2C86A2001BEFAB /* Debug */,
-				B5C556751E2C86A2001BEFAB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

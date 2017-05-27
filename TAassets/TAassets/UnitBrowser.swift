@@ -58,7 +58,7 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
     override func viewDidLoad() {
         let unitsDirectory = filesystem.root[directory: "units"] ?? Asset.Directory()
         let units = unitsDirectory.items
-            .flatMap { $0.fileAsset() }
+            .flatMap { $0.asFile() }
             .filter { $0.hasExtension("fbi") }
             .flatMap { try? filesystem.urlForFile($0, at: "units/" + $0.name) }
             .map { UnitInfo(withContentsOf: $0) }
@@ -88,7 +88,6 @@ extension UnitBrowserViewController: NSTableViewDelegate {
         let cell: UnitInfoCell
         if let existing = tableView.make(withIdentifier: "UnitInfo", owner: self) as? UnitInfoCell {
             cell = existing
-            print("Cell Reuse!")
         }
         else {
             cell = UnitInfoCell()
@@ -196,121 +195,6 @@ class UnitInfoCell: NSTableCellView {
     
 }
 
-private extension Asset {
-    
-    func fileAsset() -> Asset.File? {
-        switch self {
-        case .file(let f): return f
-        default: return nil
-        }
-    }
-    
-}
-
-private extension Asset.File {
-    
-    func hasExtension(_ ext: String) -> Bool {
-        return (name as NSString).pathExtension.caseInsensitiveCompare(ext) == .orderedSame
-    }
-    
-}
-
-struct UnitInfo {
-    var name: String = ""
-    var side: String = ""
-    var object: String = ""
-    
-    var title: String = ""
-    var description: String = ""
-    
-    var categories: Set<String> = []
-    var tedClass: String = ""
-}
-
-extension UnitInfo {
-    
-    init(withContentsOf fileUrl: URL) {
-        UnitInfo.processFbi(at: fileUrl) { field, value in
-            switch field {
-            case "UnitName":
-                name = value
-            case "Side":
-                side = value
-            case "Objectname":
-                object = value
-            case "Name":
-                title = value
-            case "Description":
-                description = value
-            case "Category":
-                categories = Set(value.components(separatedBy: " "))
-            case "TEDClass":
-                tedClass = value
-            default:
-                () // Unhandled field
-            }
-        }
-    }
-    
-    static func processFbi(at fileUrl: URL, item: (String, String) -> Void) {
-        
-        var encoding = String.Encoding.ascii
-        guard let contents = try? String(textContentsOf: fileUrl, usedEncoding: &encoding)
-            else { return }
-        
-        let scanner = Scanner(string: contents)
-        //scanner.charactersToBeSkipped = CharacterSet.whitespacesAndNewlines
-        scanner.charactersToBeSkipped = CharacterSet(charactersIn: "\r\n\t=;{}")
-        
-        scanner.scanUpTo("[UNITINFO]", into: nil)
-        scanner.scanUpTo("{", into: nil)
-        
-        while !scanner.isAtEnd {
-            var field: NSString?
-            var value: NSString?
-            scanner.scanUpTo("=", into: &field)
-            scanner.scanUpTo(";", into: &value)
-            
-            if let field = field as? String, let value = value as? String {
-                item(field, value)
-            }
-        }
-        
-    }
-    
-}
-
-extension String {
-    
-    init(textContentsOf url: URL, usedEncoding inoutEncoding: inout String.Encoding) throws {
-        do {
-            try self.init(contentsOf: url, usedEncoding: &inoutEncoding)
-        }
-        catch {
-            let cocoaError = error as NSError
-            if cocoaError.domain == NSCocoaErrorDomain && cocoaError.code == NSFileReadUnknownStringEncodingError {
-                do {
-                    try self.init(contentsOf: url, encoding: .utf8)
-                    inoutEncoding = .utf8
-                }
-                catch {
-                    do {
-                        try self.init(contentsOf: url, encoding: .ascii)
-                        inoutEncoding = .ascii
-                    }
-                    catch {
-                        throw error
-                    }
-                }
-            }
-            else {
-                throw error
-            }
-        }
-    }
-    
-}
-
 class UnitDetailViewController: NSViewController {
     
     var filesystem = TaassetsFileSystem()
@@ -320,7 +204,10 @@ class UnitDetailViewController: NSViewController {
             if let unit = unit {
                 tempView.title = unit.object
                 let modelUrl = try! filesystem.urlForFile(at: "objects3d/" + unit.object + ".3DO")
-                try! tempView.modelView.loadModel(contentsOf: modelUrl)
+                let model = try! UnitModel(contentsOf: modelUrl)
+                let scriptUrl = try! filesystem.urlForFile(at: "scripts/" + unit.object + ".COB")
+                let script = try! UnitScript(contentsOf: scriptUrl)
+                tempView.modelView.load(model, script)
             }
             else {
                 

@@ -251,6 +251,14 @@ extension NamedAsset {
 extension Asset: NamedAsset { }
 extension Asset.File: NamedAsset { }
 
+extension Asset.File {
+    
+    func hasExtension(_ ext: String) -> Bool {
+        return (name as NSString).pathExtension.caseInsensitiveCompare(ext) == .orderedSame
+    }
+    
+}
+
 extension Asset {
     
     func asDirectory() -> Asset.Directory? {

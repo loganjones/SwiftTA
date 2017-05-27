@@ -12,8 +12,11 @@ import OpenGL
 
 class Model3DOView: NSOpenGLView {
     
-    var displayList: GLuint?
-    var wireframe: GLuint?
+    var model: GLInstancePieces?
+    var displayLink: CVDisplayLink?
+    var scriptContext: UnitScript.Context?
+    var loadTime: Double = 0
+    var shouldStartMoving = false
     
     enum DrawMode: Int {
         case solid
@@ -44,8 +47,54 @@ class Model3DOView: NSOpenGLView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        CVDisplayLinkStop(displayLink!)
+    }
     
-    override func draw(_ dirtyRect: NSRect) {
+    override func prepareOpenGL() {
+        super.prepareOpenGL()
+        
+        guard let context = openGLContext
+            else { return }
+        
+        var swapInt: GLint = 1
+        context.setValues(&swapInt, for: NSOpenGLCPSwapInterval)
+        
+        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
+        CVDisplayLinkSetOutputCallback(displayLink!, Model3DOViewDisplayLinkCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
+        CVDisplayLinkStart(displayLink!)
+    }
+    
+//    override func draw(_ dirtyRect: NSRect) {
+//        drawScene()
+//        glFlush()
+//    }
+    
+    func drawFrame(_ currentTime: Double, _ deltaTime: Double) {
+        
+        if let script = scriptContext {
+            if shouldStartMoving && getTime() > loadTime + 1 {
+                script.startScript("StartMoving")
+                shouldStartMoving = false
+            }
+            script.run(for: model!.instance, on: self)
+            model?.animate(script, for: deltaTime)
+        }
+        
+        guard let context = openGLContext
+            else { return }
+        context.makeCurrentContext()
+        CGLLockContext(context.cglContextObj!)
+        
+        drawScene()
+        glFlush()
+        
+        CGLFlushDrawable(context.cglContextObj!)
+        CGLUnlockContext(context.cglContextObj!)
+    }
+    
+    func drawScene() {
+        
         reshape(viewport: convertToBacking(bounds).size)
         initScene()
         
@@ -66,27 +115,7 @@ class Model3DOView: NSOpenGLView {
         glRotatef(rotateX, 1.0, 0.0, 0.0)
         glRotatef(rotateY, 0.0, 1.0, 0.0)
         
-        switch drawMode {
-        case .solid:
-            glEnable(GLenum(GL_LIGHTING))
-            if let model = displayList { glCallList(model) }
-        case .wireframe:
-            glDisable(GLenum(GL_LIGHTING))
-            glColor3dv([0.3, 0.3, 0.3, 1])
-            if let model = wireframe { glCallList(model) }
-        case .outlined:
-            glEnable(GLenum(GL_LIGHTING))
-            glMaterialfv(GLenum(GL_FRONT), GLenum(GL_AMBIENT), [0.50, 0.40, 0.35, 1])
-            glMaterialfv(GLenum(GL_FRONT), GLenum(GL_DIFFUSE), [0.45, 0.45, 0.45, 1])
-            glEnable(GLenum(GL_POLYGON_OFFSET_FILL))
-            glPolygonOffset(1.0, 1.0)
-            if let model = displayList { glCallList(model) }
-            glDisable(GLenum(GL_POLYGON_OFFSET_FILL))
-            
-            glDisable(GLenum(GL_LIGHTING))
-            glColor3dv([0.3, 0.3, 0.3, 1])
-            if let model = wireframe { glCallList(model) }
-        }
+        if let model = model { draw(model) }
         
         if showAxes {
             glDisable(GLenum(GL_LIGHTING))
@@ -104,27 +133,64 @@ class Model3DOView: NSOpenGLView {
         }
         
         glPopMatrix()
-        glFlush()
+    }
+    
+    func draw<T: Drawable>(_ model: T) {
+        switch drawMode {
+        case .solid:
+            glEnable(GLenum(GL_LIGHTING))
+            model.drawFilled()
+        case .wireframe:
+            glDisable(GLenum(GL_LIGHTING))
+            glColor3dv([0.3, 0.3, 0.3, 1])
+            model.drawWireframe()
+        case .outlined:
+            glEnable(GLenum(GL_LIGHTING))
+            glMaterialfv(GLenum(GL_FRONT), GLenum(GL_AMBIENT), [0.50, 0.40, 0.35, 1])
+            glMaterialfv(GLenum(GL_FRONT), GLenum(GL_DIFFUSE), [0.45, 0.45, 0.45, 1])
+            glEnable(GLenum(GL_POLYGON_OFFSET_FILL))
+            glPolygonOffset(1.0, 1.0)
+            model.drawFilled()
+            glDisable(GLenum(GL_POLYGON_OFFSET_FILL))
+            
+            glDisable(GLenum(GL_LIGHTING))
+            glColor3dv([0.3, 0.3, 0.3, 1])
+            model.drawWireframe()
+        }
+    }
+    
+    func load(_ model: UnitModel, _ script: UnitScript) {
+        openGLContext?.makeCurrentContext()
+        
+        let instance = UnitModel.Instance(for: model)
+        self.model = GLInstancePieces(instance, of: model)
+        
+        let context = UnitScript.Context(script, model)
+        context.startScript("Create")
+        self.scriptContext = context
+        
+        loadTime = getTime()
+        shouldStartMoving = true
+        
+        //self.model = GLInstanceModel(instance, of: model)
+        //self.model = GLWholeModel(model)
+        setNeedsDisplay(bounds)
     }
     
     func loadModel(contentsOf modelURL: URL) throws {
-        let data = try Data(contentsOf: modelURL)
         openGLContext?.makeCurrentContext()
-        
-        let model = glGenLists(2)
-        data.withUnsafeBytes { (memory: UnsafePointer<UInt8>) -> Void in
-            glNewList(model, GLenum(GL_COMPILE))
-            ModelGL.drawFillModel(from: memory)
-            glEndList()
-            glNewList(model + 1, GLenum(GL_COMPILE))
-            ModelGL.drawWireModel(from: memory)
-            glEndList()
-        }
-        
-        displayList = model
-        wireframe = model + 1
+        let model = try UnitModel(contentsOf: modelURL)
+        let instance = UnitModel.Instance(for: model)
+        self.model = GLInstancePieces(instance, of: model)
+        //self.model = try? GLWholeModel(contentsOf: modelURL)
         setNeedsDisplay(bounds)
     }
+    
+//    func loadModel_old(contentsOf modelURL: URL) throws {
+//        openGLContext?.makeCurrentContext()
+//        self.model = try? GLRawModel(contentsOf: modelURL)
+//        setNeedsDisplay(bounds)
+//    }
     
     func initScene() {
         glLightfv(GLenum(GL_LIGHT0), GLenum(GL_POSITION), [ 5.0, 5.0, 10.0, 0.0 ])
@@ -193,56 +259,83 @@ class Model3DOView: NSOpenGLView {
     }
 }
 
+extension Model3DOView: ScriptMachine {
+    
+    func getTime() -> Double {
+        return Date.timeIntervalSinceReferenceDate
+    }
+    
+}
 
-enum ModelGL {
+// MARK:- Display Link Callback
+
+private func Model3DOViewDisplayLinkCallback(displayLink: CVDisplayLink,
+                                             now: UnsafePointer<CVTimeStamp>,
+                                             outputTime: UnsafePointer<CVTimeStamp>,
+                                             flagsIn: CVOptionFlags,
+                                             flagsOut: UnsafeMutablePointer<CVOptionFlags>,
+                                             displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
+    
+    let currentTime = Double(now.pointee.videoTime) / Double(now.pointee.videoTimeScale)
+    let deltaTime = 1.0 / (outputTime.pointee.rateScalar * Double(outputTime.pointee.videoTimeScale) / Double(outputTime.pointee.videoRefreshPeriod))
+    
+    let view = unsafeBitCast(displayLinkContext, to: Model3DOView.self)
+    view.drawFrame(currentTime, deltaTime)
+    
+    return kCVReturnSuccess
+}
+
+// MARK:- Drawables
+
+protocol Drawable {
+    func drawFilled()
+    func drawWireframe()
+}
+
+// MARK:- Draw Model (Memory)
+
+struct GLRawModel: Drawable {
+    
+    private var filledList: GLuint
+    private var wireframeList: GLuint
+    
+    init(contentsOf modelURL: URL) throws {
+        let data = try Data(contentsOf: modelURL)
+        let lists = glGenLists(2)
+        filledList = lists + 0
+        wireframeList = lists + 1
+        
+        data.withUnsafeBytes { (memory: UnsafePointer<UInt8>) -> Void in
+            
+            glNewList(filledList, GLenum(GL_COMPILE))
+            GLRawModel.drawFillModel(from: memory)
+            glEndList()
+            
+            glNewList(wireframeList, GLenum(GL_COMPILE))
+            GLRawModel.drawWireModel(from: memory)
+            glEndList()
+        }
+        
+    }
+    
+//    deinit {
+//        glDeleteLists(filledList, 2)
+//    }
+    
+    func drawFilled() {
+        glCallList(filledList)
+    }
+    
+    func drawWireframe() {
+        glCallList(wireframeList)
+    }
     
     static func drawWireModel(from memory: UnsafePointer<UInt8>) {
-        drawPiece(atOffset:0, in: memory, level: 0) { (vertices) in
-            glBegin(GLenum(GL_LINE_LOOP))
-            vertices.forEach { glVertex($0) }
-            glEnd()
-        }
+        drawPiece(atOffset:0, in: memory, level: 0, draw: ModelGL.drawWireShape)
     }
     
     static func drawFillModel(from memory: UnsafePointer<UInt8>) {
-        drawPiece(atOffset:0, in: memory, level: 0) { (vertices) in
-            
-            let glModelTriangle = { (a: Int, b: Int, c: Int) in
-                glVertex(vertices[a])
-                glVertex(vertices[b])
-                glVertex(vertices[c])
-            }
-            let glModelNormal = { (a: Int, b: Int, c: Int) in
-                let v1 = vertices[a]
-                let v2 = vertices[b]
-                let v3 = vertices[c]
-                let u = v2 - v1
-                let v = v3 - v1
-                glNormal(u × v)
-            }
-            
-            switch vertices.count {
-            case 3: // Single Triangle
-                glBegin(GLenum(GL_TRIANGLES))
-                glModelNormal(2,1,0)
-                glModelTriangle(2,1,0)
-                glEnd()
-            case 4: // Single Quad, split into two triangles
-                glBegin(GLenum(GL_TRIANGLES))
-                glModelNormal(3,1,0)
-                glModelTriangle(3,1,0)
-                glModelTriangle(3,2,1)
-                glEnd()
-            case 5: // Pentagon, split into three triangles
-                glBegin(GLenum(GL_TRIANGLES))
-                glModelNormal(2,1,0)
-                glModelTriangle(2,1,0)
-                glModelTriangle(3,2,0)
-                glModelTriangle(4,3,0)
-                glEnd()
-            default: ()
-            }
-        }
+        drawPiece(atOffset:0, in: memory, level: 0, draw: ModelGL.drawFilledPrimitive)
     }
     
     static func drawPiece(atOffset offset: Int, in memory: UnsafePointer<UInt8>, level: Int, draw: ([Vertex3]) -> Void) {
@@ -276,90 +369,301 @@ enum ModelGL {
     
 }
 
-// MARK:- Geometry
+// MARK:- Draw Model (UnitModel)
 
-let LINEAR_CONSTANT = 163840.0 / 2.5
-
-struct Vertex3 {
-    var x: Double
-    var y: Double
-    var z: Double
-}
-struct Vector3 {
-    var x: Double
-    var y: Double
-    var z: Double
-}
-
-extension Vertex3 {
-    init(_ v: TA_3DO_VERTEX) {
-        x = Double(v.x) / LINEAR_CONSTANT
-        y = Double(v.z) / LINEAR_CONSTANT
-        z = Double(v.y) / LINEAR_CONSTANT
+struct GLWholeModel: Drawable {
+    
+    private var filledList: GLuint
+    private var wireframeList: GLuint
+    
+    init(contentsOf modelURL: URL) throws {
+        let model = try UnitModel(contentsOf: modelURL)
+        self.init(model)
     }
-}
-
-extension Vertex3: CustomStringConvertible {
-    var description: String {
-        return "(\(x), \(y), \(z))"
+    
+    init(_ model: UnitModel) {
+        let lists = glGenLists(2)
+        filledList = lists + 0
+        wireframeList = lists + 1
+        
+        glNewList(filledList, GLenum(GL_COMPILE))
+        GLWholeModel.drawFillModel(from: model)
+        glEndList()
+        
+        glNewList(wireframeList, GLenum(GL_COMPILE))
+        GLWholeModel.drawWireModel(from: model)
+        glEndList()
     }
-}
-extension Vector3: CustomStringConvertible {
-    var description: String {
-        return "->(\(x), \(y), \(z))"
+    
+    func drawFilled() {
+        glCallList(filledList)
     }
-}
-
-extension TA_3DO_OBJECT {
-    var offsetFromParent: Vector3 {
-        return Vector3(
-            x: Double(xFromParent) / LINEAR_CONSTANT,
-            y: Double(zFromParent) / LINEAR_CONSTANT,
-            z: Double(yFromParent) / LINEAR_CONSTANT
-        )
+    
+    func drawWireframe() {
+        glCallList(wireframeList)
     }
+    
+    static func drawWireModel(from model: UnitModel) {
+        drawPiece(at: model.root, in: model, level: 0, draw: ModelGL.drawWireShape)
+    }
+    
+    static func drawFillModel(from model: UnitModel) {
+        drawPiece(at: model.root, in: model, level: 0, draw: ModelGL.drawFilledPrimitive)
+    }
+    
+    static func drawPiece(at pieceIndex: Int, in model: UnitModel, level: Int, draw: ([Vertex3]) -> Void) {
+        
+        let piece = model.pieces[pieceIndex]
+        
+        glPushMatrix()
+        glTranslate(piece.offset)
+        
+        for primitiveIndex in piece.primitives.reversed() {
+            guard primitiveIndex != model.groundPlate else { continue }
+            let primitive = model.primitives[primitiveIndex]
+            let indices = primitive.indices
+            draw( indices.map({ model.vertices[$0] }) )
+        }
+        
+        for childIndex in piece.children {
+            drawPiece(at: childIndex, in: model, level: level+1, draw: draw)
+        }
+        
+        glPopMatrix()
+        
+    }
+    
 }
 
-func +(lhs: Vertex3, rhs: Vector3) -> Vertex3 {
-    return Vertex3(
-        x: lhs.x + rhs.x,
-        y: lhs.y + rhs.y,
-        z: lhs.z + rhs.z
-    )
-}
-func +(lhs: Vector3, rhs: Vector3) -> Vector3 {
-    return Vector3(
-        x: lhs.x + rhs.x,
-        y: lhs.y + rhs.y,
-        z: lhs.z + rhs.z
-    )
+// MARK:- Draw Instance (UnitModel.Instance)
+
+struct GLInstanceModel: Drawable {
+    
+    private var filledList: GLuint
+    private var wireframeList: GLuint
+    
+    init(_ instance: UnitModel.Instance, of model: UnitModel) {
+        let lists = glGenLists(2)
+        filledList = lists + 0
+        wireframeList = lists + 1
+        
+        glNewList(filledList, GLenum(GL_COMPILE))
+        GLInstanceModel.drawFillModel(from: instance, of: model)
+        glEndList()
+        
+        glNewList(wireframeList, GLenum(GL_COMPILE))
+        GLInstanceModel.drawWireModel(from: instance, of: model)
+        glEndList()
+    }
+    
+    func drawFilled() {
+        glCallList(filledList)
+    }
+    
+    func drawWireframe() {
+        glCallList(wireframeList)
+    }
+    
+    static func drawWireModel(from instance: UnitModel.Instance, of model: UnitModel) {
+        drawPiece(at: model.root, instance: instance, model: model, level: 0, draw: ModelGL.drawWireShape)
+    }
+    
+    static func drawFillModel(from instance: UnitModel.Instance, of model: UnitModel) {
+        drawPiece(at: model.root, instance: instance, model: model, level: 0, draw: ModelGL.drawFilledPrimitive)
+    }
+    
+    static func drawPiece(at pieceIndex: Int, instance: UnitModel.Instance, model: UnitModel, level: Int, draw: ([Vertex3]) -> Void) {
+        
+        let state = instance.pieces[pieceIndex]
+        let piece = model.pieces[pieceIndex]
+        
+        glPushMatrix()
+        glMultMatrixd(state.transform(with: piece.offset))
+        
+        if !state.hidden {
+            for primitiveIndex in piece.primitives.reversed() {
+                guard primitiveIndex != model.groundPlate else { continue }
+                let primitive = model.primitives[primitiveIndex]
+                let indices = primitive.indices
+                draw( indices.map({ model.vertices[$0] }) )
+            }
+        }
+        
+        for childIndex in piece.children {
+            drawPiece(at: childIndex, instance: instance, model: model, level: level+1, draw: draw)
+        }
+        
+        glPopMatrix()
+        
+    }
+    
 }
 
-func -(lhs: Vertex3, rhs: Vertex3) -> Vector3 {
-    return Vector3(
-        x: lhs.x - rhs.x,
-        y: lhs.y - rhs.y,
-        z: lhs.z - rhs.z
-    )
+// MARK:- Draw Instance (UnitModel.Instance)
+
+struct GLInstancePieces: Drawable {
+    
+    private var filled: [GLuint]
+    private var wireframe: [GLuint]
+    fileprivate var model: UnitModel
+    fileprivate var instance: UnitModel.Instance
+    
+    init(_ instance: UnitModel.Instance, of model: UnitModel) {
+        let pieceCount = model.pieces.count
+        let lists = glGenLists(GLsizei(pieceCount * 2))
+        filled = Array(lists ..< (lists + GLuint(pieceCount)))
+        wireframe = Array((lists + GLuint(pieceCount)) ..< (lists + GLuint(pieceCount * 2)))
+        
+        GLInstancePieces.initPieces(filled, model: model, draw: ModelGL.drawFilledPrimitive)
+        GLInstancePieces.initPieces(wireframe, model: model, draw: ModelGL.drawWireShape)
+        
+        self.model = model
+        self.instance = instance
+    }
+    
+    func drawFilled() {
+        GLInstancePieces.drawPiece(at: model.root, instance: instance, model: model, displayLists: filled)
+    }
+    
+    func drawWireframe() {
+        GLInstancePieces.drawPiece(at: model.root, instance: instance, model: model, displayLists: wireframe)
+    }
+    
+    static func initPieces(_ displayLists: [GLuint], model: UnitModel, draw: ([Vertex3]) -> Void) {
+        for i in 0 ..< displayLists.count {
+            let displayList = displayLists[i]
+            let piece = model.pieces[i]
+            glNewList(displayList, GLenum(GL_COMPILE))
+            for primitiveIndex in piece.primitives.reversed() {
+                guard primitiveIndex != model.groundPlate else { continue }
+                let primitive = model.primitives[primitiveIndex]
+                let indices = primitive.indices
+                draw( indices.map({ model.vertices[$0] }) )
+            }
+            glEndList()
+        }
+    }
+    
+    static func drawPiece(at pieceIndex: Int, instance: UnitModel.Instance, model: UnitModel, displayLists: [GLuint]) {
+        
+        let state = instance.pieces[pieceIndex]
+        let piece = model.pieces[pieceIndex]
+        
+        glPushMatrix()
+        glMultMatrixd(state.transform(with: piece.offset))
+        
+        if !state.hidden {
+            glCallList(displayLists[pieceIndex])
+        }
+        
+        for childIndex in piece.children {
+            drawPiece(at: childIndex, instance: instance, model: model, displayLists: displayLists)
+        }
+        
+        glPopMatrix()
+        
+    }
+    
+    mutating func animate(_ script: UnitScript.Context, for deltaTime: Double) {
+        script.applyAnimations(to: &instance, for: deltaTime)
+    }
+    
 }
 
-infix operator •: MultiplicationPrecedence
-func •(lhs: Vector3, rhs: Vector3) -> Double {
-    return
-        lhs.x * rhs.x +
-            lhs.y * rhs.y +
-            lhs.z * rhs.z
+
+// MARK:- Draw Piece Vertices
+
+enum ModelGL { }
+
+extension ModelGL {
+    
+    static func drawWireShape(vertices: [Vertex3]) {
+        glBegin(GLenum(GL_LINE_LOOP))
+        vertices.forEach { glVertex($0) }
+        glEnd()
+    }
+    
+    static func drawFilledPrimitive(vertices: [Vertex3]) {
+        let glModelTriangle = { (a: Int, b: Int, c: Int) in
+            glVertex(vertices[a])
+            glVertex(vertices[b])
+            glVertex(vertices[c])
+        }
+        let glModelNormal = { (a: Int, b: Int, c: Int) in
+            let v1 = vertices[a]
+            let v2 = vertices[b]
+            let v3 = vertices[c]
+            let u = v2 - v1
+            let v = v3 - v1
+            glNormal(u × v)
+        }
+        
+        switch vertices.count {
+        case 3: // Single Triangle
+            glBegin(GLenum(GL_TRIANGLES))
+            glModelNormal(2,1,0)
+            glModelTriangle(2,1,0)
+            glEnd()
+        case 4: // Single Quad, split into two triangles
+            glBegin(GLenum(GL_TRIANGLES))
+            glModelNormal(3,1,0)
+            glModelTriangle(3,1,0)
+            glModelTriangle(3,2,1)
+            glEnd()
+        case 5: // Pentagon, split into three triangles
+            glBegin(GLenum(GL_TRIANGLES))
+            glModelNormal(2,1,0)
+            glModelTriangle(2,1,0)
+            glModelTriangle(3,2,0)
+            glModelTriangle(4,3,0)
+            glEnd()
+        case 6: // Pentagon, split into four triangles
+            glBegin(GLenum(GL_TRIANGLES))
+            glModelNormal(2,1,0)
+            glModelTriangle(2,1,0)
+            glModelTriangle(3,2,0)
+            glModelTriangle(4,3,0)
+            glModelTriangle(5,4,0)
+            glEnd()
+        default: ()
+        }
+    }
+    
 }
 
-infix operator ×: MultiplicationPrecedence
-func ×(lhs: Vector3, rhs: Vector3) -> Vector3 {
-    return Vector3(
-        x: lhs.y * rhs.z - lhs.z * rhs.y,
-        y: lhs.z * rhs.x - lhs.x * rhs.z,
-        z: lhs.x * rhs.y - lhs.y * rhs.x
-    )
+extension UnitModel.PieceState {
+    
+    func transform(with offset: Vector3) -> [Double] {
+        
+        var M: [Double] = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1]
+        
+        let rad2deg = Double.pi / 180
+        let sin = turn.map { Darwin.sin($0 * rad2deg) }
+        let cos = turn.map { Darwin.cos($0 * rad2deg) }
+        
+        M[12] = offset.x - move.x
+        M[13] = offset.y - move.z
+        M[14] = offset.z + move.y
+        
+        M[0] = cos.y * cos.z
+        M[1] = (sin.y * cos.x) + (sin.x * cos.y * sin.z)
+        M[2] = (sin.x * sin.y) - (cos.x * cos.y * sin.z)
+        
+        M[4] = -sin.y * cos.z
+        M[5] = (cos.x * cos.y) - (sin.x * sin.y * sin.z)
+        M[6] = (sin.x * cos.y) + (cos.x * sin.y * sin.z)
+        
+        M[8] = sin.z
+        M[9] = -sin.x * cos.z
+        M[10] = cos.x * cos.z
+        
+        return M
+    }
+    
 }
 
+
+// MARK:- Geometry OpenGL Functions
 
 func glVertex(_ v: Vertex3) {
     glVertex3d(v.x, v.y, v.z)
