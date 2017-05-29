@@ -29,6 +29,8 @@ struct UnitModel {
         let fileData = try Data(contentsOf: modelURL)
         let model = fileData.withUnsafeBytes { UnitModel.loadModel(from: $0) }
         
+        //UnitModel.dump(model)
+        
         pieces = model.pieces
         primitives = model.primitives
         vertices = model.vertices
@@ -39,7 +41,7 @@ struct UnitModel {
         
         var names: [String: Pieces.Index] = [:]
         for (index, piece) in pieces.enumerated() {
-            names[piece.name] = index
+            names[piece.name.lowercased()] = index
         }
         nameLookup = names
     }
@@ -64,21 +66,6 @@ struct UnitModel {
     enum Texture {
         case image(String)
         case color(Int)
-    }
-    
-    struct Instance {
-        var position: Vector3 = Vector3.zero
-        var orientation: Vector3 = Vector3.zero
-        var pieces: [PieceState]
-    }
-    
-    struct PieceState {
-        var move = Vector3.zero
-        var turn = Vector3.zero
-        var hidden = false
-        var cache = true
-        var shade = true
-        var shadow = true
     }
     
 }
@@ -162,6 +149,40 @@ private extension UnitModel {
             else { break }
         }
         return offsets
+    }
+    
+    static func dump(_ model: ModelData) {
+        model.roots.forEach { pieceIndex in
+            dumpPiece(at: pieceIndex, from: model)
+        }
+    }
+    
+    private static func dumpPiece(at pieceIndex: Int, from model: ModelData, level: Int = 0) {
+        
+        let prefix1 = String(repeating: "    ", count: level)
+        let piece = model.pieces[pieceIndex]
+        
+        print(prefix1+"Piece #\(pieceIndex): \(piece.name)")
+        let prefix2 = prefix1 + " "
+        print(prefix2+"offset: \(piece.offset)")
+        print(prefix2+"primitives: \(piece.primitives.count)")
+        piece.primitives.forEach { primitiveIndex in
+            let prefix3 = prefix2 + " "
+            let primitive = model.primitives[primitiveIndex]
+            print(prefix3+"Primitive #\(primitiveIndex)")
+            let prefix4 = prefix3 + " "
+            print(prefix4+"texture: #\(primitive.texture) -> \(model.textures[primitive.texture])")
+            print(prefix4+"vertices: \(primitive.indices.count)")
+            primitive.indices.forEach { vertexIndex in
+                let prefix5 = prefix4 + " "
+                print(prefix5+"Vertex #\(vertexIndex): \(model.vertices[vertexIndex])")
+            }
+        }
+        
+        print(prefix2+"children: \(piece.children.count)")
+        piece.children.forEach { childIndex in
+            dumpPiece(at: childIndex, from: model, level: level + 1)
+        }
     }
     
 }

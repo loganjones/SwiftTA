@@ -52,6 +52,12 @@ class HpiBrowserWindowController: NSWindowController {
         return doc
     }
     
+    lazy var mainPalette: Palette = {
+        guard let url = Bundle.main.url(forResource: "PALETTE", withExtension: "PAL")
+            else { fatalError("No Palette!") }
+        return Palette(contentsOf: url)
+    }()
+    
     override func awakeFromNib() {
         finder.register(NSNib(nibNamed: "HpiFinderRow", bundle: nil), forIdentifier: "HpiItem")
         finder.delegate = self
@@ -307,9 +313,6 @@ extension HpiBrowserWindowController: FinderViewDelegate {
         let pathString = pathDirectories.map({ $0.name }).joined(separator: "/")
         print("Selected Path: \(pathString)")
         
-        guard case .image(let image) = item
-            else { return nil }
-        
         guard let _fileURL = try? cache?.url(for: file, atHpiPath: pathString), let fileURL = _fileURL
             else { return nil }
         
@@ -323,7 +326,7 @@ extension HpiBrowserWindowController: FinderViewDelegate {
             let subview: NSView
 
                 let gaf = GafView(frame: contentView.bounds)
-                try gaf.load(image: image, from: fileURL)
+                try gaf.load(item, from: fileURL, using: mainPalette)
                 subview = gaf
 
             subview.translatesAutoresizingMaskIntoConstraints = false

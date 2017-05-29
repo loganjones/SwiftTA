@@ -16,6 +16,7 @@ class FileBrowserViewController: NSViewController, ContentViewController {
     
     var filesystem = TaassetsFileSystem()
     var finderView: FinderView!
+    var mainPalette: Palette!
     
     override func loadView() {
         let mainView = NSView()
@@ -39,6 +40,14 @@ class FileBrowserViewController: NSViewController, ContentViewController {
     
     override func viewDidLoad() {
         finderView.setRoot(directory: FileBrowserItem.Directory(asset: filesystem.root, browser: self))
+        
+        do {
+            let url = try filesystem.urlForFile(at: "Palettes/PALETTE.PAL")
+            mainPalette = Palette(contentsOf: url)
+        }
+        catch {
+            Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
+        }
     }
 }
 
@@ -158,7 +167,7 @@ extension FileBrowserViewController: FinderViewDelegate {
         return preview
     }
     
-    func preview(forGafImage image: GafImage, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+    func preview(forGafImage item: GafItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
         
         // MORE TEMP
         guard let gaf = pathDirectories.last as? FileBrowserItem.GafContents
@@ -171,7 +180,7 @@ extension FileBrowserViewController: FinderViewDelegate {
             else { return nil }
         
         let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
-        preview.title = image.name
+        preview.title = item.name
         preview.size = 13
         preview.source = gaf.asset.archiveURL.lastPathComponent
         
@@ -181,7 +190,7 @@ extension FileBrowserViewController: FinderViewDelegate {
             let subview: NSView
             
             let gaf = GafView(frame: contentView.bounds)
-            try gaf.load(image: image, from: gafUrl)
+            try gaf.load(item, from: gafUrl, using: mainPalette)
             subview = gaf
             
             subview.translatesAutoresizingMaskIntoConstraints = false
@@ -207,7 +216,7 @@ enum FileBrowserItem {
     case directory(Directory)
     case file(Asset.File)
     case gafArchive(GafArchive)
-    case gafImage(GafImage)
+    case gafImage(GafItem)
     
     struct Directory {
         var asset: Asset.Directory
@@ -240,9 +249,7 @@ extension FileBrowserItem {
     }
     
     init(gaf: GafItem) {
-        switch gaf {
-        case .image(let i): self = .gafImage(i)
-        }
+        self = .gafImage(gaf)
     }
     
 }

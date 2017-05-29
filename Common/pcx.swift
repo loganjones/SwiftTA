@@ -18,8 +18,37 @@ extension PCX_HEADER {
 }
 
 struct Size2D {
-    var width: Int = 0
-    var height: Int = 0
+    var width: Int
+    var height: Int
+}
+extension Size2D {
+    static var zero: Size2D { return Size2D(width: 0, height: 0) }
+    var area: Int { return width * height }
+}
+extension Size2D: CustomStringConvertible {
+    var description: String { return "\(width)x\(height)" }
+}
+extension Size2D {
+    init(_ tuple: (Int, Int)) {
+        width = tuple.0
+        height = tuple.1
+    }
+}
+extension Size2D {
+    static func / (size: Size2D, divisor: Int) -> Size2D {
+        return Size2D(width: size.width / divisor, height: size.height / divisor)
+    }
+    static func /= (size: inout Size2D, divisor: Int) {
+        size.width /= divisor
+        size.height /= divisor
+    }
+    static func * (size: Size2D, multiplier: Int) -> Size2D {
+        return Size2D(width: size.width * multiplier, height: size.height * multiplier)
+    }
+    static func *= (size: inout Size2D, multiplier: Int) {
+        size.width *= multiplier
+        size.height *= multiplier
+    }
 }
 
 /**

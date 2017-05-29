@@ -45,29 +45,45 @@ struct GafListing {
         
         let entryOffsets = gaf.readArray(ofType: UInt32.self, count: Int(fileHeader.numberOfEntries))
         items = entryOffsets.map { entryOffset -> GafItem in
+            
             gaf.seek(toFileOffset: entryOffset)
             let entryHeader = gaf.readValue(ofType: TA_GAF_ENTRY.self)
             let frameEntries = gaf.readArray(ofType: TA_GAF_FRAME_ENTRY.self, count: Int(entryHeader.numberOfFrames))
-            return .image(GafImage(name: entryHeader.name, frames: frameEntries))
+            
+            var maxSize = Size2D.zero
+            for frameEntry in frameEntries {
+                gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
+                let frameInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
+                let frameSize = Size2D(width: Int(frameInfo.width), height: Int(frameInfo.height))
+                maxSize.width = max(maxSize.width, frameSize.width)
+                maxSize.height = max(maxSize.height, frameSize.height)
+            }
+            
+            return GafItem(name: entryHeader.name,
+                           frames: frameEntries,
+                           size: maxSize,
+                           unknown1: entryHeader.unknown_1,
+                           unknown2: entryHeader.unknown_2)
         }
     }
     
     enum LoadError: Error {
         case failedToOpenGAF
         case badGafVersion(UInt32)
+        case badGafEntry(UInt32)
     }
 }
 
-enum GafItem {
-    case image(GafImage)
-}
-
-struct GafImage {
+struct GafItem {
     var name: String
     var frames: [TA_GAF_FRAME_ENTRY]
+    var size: Size2D
+    
+    var unknown1: UInt16
+    var unknown2: UInt32
 }
 
-extension GafImage {
+extension GafItem {
     
     private typealias ImageSize = (width: Int, height: Int)
     
@@ -154,18 +170,6 @@ extension GafImage {
         case unknownFrameCompression(UInt8)
         case unsupportedFrameCompression(GafFrameCompressionMethod)
     }
-}
-
-extension GafItem {
-    
-    /// Every GafItem has a name.
-    /// This name uniquely identifies the item in its containing GAF.
-    var name: String {
-        switch self {
-        case .image(let image): return image.name
-        }
-    }
-    
 }
 
 extension TA_GAF_ENTRY {

@@ -11,7 +11,8 @@ import Foundation
 
 class ModelTexturePack {
     
-    private let textures: [String: ModelTextureInfo]
+    typealias Gaf = UnitTextureAtlas.GafContent
+    private let textures: [String: Gaf]
     
     init(loadFrom filesystem: TaassetsFileSystem) {
         
@@ -20,42 +21,40 @@ class ModelTexturePack {
             .flatMap { $0.asFile() }
             .filter { $0.hasExtension("gaf") }
             .flatMap { try? filesystem.urlForFile($0, at: "textures/" + $0.name) }
-            .flatMap { (try? ModelTextureInfo.load(withContentsOf: $0)) ?? [] }
+            .flatMap { (try? Gaf.load(withContentsOf: $0)) ?? [] }
         
-        var textures: [String: ModelTextureInfo] = [:]
+        var textures: [String: Gaf] = [:]
         for tex in list {
-            textures[tex.name] = tex
+            textures[tex.item.name] = tex
         }
         self.textures = textures
+        
+        //let allSizes = textures.values.map { $0.item.size }.sorted(by: largestSize)
+        //print("Sizes: \(allSizes)")
     }
     
-    subscript(name: String) -> ModelTextureInfo? {
+    subscript(name: String) -> Gaf? {
         if let tex = textures[name] { return tex }
         else { return nil }
     }
     
 }
 
-struct ModelTextureInfo {
-    var gafUrl: URL
-    var image: GafImage
-}
+//private func largestSize(a: Size2D, b: Size2D) -> Bool {
+//    let areaA = a.width * a.height
+//    let areaB = b.width * b.height
+//    let perimeterA = a.width * 2 + a.height * 2
+//    let perimeterB = b.width * 2 + b.height * 2
+//    let maxA = max(a.width, a.height)
+//    let maxB = max(b.width, b.height)
+//    return areaA > areaB && perimeterA > perimeterB && maxA > maxB
+//}
 
-extension ModelTextureInfo {
-    var name: String { return image.name }
-}
+private extension ModelTexturePack.Gaf {
 
-extension ModelTextureInfo {
-
-    static func load(withContentsOf gafUrl: URL) throws -> [ModelTextureInfo] {
-        
+    static func load(withContentsOf gafUrl: URL) throws -> [ModelTexturePack.Gaf] {
         let listing = try GafListing(withContentsOf: gafUrl)
-        return listing.items.flatMap {
-            switch $0 {
-            case .image(let image):
-                return ModelTextureInfo(gafUrl: gafUrl, image: image)
-            }
-        }
+        return listing.items.map { ModelTexturePack.Gaf(url: gafUrl, item: $0) }
     }
     
 }

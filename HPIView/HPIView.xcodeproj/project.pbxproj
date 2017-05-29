@@ -33,6 +33,8 @@
 		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
 		B5E26F341ED9EECC006C329B /* PcxImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F331ED9EECC006C329B /* PcxImage.swift */; };
 		B5E26F361ED9EFE6006C329B /* CocoaUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F351ED9EFE6006C329B /* CocoaUtility.swift */; };
+		B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */; };
+		B5E26F461EE375A8006C329B /* OpenGL+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F451EE375A8006C329B /* OpenGL+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +74,8 @@
 		B5E26F311ED9EDD7006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GafView.swift; sourceTree = "<group>"; };
 		B5E26F331ED9EECC006C329B /* PcxImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PcxImage.swift; sourceTree = "<group>"; };
 		B5E26F351ED9EFE6006C329B /* CocoaUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaUtility.swift; sourceTree = "<group>"; };
+		B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
+		B5E26F451EE375A8006C329B /* OpenGL+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OpenGL+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +119,7 @@
 				B5E26F2F1ED9ECE9006C329B /* CobView.swift */,
 				B5E26F311ED9EDD7006C329B /* GafView.swift */,
 				B553EE351DDFE2270033C70D /* ModelView.swift */,
+				B5E26F451EE375A8006C329B /* OpenGL+Extensions.swift */,
 				B5E26F331ED9EECC006C329B /* PcxImage.swift */,
 				B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */,
 				B50F6A511D87A54B0016C15B /* HpiBrowserWindow.xib */,
@@ -152,6 +157,7 @@
 				B5E26F1C1ED9EB80006C329B /* UnitData.swift */,
 				B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */,
 				B5E26F1E1ED9EB80006C329B /* UnitModel.swift */,
+				B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */,
 				B5E26F1F1ED9EB80006C329B /* UnitObject.swift */,
 				B5E26F201ED9EB80006C329B /* UnitScript.swift */,
 				B5E26F211ED9EB80006C329B /* UnitScriptVM.swift */,
@@ -236,12 +242,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5E26F461EE375A8006C329B /* OpenGL+Extensions.swift in Sources */,
 				B5E26F241ED9EB80006C329B /* Geometry.swift in Sources */,
 				B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */,
 				B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */,
 				B5E26F251ED9EB80006C329B /* hpi.swift in Sources */,
 				B5E26F281ED9EB80006C329B /* UnitData.swift in Sources */,
 				B5E26F271ED9EB80006C329B /* pcx.swift in Sources */,
+				B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */,
 				B5E26F341ED9EECC006C329B /* PcxImage.swift in Sources */,
 				B5E26F2D1ED9EB80006C329B /* UnitScriptVM.swift in Sources */,
 				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,

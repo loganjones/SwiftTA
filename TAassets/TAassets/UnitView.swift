@@ -1,5 +1,5 @@
 //
-//  ModelView.swift
+//  UnitView.swift
 //  HPIView
 //
 //  Created by Logan Jones on 11/18/16.
@@ -10,17 +10,23 @@ import Cocoa
 import OpenGL
 
 
-class Model3DOView: NSOpenGLView {
+class UnitView: NSOpenGLView {
     
-    private var model: GLWholeModel?
+    private var model: GLInstancePieces?
+    private var modelTexture: GLuint = 0
+    private var displayLink: CVDisplayLink?
+    private var scriptContext: UnitScript.Context?
+    private var loadTime: Double = 0
+    private var shouldStartMoving = false
     
     enum DrawMode: Int {
         case solid
         case wireframe
         case outlined
     }
-    private var drawMode = DrawMode.outlined
-    private var lighted = true
+    private var drawMode = DrawMode.solid
+    private var textured = true
+    private var lighted = false
     
     private var trackingMouse = false
     private var rotateZ: GLfloat = 160
@@ -45,9 +51,50 @@ class Model3DOView: NSOpenGLView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func draw(_ dirtyRect: NSRect) {
+    deinit {
+        CVDisplayLinkStop(displayLink!)
+    }
+    
+    override func prepareOpenGL() {
+        super.prepareOpenGL()
+        
+        guard let context = openGLContext
+            else { return }
+        
+        var swapInt: GLint = 1
+        context.setValues(&swapInt, for: NSOpenGLCPSwapInterval)
+        
+        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
+        CVDisplayLinkSetOutputCallback(displayLink!, UnitViewDisplayLinkCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
+        CVDisplayLinkStart(displayLink!)
+    }
+    
+//    override func draw(_ dirtyRect: NSRect) {
+//        drawScene()
+//        glFlush()
+//    }
+    
+    fileprivate func drawFrame(_ currentTime: Double, _ deltaTime: Double) {
+        
+        if let script = scriptContext {
+            if shouldStartMoving && getTime() > loadTime + 1 {
+                script.startScript("StartMoving")
+                shouldStartMoving = false
+            }
+            script.run(for: model!.instance, on: self)
+            model?.animate(script, for: deltaTime)
+        }
+        
+        guard let context = openGLContext
+            else { return }
+        context.makeCurrentContext()
+        CGLLockContext(context.cglContextObj!)
+        
         drawScene()
         glFlush()
+        
+        CGLFlushDrawable(context.cglContextObj!)
+        CGLUnlockContext(context.cglContextObj!)
     }
     
     private func drawScene() {
@@ -94,8 +141,11 @@ class Model3DOView: NSOpenGLView {
     }
     
     private func draw<T: Drawable>(_ model: T) {
+        glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture)
         switch drawMode {
         case .solid:
+            if textured { glEnable(GLenum(GL_TEXTURE_2D)) }
+            else { glDisable(GLenum(GL_TEXTURE_2D)) }
             if lighted {
                 glEnable(GLenum(GL_LIGHTING))
                 glMaterialfv(GLenum(GL_FRONT), GLenum(GL_AMBIENT), [0.50, 0.40, 0.35, 1])
@@ -112,6 +162,8 @@ class Model3DOView: NSOpenGLView {
             glColor3dv([0.3, 0.3, 0.3, 1])
             model.drawWireframe()
         case .outlined:
+            if textured { glEnable(GLenum(GL_TEXTURE_2D)) }
+            else { glDisable(GLenum(GL_TEXTURE_2D)) }
             if lighted {
                 glEnable(GLenum(GL_LIGHTING))
                 glMaterialfv(GLenum(GL_FRONT), GLenum(GL_AMBIENT), [0.50, 0.40, 0.35, 1])
@@ -133,18 +185,51 @@ class Model3DOView: NSOpenGLView {
         }
     }
     
-    func loadModel(contentsOf modelURL: URL) throws {
+    func load(_ model: UnitModel, _ script: UnitScript, _ texture: UnitTextureAtlas, _ palette: Palette) throws {
         openGLContext?.makeCurrentContext()
-        let model = try UnitModel(contentsOf: modelURL)
-        self.model = GLWholeModel(model)
+        
+        let instance = UnitModel.Instance(for: model)
+        self.model = GLInstancePieces(instance, of: model, with: texture)
+        
+        let context = try UnitScript.Context(script, model)
+        context.startScript("Create")
+        self.scriptContext = context
+        
+        makeTexture(texture, palette)
+        
+        loadTime = getTime()
+        shouldStartMoving = true
+        
         setNeedsDisplay(bounds)
     }
     
-//    func loadModel_old(contentsOf modelURL: URL) throws {
-//        openGLContext?.makeCurrentContext()
-//        self.model = try? GLRawModel(contentsOf: modelURL)
-//        setNeedsDisplay(bounds)
-//    }
+    private func makeTexture(_ texture: UnitTextureAtlas, _ palette: Palette) {
+        
+        var textureId: GLuint = 0
+        glGenTextures(1, &textureId)
+        glBindTexture(GLenum(GL_TEXTURE_2D), textureId)
+        glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_MAG_FILTER), GL_NEAREST)
+        glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_MIN_FILTER), GL_NEAREST)
+        glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_WRAP_S), GL_REPEAT )
+        glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_WRAP_T), GL_REPEAT )
+        
+        let data = texture.build(using: palette)
+        data.withUnsafeBytes {
+            glTexImage2D(
+                GLenum(GL_TEXTURE_2D),
+                0,
+                GLint(GL_RGBA),
+                GLsizei(texture.size.width),
+                GLsizei(texture.size.height),
+                0,
+                GLenum(GL_RGBA),
+                GLenum(GL_UNSIGNED_BYTE),
+                $0)
+        }
+        
+        modelTexture = textureId
+        printGlErrors()
+    }
     
     private func printGlErrors() {
         var err = GL_NO_ERROR
@@ -214,6 +299,9 @@ class Model3DOView: NSOpenGLView {
             if let mode = DrawMode(rawValue: i+1) { drawMode = mode }
             else { drawMode = .solid }
             setNeedsDisplay(bounds)
+        case .some("t"):
+            textured = !textured
+            setNeedsDisplay(bounds)
         case .some("l"):
             lighted = !lighted
             setNeedsDisplay(bounds)
@@ -227,6 +315,32 @@ class Model3DOView: NSOpenGLView {
     }
 }
 
+extension UnitView: ScriptMachine {
+    
+    func getTime() -> Double {
+        return Date.timeIntervalSinceReferenceDate
+    }
+    
+}
+
+// MARK:- Display Link Callback
+
+private func UnitViewDisplayLinkCallback(displayLink: CVDisplayLink,
+                                             now: UnsafePointer<CVTimeStamp>,
+                                             outputTime: UnsafePointer<CVTimeStamp>,
+                                             flagsIn: CVOptionFlags,
+                                             flagsOut: UnsafeMutablePointer<CVOptionFlags>,
+                                             displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
+    
+    let currentTime = Double(now.pointee.videoTime) / Double(now.pointee.videoTimeScale)
+    let deltaTime = 1.0 / (outputTime.pointee.rateScalar * Double(outputTime.pointee.videoTimeScale) / Double(outputTime.pointee.videoRefreshPeriod))
+    
+    let view = unsafeBitCast(displayLinkContext, to: UnitView.self)
+    view.drawFrame(currentTime, deltaTime)
+    
+    return kCVReturnSuccess
+}
+
 // MARK:- Drawables
 
 private protocol Drawable {
@@ -234,101 +348,24 @@ private protocol Drawable {
     func drawWireframe()
 }
 
-// MARK:- Draw Model (Memory)
+// MARK:- Draw Instance (UnitModel.Instance)
 
-private struct GLRawModel: Drawable {
+private struct GLInstanceModel: Drawable {
     
     private var filledList: GLuint
     private var wireframeList: GLuint
     
-    init(contentsOf modelURL: URL) throws {
-        let data = try Data(contentsOf: modelURL)
-        let lists = glGenLists(2)
-        filledList = lists + 0
-        wireframeList = lists + 1
-        
-        data.withUnsafeBytes { (memory: UnsafePointer<UInt8>) -> Void in
-            
-            glNewList(filledList, GLenum(GL_COMPILE))
-            GLRawModel.drawFillModel(from: memory)
-            glEndList()
-            
-            glNewList(wireframeList, GLenum(GL_COMPILE))
-            GLRawModel.drawWireModel(from: memory)
-            glEndList()
-        }
-        
-    }
-    
-//    deinit {
-//        glDeleteLists(filledList, 2)
-//    }
-    
-    func drawFilled() {
-        glCallList(filledList)
-    }
-    
-    func drawWireframe() {
-        glCallList(wireframeList)
-    }
-    
-    static func drawWireModel(from memory: UnsafePointer<UInt8>) {
-        drawPiece(atOffset:0, in: memory, level: 0, draw: ModelGL.drawWireShape)
-    }
-    
-    static func drawFillModel(from memory: UnsafePointer<UInt8>) {
-        drawPiece(atOffset:0, in: memory, level: 0, draw: ModelGL.drawFilledPrimitive)
-    }
-    
-    static func drawPiece(atOffset offset: Int, in memory: UnsafePointer<UInt8>, level: Int, draw: ModelGL.DrawFunc) {
-        
-        let object = UnsafeRawPointer(memory + offset).bindMemory(to: TA_3DO_OBJECT.self, capacity: 1).pointee
-        //let name = String(cString: memory + object.offsetToObjectName)
-        
-        let vertices = UnsafeRawPointer(memory + object.offsetToVertexArray).bindMemoryBuffer(to: TA_3DO_VERTEX.self, capacity: Int(object.numberOfVertexes)).map({ Vertex3($0) })
-        
-        glPushMatrix()
-        glTranslate(object.offsetFromParent)
-        
-        let primitives = UnsafeRawPointer(memory + object.offsetToPrimitiveArray).bindMemoryBuffer(to: TA_3DO_PRIMITIVE.self, capacity: Int(object.numberOfPrimitives))
-        for (index, primitive) in primitives.enumerated().reversed() {
-            guard index != Int(object.groundPlateIndex) else { continue }
-            let indices = UnsafeRawPointer(memory + primitive.offsetToVertexIndexArray).bindMemoryBuffer(to: UInt16.self, capacity: Int(primitive.numberOfVertexIndexes))
-            draw( indices.map({ vertices[$0] }), ModelGL.ZeroTexCoords )
-        }
-        
-        if object.offsetToChildObject != 0 {
-            drawPiece(atOffset: Int(object.offsetToChildObject), in: memory, level: level+1, draw: draw)
-        }
-        
-        glPopMatrix()
-        
-        if object.offsetToSiblingObject != 0 {
-            drawPiece(atOffset: Int(object.offsetToSiblingObject), in: memory, level: level, draw: draw)
-        }
-        
-    }
-    
-}
-
-// MARK:- Draw Model (UnitModel)
-
-private struct GLWholeModel: Drawable {
-    
-    private var filledList: GLuint
-    private var wireframeList: GLuint
-    
-    init(_ model: UnitModel) {
+    init(_ instance: UnitModel.Instance, of model: UnitModel) {
         let lists = glGenLists(2)
         filledList = lists + 0
         wireframeList = lists + 1
         
         glNewList(filledList, GLenum(GL_COMPILE))
-        GLWholeModel.drawFillModel(from: model)
+        GLInstanceModel.drawFillModel(from: instance, of: model)
         glEndList()
         
         glNewList(wireframeList, GLenum(GL_COMPILE))
-        GLWholeModel.drawWireModel(from: model)
+        GLInstanceModel.drawWireModel(from: instance, of: model)
         glEndList()
     }
     
@@ -340,30 +377,33 @@ private struct GLWholeModel: Drawable {
         glCallList(wireframeList)
     }
     
-    static func drawWireModel(from model: UnitModel) {
-        drawPiece(at: model.root, in: model, level: 0, draw: ModelGL.drawWireShape)
+    static func drawWireModel(from instance: UnitModel.Instance, of model: UnitModel) {
+        drawPiece(at: model.root, instance: instance, model: model, level: 0, draw: ModelGL.drawWireShape)
     }
     
-    static func drawFillModel(from model: UnitModel) {
-        drawPiece(at: model.root, in: model, level: 0, draw: ModelGL.drawFilledPrimitive)
+    static func drawFillModel(from instance: UnitModel.Instance, of model: UnitModel) {
+        drawPiece(at: model.root, instance: instance, model: model, level: 0, draw: ModelGL.drawFilledPrimitive)
     }
     
-    static func drawPiece(at pieceIndex: Int, in model: UnitModel, level: Int, draw: ModelGL.DrawFunc) {
+    static func drawPiece(at pieceIndex: Int, instance: UnitModel.Instance, model: UnitModel, level: Int, draw: ModelGL.DrawFunc) {
         
+        let state = instance.pieces[pieceIndex]
         let piece = model.pieces[pieceIndex]
         
         glPushMatrix()
-        glTranslate(piece.offset)
+        glMultMatrixd(makeTransform(from: state, with: piece.offset))
         
-        for primitiveIndex in piece.primitives.reversed() {
-            guard primitiveIndex != model.groundPlate else { continue }
-            let primitive = model.primitives[primitiveIndex]
-            let indices = primitive.indices
-            draw( indices.map({ model.vertices[$0] }), ModelGL.ZeroTexCoords )
+        if !state.hidden {
+            for primitiveIndex in piece.primitives.reversed() {
+                guard primitiveIndex != model.groundPlate else { continue }
+                let primitive = model.primitives[primitiveIndex]
+                let indices = primitive.indices
+                draw( indices.map({ model.vertices[$0] }), ModelGL.ZeroTexCoords )
+            }
         }
         
         for childIndex in piece.children {
-            drawPiece(at: childIndex, in: model, level: level+1, draw: draw)
+            drawPiece(at: childIndex, instance: instance, model: model, level: level+1, draw: draw)
         }
         
         glPopMatrix()
@@ -371,6 +411,79 @@ private struct GLWholeModel: Drawable {
     }
     
 }
+
+// MARK:- Draw Instance (UnitModel.Instance)
+
+private struct GLInstancePieces: Drawable {
+    
+    private var filled: [GLuint]
+    private var wireframe: [GLuint]
+    fileprivate var model: UnitModel
+    fileprivate var instance: UnitModel.Instance
+    
+    init(_ instance: UnitModel.Instance, of model: UnitModel, with textures: UnitTextureAtlas? = nil) {
+        let pieceCount = model.pieces.count
+        let lists = glGenLists(GLsizei(pieceCount * 2))
+        filled = Array(lists ..< (lists + GLuint(pieceCount)))
+        wireframe = Array((lists + GLuint(pieceCount)) ..< (lists + GLuint(pieceCount * 2)))
+        
+        GLInstancePieces.initPieces(filled, model: model, textures: textures, draw: ModelGL.drawFilledPrimitive)
+        GLInstancePieces.initPieces(wireframe, model: model, textures: textures, draw: ModelGL.drawWireShape)
+        
+        self.model = model
+        self.instance = instance
+    }
+    
+    func drawFilled() {
+        GLInstancePieces.drawPiece(at: model.root, instance: instance, model: model, displayLists: filled)
+    }
+    
+    func drawWireframe() {
+        GLInstancePieces.drawPiece(at: model.root, instance: instance, model: model, displayLists: wireframe)
+    }
+    
+    static func initPieces(_ displayLists: [GLuint], model: UnitModel, textures: UnitTextureAtlas?, draw: ModelGL.DrawFunc) {
+        for i in 0 ..< displayLists.count {
+            let displayList = displayLists[i]
+            let piece = model.pieces[i]
+            glNewList(displayList, GLenum(GL_COMPILE))
+            for primitiveIndex in piece.primitives.reversed() {
+                guard primitiveIndex != model.groundPlate else { continue }
+                let primitive = model.primitives[primitiveIndex]
+                let indices = primitive.indices
+                let texCoords = textures?.textureCoordinates(for: primitive.texture) ?? ModelGL.ZeroTexCoords
+                draw( indices.map({ model.vertices[$0] }), texCoords )
+            }
+            glEndList()
+        }
+    }
+    
+    static func drawPiece(at pieceIndex: Int, instance: UnitModel.Instance, model: UnitModel, displayLists: [GLuint]) {
+        
+        let state = instance.pieces[pieceIndex]
+        let piece = model.pieces[pieceIndex]
+        
+        glPushMatrix()
+        glMultMatrixd(makeTransform(from: state, with: piece.offset))
+        
+        if !state.hidden {
+            glCallList(displayLists[pieceIndex])
+        }
+        
+        for childIndex in piece.children {
+            drawPiece(at: childIndex, instance: instance, model: model, displayLists: displayLists)
+        }
+        
+        glPopMatrix()
+        
+    }
+    
+    mutating func animate(_ script: UnitScript.Context, for deltaTime: Double) {
+        script.applyAnimations(to: &instance, for: deltaTime)
+    }
+    
+}
+
 
 // MARK:- Draw Piece Vertices
 
@@ -443,3 +556,29 @@ private extension ModelGL {
     
 }
 
+private func makeTransform(from piece: UnitModel.PieceState, with offset: Vector3) -> [Double] {
+    
+    var M: [Double] = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1]
+    
+    let rad2deg = Double.pi / 180
+    let sin = piece.turn.map { Darwin.sin($0 * rad2deg) }
+    let cos = piece.turn.map { Darwin.cos($0 * rad2deg) }
+    
+    M[12] = offset.x - piece.move.x
+    M[13] = offset.y - piece.move.z
+    M[14] = offset.z + piece.move.y
+    
+    M[0] = cos.y * cos.z
+    M[1] = (sin.y * cos.x) + (sin.x * cos.y * sin.z)
+    M[2] = (sin.x * sin.y) - (cos.x * cos.y * sin.z)
+    
+    M[4] = -sin.y * cos.z
+    M[5] = (cos.x * cos.y) - (sin.x * sin.y * sin.z)
+    M[6] = (sin.x * cos.y) + (cos.x * sin.y * sin.z)
+    
+    M[8] = sin.z
+    M[9] = -sin.x * cos.z
+    M[10] = cos.x * cos.z
+    
+    return M
+}

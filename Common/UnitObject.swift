@@ -13,15 +13,3 @@ struct UnitObject {
     var baseData: UnitData
     
 }
-
-extension UnitModel.Instance {
-    
-    init(for model: UnitModel) {
-        self.init(count: model.pieces.count)
-    }
-    
-    init(count: Int) {
-        pieces = Array(repeating: UnitModel.PieceState(), count: count)
-    }
-    
-}

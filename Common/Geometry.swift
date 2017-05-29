@@ -18,6 +18,10 @@ struct Vector3 {
     var y: Double
     var z: Double
 }
+struct Vertex2 {
+    var x: Double
+    var y: Double
+}
 struct Vector2 {
     var x: Double
     var y: Double
@@ -31,6 +35,11 @@ extension Vertex3: CustomStringConvertible {
 extension Vector3: CustomStringConvertible {
     var description: String {
         return "->(\(x), \(y), \(z))"
+    }
+}
+extension Vertex2: CustomStringConvertible {
+    var description: String {
+        return "(\(x), \(y))"
     }
 }
 extension Vector2: CustomStringConvertible {
@@ -51,6 +60,12 @@ func +(lhs: Vector3, rhs: Vector3) -> Vector3 {
         x: lhs.x + rhs.x,
         y: lhs.y + rhs.y,
         z: lhs.z + rhs.z
+    )
+}
+func +(lhs: Vertex2, rhs: Vertex2) -> Vertex2 {
+    return Vertex2(
+        x: lhs.x + rhs.x,
+        y: lhs.y + rhs.y
     )
 }
 func +(lhs: Vector2, rhs: Vector2) -> Vector2 {
@@ -90,6 +105,9 @@ extension Vertex3 {
 }
 extension Vector3 {
     static var zero: Vector3 { return Vector3(x: 0, y: 0, z: 0) }
+}
+extension Vertex2 {
+    static var zero: Vertex2 { return Vertex2(x: 0, y: 0) }
 }
 extension Vector2 {
     static var zero: Vector2 { return Vector2(x: 0, y: 0) }

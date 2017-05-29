@@ -10,15 +10,19 @@ import AppKit
 
 class GafView: NSImageView {
     
-    func load(image: GafImage, from gafURL: URL) throws {
+    func load(_ item: GafItem, from gafURL: URL, using palette: Palette) throws {
         
-        Swift.print("Loading \(image.name) from \(gafURL.lastPathComponent)")
+        Swift.print("Loading \(item.name) from \(gafURL.lastPathComponent)")
+        Swift.print("  \(item.frames.count) frames")
+        Swift.print("  \(item.size.width)x\(item.size.height)")
+        Swift.print("  item.unknown_1: \(item.unknown1) | \(item.unknown1.binaryString)")
+        Swift.print("  item.unknown_2: \(item.unknown2) | \(item.unknown2.binaryString)")
         
         guard let gaf = try? FileHandle(forReadingFrom: gafURL)
             else { throw LoadError.failedToOpenGAF }
         
         var i = 1
-        for frameEntry in image.frames {
+        for frameEntry in item.frames {
             
             gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
             let frameInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
@@ -57,16 +61,17 @@ class GafView: NSImageView {
         }
         
         self.image = nil
-        if let frameEntry = image.frames.first {
+        if let frameEntry = item.frames.first {
             
             gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
             let frameInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
             
             if frameInfo.numberOfSubFrames == 0,
-                let frameData = try? GafImage.read(frame: frameInfo, from: gaf) {
+                let frameData = try? GafItem.read(frame: frameInfo, from: gaf) {
                 self.image = NSImage(imageIndices: frameData,
                                      imageWidth: Int(frameInfo.width),
-                                     imageHeight: Int(frameInfo.height))
+                                     imageHeight: Int(frameInfo.height),
+                                     palette: palette)
             }
         }
     }
@@ -81,7 +86,7 @@ class GafView: NSImageView {
 
 extension NSImage {
     
-    convenience init(imageIndices: Data, imageWidth: Int, imageHeight: Int, palette: Palette = MainPalette) {
+    convenience init(imageIndices: Data, imageWidth: Int, imageHeight: Int, palette: Palette) {
         
         let size = (width: imageWidth, height: imageHeight)
         let cfdata = imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) -> CFData in
@@ -132,10 +137,8 @@ struct Palette {
     }
     private let entries: [Color]
     
-    init() {
-        guard let url = Bundle.main.url(forResource: "PALETTE", withExtension: "PAL")
-            else { fatalError("No Palette!") }
-        guard let data = try? Data(contentsOf: url)
+    init(contentsOf paletteURL: URL) {
+        guard let data = try? Data(contentsOf: paletteURL)
             else { fatalError("No Palette Data!") }
         entries = data.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) -> Array<Color> in
             let raw = UnsafeRawPointer(bytes)
@@ -152,5 +155,3 @@ struct Palette {
         return entries[Int(index)]
     }
 }
-
-let MainPalette = Palette()

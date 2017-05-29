@@ -34,6 +34,10 @@
 		B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F371ED9F0ED006C329B /* GafView.swift */; };
 		B5E26F3A1ED9F104006C329B /* PcxImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F391ED9F104006C329B /* PcxImage.swift */; };
 		B5E26F3C1ED9F11E006C329B /* CocoaUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F3B1ED9F11E006C329B /* CocoaUtility.swift */; };
+		B5E26F3E1EDB4A02006C329B /* UnitTextureAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F3D1EDB4A02006C329B /* UnitTextureAtlas.swift */; };
+		B5E26F401EE37211006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F3F1EE37211006C329B /* UnitModel+Instance.swift */; };
+		B5E26F441EE3745F006C329B /* UnitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F431EE3745F006C329B /* UnitView.swift */; };
+		B5E26F481EE375B5006C329B /* OpenGL+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F471EE375B5006C329B /* OpenGL+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,6 +77,10 @@
 		B5E26F371ED9F0ED006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GafView.swift; path = ../../HPIView/HPIView/GafView.swift; sourceTree = "<group>"; };
 		B5E26F391ED9F104006C329B /* PcxImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PcxImage.swift; path = ../../HPIView/HPIView/PcxImage.swift; sourceTree = "<group>"; };
 		B5E26F3B1ED9F11E006C329B /* CocoaUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CocoaUtility.swift; path = ../../HPIView/HPIView/CocoaUtility.swift; sourceTree = "<group>"; };
+		B5E26F3D1EDB4A02006C329B /* UnitTextureAtlas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTextureAtlas.swift; sourceTree = "<group>"; };
+		B5E26F3F1EE37211006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
+		B5E26F431EE3745F006C329B /* UnitView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitView.swift; sourceTree = "<group>"; };
+		B5E26F471EE375B5006C329B /* OpenGL+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "OpenGL+Extensions.swift"; path = "../../HPIView/HPIView/OpenGL+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +126,8 @@
 				B52A67461EC3F35900698DEF /* CobView.swift */,
 				B5E26F371ED9F0ED006C329B /* GafView.swift */,
 				B5C5568E1E3437EF001BEFAB /* ModelView.swift */,
+				B5E26F431EE3745F006C329B /* UnitView.swift */,
+				B5E26F471EE375B5006C329B /* OpenGL+Extensions.swift */,
 				B5E26F391ED9F104006C329B /* PcxImage.swift */,
 				B5C5567B1E2D5C75001BEFAB /* BridgingHeader.h */,
 				B5C5564F1E2C86A2001BEFAB /* Assets.xcassets */,
@@ -153,9 +163,11 @@
 				B5E26EFC1ED9EB05006C329B /* UnitData.swift */,
 				B5E26EFD1ED9EB05006C329B /* UnitInfo.swift */,
 				B5E26EFE1ED9EB05006C329B /* UnitModel.swift */,
+				B5E26F3F1EE37211006C329B /* UnitModel+Instance.swift */,
 				B5E26EFF1ED9EB05006C329B /* UnitObject.swift */,
 				B5E26F001ED9EB05006C329B /* UnitScript.swift */,
 				B5E26F011ED9EB05006C329B /* UnitScriptVM.swift */,
+				B5E26F3D1EDB4A02006C329B /* UnitTextureAtlas.swift */,
 				B5E26F021ED9EB05006C329B /* Utility.swift */,
 			);
 			name = Common;
@@ -244,10 +256,13 @@
 				B5E26F051ED9EB05006C329B /* hpi.swift in Sources */,
 				B5E26F3A1ED9F104006C329B /* PcxImage.swift in Sources */,
 				B5E26F0C1ED9EB05006C329B /* UnitObject.swift in Sources */,
+				B5E26F481EE375B5006C329B /* OpenGL+Extensions.swift in Sources */,
+				B5E26F441EE3745F006C329B /* UnitView.swift in Sources */,
 				B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */,
 				B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */,
 				B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */,
 				B5E26F091ED9EB05006C329B /* UnitData.swift in Sources */,
+				B5E26F401EE37211006C329B /* UnitModel+Instance.swift in Sources */,
 				B52A67471EC3F35900698DEF /* CobView.swift in Sources */,
 				B5C5564E1E2C86A2001BEFAB /* TaassetsDocument.swift in Sources */,
 				B5C5568F1E3437EF001BEFAB /* ModelView.swift in Sources */,
@@ -255,6 +270,7 @@
 				B5C556801E2F1262001BEFAB /* FileBrowser.swift in Sources */,
 				B5C5568D1E31B788001BEFAB /* HpiFileCache.swift in Sources */,
 				B5E26F0B1ED9EB05006C329B /* UnitModel.swift in Sources */,
+				B5E26F3E1EDB4A02006C329B /* UnitTextureAtlas.swift in Sources */,
 				B5E26F031ED9EB05006C329B /* gaf.swift in Sources */,
 				B5E26F071ED9EB05006C329B /* pcx.swift in Sources */,
 			);

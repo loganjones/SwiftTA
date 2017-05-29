@@ -13,6 +13,8 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
     
     var filesystem = TaassetsFileSystem()
     fileprivate var units: [UnitInfo] = []
+    fileprivate var mainPalette: Palette!
+    fileprivate var textures: ModelTexturePack!
     
     fileprivate var tableView: NSTableView!
     fileprivate var detailViewContainer: NSView!
@@ -63,6 +65,16 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
             .flatMap { try? filesystem.urlForFile($0, at: "units/" + $0.name) }
             .map { UnitInfo(withContentsOf: $0) }
         self.units = units
+        
+        do {
+            let paletteUrl = try filesystem.urlForFile(at: "Palettes/PALETTE.PAL")
+            mainPalette = Palette(contentsOf: paletteUrl)
+        }
+        catch {
+            Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
+        }
+        
+        textures = ModelTexturePack(loadFrom: filesystem)
     }
     
     final func buildpic(for unitName: String) -> NSImage? {
@@ -115,6 +127,8 @@ extension UnitBrowserViewController: NSTableViewDelegate {
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
             controller.filesystem = filesystem
+            controller.mainPalette = mainPalette
+            controller.textures = textures
             controller.unit = units[row]
         }
         else {
@@ -198,6 +212,8 @@ class UnitInfoCell: NSTableCellView {
 class UnitDetailViewController: NSViewController {
     
     var filesystem = TaassetsFileSystem()
+    fileprivate var mainPalette: Palette!
+    fileprivate var textures: ModelTexturePack!
     
     var unit: UnitInfo? {
         didSet {
@@ -207,12 +223,41 @@ class UnitDetailViewController: NSViewController {
                 let model = try! UnitModel(contentsOf: modelUrl)
                 let scriptUrl = try! filesystem.urlForFile(at: "scripts/" + unit.object + ".COB")
                 let script = try! UnitScript(contentsOf: scriptUrl)
-                tempView.modelView.load(model, script)
+                let atlas = UnitTextureAtlas(for: model.textures, from: textures)
+                try! tempView.modelView.load(model, script, atlas, mainPalette)
+                
+                //tempSaveAtlasToFile(atlas)
             }
             else {
                 
             }
         }
+    }
+    
+    private func tempSaveAtlasToFile(_ atlas: UnitTextureAtlas) {
+        let pixelData = atlas.build(using: mainPalette)
+        
+        let cfdata = pixelData.withUnsafeBytes { (pixels: UnsafePointer<UInt8>) -> CFData in
+            return CFDataCreate(kCFAllocatorDefault, pixels, pixelData.count)
+        }
+        let image = CGImage(width: atlas.size.width,
+                            height: atlas.size.height,
+                            bitsPerComponent: 8,
+                            bitsPerPixel: 32,
+                            bytesPerRow: atlas.size.width * 4,
+                            space: CGColorSpaceCreateDeviceRGB(),
+                            bitmapInfo: [],
+                            provider: CGDataProvider(data: cfdata)!,
+                            decode: nil,
+                            shouldInterpolate: false,
+                            intent: .defaultIntent)
+        //let image2 = NSImage(cgImage: image!, size: NSSize(width: atlas.size.width, height: atlas.size.height))
+        
+        let rep = NSBitmapImageRep(cgImage: image!)
+        rep.size = NSSize(width: atlas.size.width, height: atlas.size.height)
+        let fileData = rep.representation(using: .PNG, properties: [:])
+        let url2 = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Desktop").appendingPathComponent("test.png")
+        try? fileData?.write(to: url2, options: .atomic)
     }
     
     private var tempView: TempView { return view as! TempView }
@@ -230,7 +275,7 @@ class UnitDetailViewController: NSViewController {
         private unowned let titleLabel: NSTextField
         private unowned let sizeLabel: NSTextField
         private unowned let sourceLabel: NSTextField
-        unowned let modelView: Model3DOView
+        unowned let modelView: UnitView
         
         override init(frame frameRect: NSRect) {
             let titleLabel = NSTextField(labelWithString: "Title")
@@ -242,7 +287,7 @@ class UnitDetailViewController: NSViewController {
             let sourceLabel = NSTextField(labelWithString: "None")
             sourceLabel.font = NSFont.systemFont(ofSize: 9)
             sourceLabel.textColor = NSColor.secondaryLabelColor
-            let contentBox = Model3DOView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
+            let contentBox = UnitView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
             
             self.titleLabel = titleLabel
             self.sizeLabel = sizeLabel
