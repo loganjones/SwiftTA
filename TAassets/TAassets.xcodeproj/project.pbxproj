@@ -38,6 +38,8 @@
 		B5E26F401EE37211006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F3F1EE37211006C329B /* UnitModel+Instance.swift */; };
 		B5E26F441EE3745F006C329B /* UnitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F431EE3745F006C329B /* UnitView.swift */; };
 		B5E26F481EE375B5006C329B /* OpenGL+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F471EE375B5006C329B /* OpenGL+Extensions.swift */; };
+		B5E26F4E1EE3BFB4006C329B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4D1EE3BFB4006C329B /* MapView.swift */; };
+		B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4F1EE4813A006C329B /* MapBrowser.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,6 +83,9 @@
 		B5E26F3F1EE37211006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
 		B5E26F431EE3745F006C329B /* UnitView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitView.swift; sourceTree = "<group>"; };
 		B5E26F471EE375B5006C329B /* OpenGL+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "OpenGL+Extensions.swift"; path = "../../HPIView/HPIView/OpenGL+Extensions.swift"; sourceTree = "<group>"; };
+		B5E26F4A1EE3AF6B006C329B /* ta_TNT.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_TNT.h; sourceTree = "<group>"; };
+		B5E26F4D1EE3BFB4006C329B /* MapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MapView.swift; path = ../../HPIView/HPIView/MapView.swift; sourceTree = "<group>"; };
+		B5E26F4F1EE4813A006C329B /* MapBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapBrowser.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,9 +127,11 @@
 				B5C5564D1E2C86A2001BEFAB /* TaassetsDocument.swift */,
 				B5C556901E353FC1001BEFAB /* UnitBrowser.swift */,
 				B5C5567F1E2F1262001BEFAB /* FileBrowser.swift */,
+				B5E26F4F1EE4813A006C329B /* MapBrowser.swift */,
 				B5C556811E2F1747001BEFAB /* FinderView.swift */,
 				B52A67461EC3F35900698DEF /* CobView.swift */,
 				B5E26F371ED9F0ED006C329B /* GafView.swift */,
+				B5E26F4D1EE3BFB4006C329B /* MapView.swift */,
 				B5C5568E1E3437EF001BEFAB /* ModelView.swift */,
 				B5E26F431EE3745F006C329B /* UnitView.swift */,
 				B5E26F471EE375B5006C329B /* OpenGL+Extensions.swift */,
@@ -160,6 +167,7 @@
 				B5E26EF81ED9EB05006C329B /* ta_COB_Instructions.h */,
 				B5E26EF91ED9EB05006C329B /* ta_GAF.h */,
 				B5E26EFA1ED9EB05006C329B /* ta_HPI.h */,
+				B5E26F4A1EE3AF6B006C329B /* ta_TNT.h */,
 				B5E26EFC1ED9EB05006C329B /* UnitData.swift */,
 				B5E26EFD1ED9EB05006C329B /* UnitInfo.swift */,
 				B5E26EFE1ED9EB05006C329B /* UnitModel.swift */,
@@ -265,8 +273,10 @@
 				B5E26F401EE37211006C329B /* UnitModel+Instance.swift in Sources */,
 				B52A67471EC3F35900698DEF /* CobView.swift in Sources */,
 				B5C5564E1E2C86A2001BEFAB /* TaassetsDocument.swift in Sources */,
+				B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */,
 				B5C5568F1E3437EF001BEFAB /* ModelView.swift in Sources */,
 				B5C556821E2F1747001BEFAB /* FinderView.swift in Sources */,
+				B5E26F4E1EE3BFB4006C329B /* MapView.swift in Sources */,
 				B5C556801E2F1262001BEFAB /* FileBrowser.swift in Sources */,
 				B5C5568D1E31B788001BEFAB /* HpiFileCache.swift in Sources */,
 				B5E26F0B1ED9EB05006C329B /* UnitModel.swift in Sources */,

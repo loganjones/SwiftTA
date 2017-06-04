@@ -148,6 +148,11 @@ extension FileBrowserViewController: FinderViewDelegate {
             try! view.load(contentsOf: fileURL)
             subview = view
         }
+        else if fileExtension.caseInsensitiveCompare("tnt") == .orderedSame {
+            let view = MapView(frame: contentView.bounds)
+            try! view.load(contentsOf: fileURL, using: mainPalette)
+            subview = view
+        }
         else {
             let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
             qlv.previewItem = fileURL as NSURL

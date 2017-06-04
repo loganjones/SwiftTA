@@ -270,6 +270,23 @@
 				</array>
 			</dict>
 		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Total Annihilation Map</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.cavedog.ota</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ota</string>
+				</array>
+			</dict>
+		</dict>
 	</array>
 </dict>
 </plist>

@@ -413,7 +413,7 @@ class TaassetsViewController: NSViewController {
         case weaponsButton:
             showSelectedContent(controller: EmptyContentViewController())
         case mapsButton:
-            showSelectedContent(controller: EmptyContentViewController())
+            showSelectedContent(controller: MapBrowserViewController())
         case filesButton:
             showSelectedContent(controller: FileBrowserViewController())
         default:

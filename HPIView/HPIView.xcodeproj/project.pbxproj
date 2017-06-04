@@ -35,6 +35,7 @@
 		B5E26F361ED9EFE6006C329B /* CocoaUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F351ED9EFE6006C329B /* CocoaUtility.swift */; };
 		B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */; };
 		B5E26F461EE375A8006C329B /* OpenGL+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F451EE375A8006C329B /* OpenGL+Extensions.swift */; };
+		B5E26F4C1EE3B213006C329B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4B1EE3B213006C329B /* MapView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +77,8 @@
 		B5E26F351ED9EFE6006C329B /* CocoaUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaUtility.swift; sourceTree = "<group>"; };
 		B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
 		B5E26F451EE375A8006C329B /* OpenGL+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OpenGL+Extensions.swift"; sourceTree = "<group>"; };
+		B5E26F491EE3AF5F006C329B /* ta_TNT.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_TNT.h; sourceTree = "<group>"; };
+		B5E26F4B1EE3B213006C329B /* MapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +121,7 @@
 				B553EE371DE004AB0033C70D /* FinderView.swift */,
 				B5E26F2F1ED9ECE9006C329B /* CobView.swift */,
 				B5E26F311ED9EDD7006C329B /* GafView.swift */,
+				B5E26F4B1EE3B213006C329B /* MapView.swift */,
 				B553EE351DDFE2270033C70D /* ModelView.swift */,
 				B5E26F451EE375A8006C329B /* OpenGL+Extensions.swift */,
 				B5E26F331ED9EECC006C329B /* PcxImage.swift */,
@@ -154,6 +158,7 @@
 				B5E26F191ED9EB80006C329B /* ta_COB_Instructions.h */,
 				B5E26F1A1ED9EB80006C329B /* ta_GAF.h */,
 				B5E26F1B1ED9EB80006C329B /* ta_HPI.h */,
+				B5E26F491EE3AF5F006C329B /* ta_TNT.h */,
 				B5E26F1C1ED9EB80006C329B /* UnitData.swift */,
 				B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */,
 				B5E26F1E1ED9EB80006C329B /* UnitModel.swift */,
@@ -251,6 +256,7 @@
 				B5E26F271ED9EB80006C329B /* pcx.swift in Sources */,
 				B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */,
 				B5E26F341ED9EECC006C329B /* PcxImage.swift in Sources */,
+				B5E26F4C1EE3B213006C329B /* MapView.swift in Sources */,
 				B5E26F2D1ED9EB80006C329B /* UnitScriptVM.swift in Sources */,
 				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,
 				B5E26F291ED9EB80006C329B /* UnitInfo.swift in Sources */,
