@@ -10,12 +10,10 @@ import AppKit
 
 class MapView: NSImageView {
     
-    func load(contentsOf tntURL: URL, using palette: Palette) throws {
-        
-        guard let tntFile = try? FileHandle(forReadingFrom: tntURL)
-            else { throw Error.failedToOpenTnt }
-        
-        let header = tntFile.readValue(ofType: TA_TNT_HEADER.self)
+    func load<File>(contentsOf tntFile: File, using palette: Palette) throws
+        where File: FileReadHandle
+    {
+        let header = try tntFile.readValue(ofType: TA_TNT_HEADER.self)
         let size = Size2D(width: Int(header.width), height: Int(header.height))
         
         guard let tntType = TntFormat.TntVersion(rawValue: header.version)
@@ -28,15 +26,16 @@ class MapView: NSImageView {
         
     }
     
-    private func loadTa(_ tntFile: FileHandle, mapSize: Size2D, using palette: Palette) throws {
-        
-        let header = tntFile.readValue(ofType: TA_TNT_EXT_HEADER.self)
+    private func loadTa<File>(_ tntFile: File, mapSize: Size2D, using palette: Palette) throws
+        where File: FileReadHandle
+    {
+        let header = try tntFile.readValue(ofType: TA_TNT_EXT_HEADER.self)
         
         tntFile.seek(toFileOffset: header.offsetToMiniMap)
         
-        let minimapWidth = Int( tntFile.readValue(ofType: UInt32.self) )
-        let minimapHeight = Int( tntFile.readValue(ofType: UInt32.self) )
-        let data = tntFile.readData(ofLength: minimapWidth * minimapHeight)
+        let minimapWidth = Int( try tntFile.readValue(ofType: UInt32.self) )
+        let minimapHeight = Int( try tntFile.readValue(ofType: UInt32.self) )
+        let data = try tntFile.readData(verifyingLength: minimapWidth * minimapHeight)
         
         self.image = NSImage(imageIndices: data,
                              imageWidth: minimapWidth,
@@ -44,15 +43,16 @@ class MapView: NSImageView {
                              palette: palette)
     }
     
-    private func loadTak(_ tntFile: FileHandle, mapSize: Size2D, using palette: Palette) throws {
-        
-        let header = tntFile.readValue(ofType: TAK_TNT_EXT_HEADER.self)
+    private func loadTak<File>(_ tntFile: File, mapSize: Size2D, using palette: Palette) throws
+        where File: FileReadHandle
+    {
+        let header = try tntFile.readValue(ofType: TAK_TNT_EXT_HEADER.self)
         
         tntFile.seek(toFileOffset: header.offsetToLargeMiniMap)
         
-        let minimapWidth = Int( tntFile.readValue(ofType: UInt32.self) )
-        let minimapHeight = Int( tntFile.readValue(ofType: UInt32.self) )
-        let data = tntFile.readData(ofLength: minimapWidth * minimapHeight)
+        let minimapWidth = Int( try tntFile.readValue(ofType: UInt32.self) )
+        let minimapHeight = Int( try tntFile.readValue(ofType: UInt32.self) )
+        let data = try tntFile.readData(verifyingLength: minimapWidth * minimapHeight)
         
         self.image = NSImage(imageIndices: data,
                              imageWidth: minimapWidth,

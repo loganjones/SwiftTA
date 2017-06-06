@@ -10,9 +10,9 @@ import Cocoa
 
 class MapBrowserViewController: NSViewController, ContentViewController {
     
-    var filesystem = TaassetsFileSystem()
-    fileprivate var maps: [URL] = []
-    fileprivate var mainPalette: Palette!
+    var filesystem = FileSystem()
+    fileprivate var maps: [FileSystem.File] = []
+    fileprivate var mainPalette = Palette()
     
     fileprivate var tableView: NSTableView!
     fileprivate var detailViewContainer: NSView!
@@ -54,17 +54,15 @@ class MapBrowserViewController: NSViewController, ContentViewController {
     }
     
     override func viewDidLoad() {
-        let mapsDirectory = filesystem.root[directory: "maps"] ?? Asset.Directory()
+        let mapsDirectory = filesystem.root[directory: "maps"] ?? FileSystem.Directory()
         let maps = mapsDirectory.items
             .flatMap { $0.asFile() }
             .filter { $0.hasExtension("ota") }
-            .flatMap { try? filesystem.urlForFile($0, at: "maps/" + $0.name) }
-            //.map { $0.absoluteString }
         self.maps = maps
         
         do {
-            let paletteUrl = try filesystem.urlForFile(at: "Palettes/PALETTE.PAL")
-            mainPalette = Palette(contentsOf: paletteUrl)
+            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
+            mainPalette = Palette(contentsOf: file)
         }
         catch {
             Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
@@ -95,7 +93,7 @@ extension MapBrowserViewController: NSTableViewDelegate {
         }
         
         let map = maps[row]
-        cell.name = (map.lastPathComponent as NSString).deletingPathExtension
+        cell.name = (map.name as NSString).deletingPathExtension
         return cell
     }
     
@@ -154,17 +152,17 @@ class MapInfoCell: NSTableCellView {
 
 class MapDetailViewController: NSViewController {
     
-    var filesystem = TaassetsFileSystem()
+    var filesystem: FileSystem!
     fileprivate var mainPalette: Palette!
     
-    var map: URL? {
+    var map: FileSystem.File? {
         didSet {
             if let map = map {
-                let mapName = (map.lastPathComponent as NSString).deletingPathExtension
+                let mapName = (map.name as NSString).deletingPathExtension
                 tempView.title = mapName
                 
-                let tntUrl = try! filesystem.urlForFile(at: "maps/" + mapName + ".tnt")
-                try! tempView.mapView.load(contentsOf: tntUrl, using: mainPalette)
+                let file = try! filesystem.openFile(at: "maps/" + mapName + ".tnt")
+                try! tempView.mapView.load(contentsOf: file, using: mainPalette)
             }
             else {
                 

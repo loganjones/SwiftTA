@@ -62,7 +62,7 @@ class UnitView: NSOpenGLView {
             else { return }
         
         var swapInt: GLint = 1
-        context.setValues(&swapInt, for: NSOpenGLCPSwapInterval)
+        context.setValues(&swapInt, for: .swapInterval)
         
         CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
         CVDisplayLinkSetOutputCallback(displayLink!, UnitViewDisplayLinkCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
@@ -185,7 +185,11 @@ class UnitView: NSOpenGLView {
         }
     }
     
-    func load(_ model: UnitModel, _ script: UnitScript, _ texture: UnitTextureAtlas, _ palette: Palette) throws {
+    func load(_ model: UnitModel,
+              _ script: UnitScript,
+              _ texture: UnitTextureAtlas,
+              _ filesystem: FileSystem,
+              _ palette: Palette) throws {
         openGLContext?.makeCurrentContext()
         
         let instance = UnitModel.Instance(for: model)
@@ -195,7 +199,7 @@ class UnitView: NSOpenGLView {
         context.startScript("Create")
         self.scriptContext = context
         
-        makeTexture(texture, palette)
+        makeTexture(texture, filesystem, palette)
         
         loadTime = getTime()
         shouldStartMoving = true
@@ -203,7 +207,7 @@ class UnitView: NSOpenGLView {
         setNeedsDisplay(bounds)
     }
     
-    private func makeTexture(_ texture: UnitTextureAtlas, _ palette: Palette) {
+    private func makeTexture(_ texture: UnitTextureAtlas, _ filesystem: FileSystem, _ palette: Palette) {
         
         var textureId: GLuint = 0
         glGenTextures(1, &textureId)
@@ -213,7 +217,7 @@ class UnitView: NSOpenGLView {
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_WRAP_S), GL_REPEAT )
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_WRAP_T), GL_REPEAT )
         
-        let data = texture.build(using: palette)
+        let data = texture.build(from: filesystem, using: palette)
         data.withUnsafeBytes {
             glTexImage2D(
                 GLenum(GL_TEXTURE_2D),

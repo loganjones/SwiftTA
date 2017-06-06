@@ -18,8 +18,10 @@ struct UnitScript {
     var numberOfStaticVariables: Int
     var pieces: [String]
     
-    init(contentsOf fileURL: URL) throws {
-        let fileData = try Data(contentsOf: fileURL)
+    init<File>(contentsOf file: File) throws
+        where File: FileReadHandle
+    {
+        let fileData = file.readDataToEndOfFile()
         let script = fileData.withUnsafeBytes { UnitScript.loadScript(from: $0) }
         
         code = script.code

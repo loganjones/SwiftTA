@@ -13,6 +13,8 @@
 		B50F6A531D87A54B0016C15B /* HpiBrowserWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A511D87A54B0016C15B /* HpiBrowserWindow.xib */; };
 		B50F6A551D87A54B0016C15B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A541D87A54B0016C15B /* Assets.xcassets */; };
 		B50F6A581D87A54B0016C15B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A561D87A54B0016C15B /* MainMenu.xib */; };
+		B51FF36E1EEC6711009B509A /* Filesystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF36D1EEC66F4009B509A /* Filesystem.swift */; };
+		B51FF3701EEC966E009B509A /* FileReadHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF36F1EEC966E009B509A /* FileReadHandle.swift */; };
 		B553EE361DDFE2270033C70D /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE351DDFE2270033C70D /* ModelView.swift */; };
 		B553EE381DE004AB0033C70D /* FinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE371DE004AB0033C70D /* FinderView.swift */; };
 		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
@@ -46,6 +48,8 @@
 		B50F6A541D87A54B0016C15B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B50F6A571D87A54B0016C15B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		B50F6A591D87A54B0016C15B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B51FF36D1EEC66F4009B509A /* Filesystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filesystem.swift; sourceTree = "<group>"; };
+		B51FF36F1EEC966E009B509A /* FileReadHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
 		B553EE351DDFE2270033C70D /* ModelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelView.swift; sourceTree = "<group>"; };
 		B553EE371DE004AB0033C70D /* FinderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FinderView.swift; sourceTree = "<group>"; };
 		B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
@@ -147,6 +151,8 @@
 		B5E26F101ED9EB80006C329B /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				B51FF36F1EEC966E009B509A /* FileReadHandle.swift */,
+				B51FF36D1EEC66F4009B509A /* Filesystem.swift */,
 				B5E26F111ED9EB80006C329B /* gaf.swift */,
 				B5E26F121ED9EB80006C329B /* Geometry.swift */,
 				B5E26F131ED9EB80006C329B /* hpi.swift */,
@@ -247,6 +253,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B51FF3701EEC966E009B509A /* FileReadHandle.swift in Sources */,
+				B51FF36E1EEC6711009B509A /* Filesystem.swift in Sources */,
 				B5E26F461EE375A8006C329B /* OpenGL+Extensions.swift in Sources */,
 				B5E26F241ED9EB80006C329B /* Geometry.swift in Sources */,
 				B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */,

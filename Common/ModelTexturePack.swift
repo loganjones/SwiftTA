@@ -14,14 +14,14 @@ class ModelTexturePack {
     typealias Gaf = UnitTextureAtlas.GafContent
     private let textures: [String: Gaf]
     
-    init(loadFrom filesystem: TaassetsFileSystem) {
+    init(loadFrom filesystem: FileSystem) {
         
-        let texDirectectory = filesystem.root[directory: "textures"] ?? Asset.Directory()
+        let texDirectectory = filesystem.root[directory: "textures"] ?? FileSystem.Directory()
         let list = texDirectectory.items
             .flatMap { $0.asFile() }
             .filter { $0.hasExtension("gaf") }
-            .flatMap { try? filesystem.urlForFile($0, at: "textures/" + $0.name) }
-            .flatMap { (try? Gaf.load(withContentsOf: $0)) ?? [] }
+            .flatMap { try? filesystem.openFile($0) }
+            .flatMap { (try? Gaf.load(contentsOf: $0)) ?? [] }
         
         var textures: [String: Gaf] = [:]
         for tex in list {
@@ -32,6 +32,9 @@ class ModelTexturePack {
         //let allSizes = textures.values.map { $0.item.size }.sorted(by: largestSize)
         //print("Sizes: \(allSizes)")
     }
+    
+    /// Empty texture set; no textures; nada.
+    init() { textures = [:] }
     
     subscript(name: String) -> Gaf? {
         if let tex = textures[name] { return tex }
@@ -52,9 +55,9 @@ class ModelTexturePack {
 
 private extension ModelTexturePack.Gaf {
 
-    static func load(withContentsOf gafUrl: URL) throws -> [ModelTexturePack.Gaf] {
-        let listing = try GafListing(withContentsOf: gafUrl)
-        return listing.items.map { ModelTexturePack.Gaf(url: gafUrl, item: $0) }
+    static func load(contentsOf file: FileSystem.FileHandle) throws -> [ModelTexturePack.Gaf] {
+        let listing = try GafListing(withContentsOf: file)
+        return listing.items.map { ModelTexturePack.Gaf(file: file.file, item: $0) }
     }
     
 }

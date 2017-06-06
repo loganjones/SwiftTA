@@ -10,22 +10,21 @@ import AppKit
 
 class GafView: NSImageView {
     
-    func load(_ item: GafItem, from gafURL: URL, using palette: Palette) throws {
+    func load<File>(_ item: GafItem, from gaf: File, using palette: Palette) throws
+        where File: FileReadHandle
+    {
         
-        Swift.print("Loading \(item.name) from \(gafURL.lastPathComponent)")
+        Swift.print("Loading \(item.name) from \(gaf.fileName)")
         Swift.print("  \(item.frames.count) frames")
         Swift.print("  \(item.size.width)x\(item.size.height)")
         Swift.print("  item.unknown_1: \(item.unknown1) | \(item.unknown1.binaryString)")
         Swift.print("  item.unknown_2: \(item.unknown2) | \(item.unknown2.binaryString)")
         
-        guard let gaf = try? FileHandle(forReadingFrom: gafURL)
-            else { throw LoadError.failedToOpenGAF }
-        
         var i = 1
         for frameEntry in item.frames {
             
             gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
-            let frameInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
+            let frameInfo = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
             
             let compression = GafFrameCompressionMethod(rawValue: frameInfo.compressionMethod) ?? .uncompressed
             
@@ -40,12 +39,12 @@ class GafView: NSImageView {
             
             if frameInfo.numberOfSubFrames > 0 {
                 gaf.seek(toFileOffset: frameInfo.offsetToFrameData)
-                let subframeOffsets = gaf.readArray(ofType: UInt32.self, count: Int(frameInfo.numberOfSubFrames))
+                let subframeOffsets = try gaf.readArray(ofType: UInt32.self, count: Int(frameInfo.numberOfSubFrames))
                 
                 var j = 1
                 for offset in subframeOffsets {
                     gaf.seek(toFileOffset: offset)
-                    let subframeInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
+                    let subframeInfo = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
                     Swift.print("    subframe \(j):")
                     Swift.print("      \(subframeInfo.width)x\(subframeInfo.height)")
                     Swift.print("      compression: \(compression)")
@@ -64,7 +63,7 @@ class GafView: NSImageView {
         if let frameEntry = item.frames.first {
             
             gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
-            let frameInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
+            let frameInfo = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
             
             if frameInfo.numberOfSubFrames == 0,
                 let frameData = try? GafItem.read(frame: frameInfo, from: gaf) {
@@ -137,9 +136,17 @@ struct Palette {
     }
     private let entries: [Color]
     
-    init(contentsOf paletteURL: URL) {
-        guard let data = try? Data(contentsOf: paletteURL)
-            else { fatalError("No Palette Data!") }
+    init(contentsOf url: URL) throws {
+        let data = try Data(contentsOf: url)
+        self.init(data)
+    }
+    
+    init(contentsOf file: FileSystem.FileHandle) {
+        let data = file.readDataToEndOfFile()
+        self.init(data)
+    }
+    
+    init(_ data: Data) {
         entries = data.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) -> Array<Color> in
             let raw = UnsafeRawPointer(bytes)
             let p = raw.bindMemory(to: Color.self, capacity: 256)
@@ -148,10 +155,17 @@ struct Palette {
         }
     }
     
+    init() { entries = Array(repeating: Color.white, count: 255) }
+    
     subscript(index: Int) -> Color {
         return entries[index]
     }
     subscript(index: UInt8) -> Color {
         return entries[Int(index)]
     }
+}
+
+extension Palette.Color {
+    static let white = Palette.Color(red: UInt8.max, green: UInt8.max, blue: UInt8.max, alpha: UInt8.max)
+    static let black = Palette.Color(red: UInt8.min, green: UInt8.min, blue: UInt8.min, alpha: UInt8.max)
 }

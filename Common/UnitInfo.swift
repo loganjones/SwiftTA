@@ -22,8 +22,8 @@ struct UnitInfo {
 
 extension UnitInfo {
     
-    init(withContentsOf fileUrl: URL) {
-        UnitInfo.processFbi(at: fileUrl) { field, value in
+    init(contentsOf file: FileSystem.FileHandle) {
+        UnitInfo.processFbi(file) { field, value in
             switch field {
             case "UnitName":
                 name = value
@@ -45,10 +45,11 @@ extension UnitInfo {
         }
     }
     
-    static func processFbi(at fileUrl: URL, item: (String, String) -> Void) {
+    static func processFbi(_ file: FileSystem.FileHandle, item: (String, String) -> Void) {
         
-        var encoding = String.Encoding.ascii
-        guard let contents = try? String(textContentsOf: fileUrl, usedEncoding: &encoding)
+        let data = file.readDataToEndOfFile()
+        
+        guard let contents = String(data: data, encoding: .ascii) ?? String(data: data, encoding: .utf8)
             else { return }
         
         let scanner = Scanner(string: contents)
