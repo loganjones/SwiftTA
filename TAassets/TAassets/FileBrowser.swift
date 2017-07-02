@@ -7,10 +7,6 @@
 //
 
 import Cocoa
-import Quartz
-import QuickLook
-import CoreGraphics
-
 
 class FileBrowserViewController: NSViewController, ContentViewController {
     
@@ -141,11 +137,9 @@ extension FileBrowserViewController: FinderViewDelegate {
                 subview = view
             }
             else {
-                //let data = fileHandle.readDataToEndOfFile()
-                let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
-                qlv.previewItem = nil//fileHandle as NSURL
-                qlv.refreshPreviewItem()
-                subview = qlv
+                let view = QuickLookView(frame: contentView.bounds)
+                try view.load(contentsOf: fileHandle)
+                subview = view
             }
             
             subview.translatesAutoresizingMaskIntoConstraints = false

@@ -19,6 +19,7 @@
 		B5C556841E3058A9001BEFAB /* HpiFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5C556831E3058A9001BEFAB /* HpiFinderRow.xib */; };
 		B5C5568F1E3437EF001BEFAB /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5568E1E3437EF001BEFAB /* ModelView.swift */; };
 		B5C556911E353FC1001BEFAB /* UnitBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556901E353FC1001BEFAB /* UnitBrowser.swift */; };
+		B5D432FA1F0995CC005B468E /* QuickLookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D432F91F0995CC005B468E /* QuickLookView.swift */; };
 		B5E26F031ED9EB05006C329B /* gaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EF01ED9EB05006C329B /* gaf.swift */; };
 		B5E26F041ED9EB05006C329B /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EF11ED9EB05006C329B /* Geometry.swift */; };
 		B5E26F051ED9EB05006C329B /* hpi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EF21ED9EB05006C329B /* hpi.swift */; };
@@ -59,6 +60,7 @@
 		B5C556831E3058A9001BEFAB /* HpiFinderRow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = HpiFinderRow.xib; path = ../../HPIView/HPIView/HpiFinderRow.xib; sourceTree = "<group>"; };
 		B5C5568E1E3437EF001BEFAB /* ModelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ModelView.swift; path = ../../HPIView/HPIView/ModelView.swift; sourceTree = "<group>"; };
 		B5C556901E353FC1001BEFAB /* UnitBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitBrowser.swift; sourceTree = "<group>"; };
+		B5D432F91F0995CC005B468E /* QuickLookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookView.swift; sourceTree = "<group>"; };
 		B5E26EF01ED9EB05006C329B /* gaf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = gaf.swift; sourceTree = "<group>"; };
 		B5E26EF11ED9EB05006C329B /* Geometry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
 		B5E26EF21ED9EB05006C329B /* hpi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = hpi.swift; sourceTree = "<group>"; };
@@ -130,6 +132,7 @@
 				B5C5567F1E2F1262001BEFAB /* FileBrowser.swift */,
 				B5E26F4F1EE4813A006C329B /* MapBrowser.swift */,
 				B5C556811E2F1747001BEFAB /* FinderView.swift */,
+				B5D432F91F0995CC005B468E /* QuickLookView.swift */,
 				B52A67461EC3F35900698DEF /* CobView.swift */,
 				B5E26F371ED9F0ED006C329B /* GafView.swift */,
 				B5E26F4D1EE3BFB4006C329B /* MapView.swift */,
@@ -269,6 +272,7 @@
 				B5E26F0C1ED9EB05006C329B /* UnitObject.swift in Sources */,
 				B5E26F481EE375B5006C329B /* OpenGL+Extensions.swift in Sources */,
 				B5E26F441EE3745F006C329B /* UnitView.swift in Sources */,
+				B5D432FA1F0995CC005B468E /* QuickLookView.swift in Sources */,
 				B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */,
 				B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */,
 				B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */,
