@@ -18,14 +18,14 @@ extension NSImage {
      - note: This loaer does *not* support to full breadth of the PCX format.
      Only 24-bit images with a VGA palette are supported.
      */
-    convenience init(pcxContentsOf pcxURL: URL) throws {
-        
+    convenience init<File>(pcxContentsOf pcxFile: File) throws
+        where File: FileReadHandle
+    {
         // Read in the PCX header and check that the `identifer` is what we expect.
         // This is the full extenet to doing any compatibility checks;
         // from here on, we assume this is a standard TA PCX file.
         // (ie. 8-bit per pixel, VGA palette at end of file, etc)
-        let pcxFile = try FileHandle(forReadingFrom: pcxURL)
-        let header = pcxFile.readValue(ofType: PCX_HEADER.self)
+        let header = try pcxFile.readValue(ofType: PCX_HEADER.self)
         guard header.identifier == PCX_IDENTIFIER else { throw PcxError.badIdentifier(header.identifier) }
         
         // Sanity checks

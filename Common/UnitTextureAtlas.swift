@@ -25,7 +25,7 @@ class UnitTextureAtlas {
     }
     
     struct GafContent {
-        var url: URL
+        var file: FileSystem.File
         var item: GafItem
     }
     
@@ -34,14 +34,14 @@ class UnitTextureAtlas {
         (size, textures) = UnitTextureAtlas.pack(content)
     }
     
-    func build(using palette: Palette) -> Data {
+    func build(from filesystem: FileSystem, using palette: Palette) -> Data {
         
         let bytesPerPixel = 4
         let byteCount = size.area * bytesPerPixel
         let bytes = UnsafeMutablePointer<UInt8>.allocate(capacity: byteCount)
         
         textures.forEach {
-            UnitTextureAtlas.copy(texture: $0, to: bytes, of: size, using: palette)
+            UnitTextureAtlas.copy(texture: $0, to: bytes, of: size, filesystem: filesystem, palette: palette)
         }
         
         let raw = UnsafeMutableRawPointer(bytes)
@@ -73,7 +73,11 @@ class UnitTextureAtlas {
 
 private extension UnitTextureAtlas {
     
-    class func copy(texture: Texture, to bytes: UnsafeMutablePointer<UInt8>, of size: Size2D, using palette: Palette) {
+    class func copy(texture: Texture,
+                    to bytes: UnsafeMutablePointer<UInt8>,
+                    of size: Size2D,
+                    filesystem: FileSystem,
+                    palette: Palette) {
         
         let bytesPerPixel = 4
         let pitch = size.width * bytesPerPixel
@@ -91,10 +95,10 @@ private extension UnitTextureAtlas {
                 }
             }
         case .gafItem(let gaf):
-            let file = try! FileHandle(forReadingFrom: gaf.url)
+            let file = try! filesystem.openFile(gaf.file)
             let frameEntry = gaf.item.frames[0]
             file.seek(toFileOffset: frameEntry.offsetToFrameData)
-            let frameInfo = file.readValue(ofType: TA_GAF_FRAME_DATA.self)
+            let frameInfo = try! file.readValue(ofType: TA_GAF_FRAME_DATA.self)
             if frameInfo.numberOfSubFrames == 0, let frameData = try? GafItem.read(frame: frameInfo, from: file) {
                 frameData.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
                     var raw = indices

@@ -44,8 +44,7 @@ class CobView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func load(contentsOf fileUrl: URL) throws {
-        let script = try UnitScript(contentsOf: fileUrl)
+    func load(_ script: UnitScript) {
         textView.string = ""
         guard let textStorage = textView.textStorage
             else { return }

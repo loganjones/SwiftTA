@@ -34,26 +34,25 @@ struct GafListing {
     var items: [GafItem]
     
     /// Parse & load a GAF archive into a list of GafItems.
-    init(withContentsOf gafURL: URL) throws {
-        name = gafURL.lastPathComponent
+    init<File>(withContentsOf gaf: File) throws
+        where File: FileReadHandle
+    {
+        name = gaf.fileName
         
-        guard let gaf = try? FileHandle(forReadingFrom: gafURL)
-            else { throw LoadError.failedToOpenGAF }
-        
-        let fileHeader = gaf.readValue(ofType: TA_GAF_HEADER.self)
+        let fileHeader = try gaf.readValue(ofType: TA_GAF_HEADER.self)
         guard fileHeader.version == TA_GAF_VERSION_STANDARD else { throw LoadError.badGafVersion(fileHeader.version) }
         
-        let entryOffsets = gaf.readArray(ofType: UInt32.self, count: Int(fileHeader.numberOfEntries))
-        items = entryOffsets.map { entryOffset -> GafItem in
+        let entryOffsets = try gaf.readArray(ofType: UInt32.self, count: Int(fileHeader.numberOfEntries))
+        items = try entryOffsets.map { entryOffset -> GafItem in
             
             gaf.seek(toFileOffset: entryOffset)
-            let entryHeader = gaf.readValue(ofType: TA_GAF_ENTRY.self)
-            let frameEntries = gaf.readArray(ofType: TA_GAF_FRAME_ENTRY.self, count: Int(entryHeader.numberOfFrames))
+            let entryHeader = try gaf.readValue(ofType: TA_GAF_ENTRY.self)
+            let frameEntries = try gaf.readArray(ofType: TA_GAF_FRAME_ENTRY.self, count: Int(entryHeader.numberOfFrames))
             
             var maxSize = Size2D.zero
             for frameEntry in frameEntries {
                 gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
-                let frameInfo = gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
+                let frameInfo = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
                 let frameSize = Size2D(width: Int(frameInfo.width), height: Int(frameInfo.height))
                 maxSize.width = max(maxSize.width, frameSize.width)
                 maxSize.height = max(maxSize.height, frameSize.height)
@@ -87,8 +86,9 @@ extension GafItem {
     
     private typealias ImageSize = (width: Int, height: Int)
     
-    static func read(frame: TA_GAF_FRAME_DATA, from gaf: FileHandle) throws -> Data {
-        
+    static func read<File>(frame: TA_GAF_FRAME_DATA, from gaf: File) throws -> Data
+        where File: FileReadHandle
+    {
         guard let compression = GafFrameCompressionMethod(rawValue: frame.compressionMethod)
             else { throw GafLoadError.unknownFrameCompression(frame.compressionMethod) }
         let size = ImageSize(width: Int(frame.width), height: Int(frame.height))
@@ -96,9 +96,9 @@ extension GafItem {
         gaf.seek(toFileOffset: frame.offsetToFrameData)
         switch compression {
         case .uncompressed:
-            return gaf.readData(ofLength: size.width * size.height)
+            return try gaf.readData(verifyingLength: size.width * size.height)
         case .ta:
-            let compressed = gaf.readData(ofLength: size.width * size.height)
+            let compressed = try gaf.readData(verifyingLength: size.width * size.height)
             return decompressTaImageBits(compressed, decompressedSize: size)
         default:
             throw GafLoadError.unsupportedFrameCompression(compression)

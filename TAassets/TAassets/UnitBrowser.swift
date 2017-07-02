@@ -11,10 +11,10 @@ import Cocoa
 
 class UnitBrowserViewController: NSViewController, ContentViewController {
     
-    var filesystem = TaassetsFileSystem()
+    var filesystem = FileSystem()
     fileprivate var units: [UnitInfo] = []
-    fileprivate var mainPalette: Palette!
-    fileprivate var textures: ModelTexturePack!
+    fileprivate var mainPalette = Palette()
+    fileprivate var textures = ModelTexturePack()
     
     fileprivate var tableView: NSTableView!
     fileprivate var detailViewContainer: NSView!
@@ -58,17 +58,17 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
     }
     
     override func viewDidLoad() {
-        let unitsDirectory = filesystem.root[directory: "units"] ?? Asset.Directory()
+        let unitsDirectory = filesystem.root[directory: "units"] ?? FileSystem.Directory()
         let units = unitsDirectory.items
             .flatMap { $0.asFile() }
             .filter { $0.hasExtension("fbi") }
-            .flatMap { try? filesystem.urlForFile($0, at: "units/" + $0.name) }
-            .map { UnitInfo(withContentsOf: $0) }
+            .flatMap { try? filesystem.openFile($0) }
+            .map { UnitInfo(contentsOf: $0) }
         self.units = units
         
         do {
-            let paletteUrl = try filesystem.urlForFile(at: "Palettes/PALETTE.PAL")
-            mainPalette = Palette(contentsOf: paletteUrl)
+            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
+            mainPalette = Palette(contentsOf: file)
         }
         catch {
             Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
@@ -78,9 +78,9 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
     }
     
     final func buildpic(for unitName: String) -> NSImage? {
-        guard let url = try? filesystem.urlForFile(at: "unitpics/" + unitName + ".PCX")
+        guard let file = try? filesystem.openFile(at: "unitpics/" + unitName + ".PCX")
             else { return nil }
-        return try? NSImage(pcxContentsOf: url)
+        return try? NSImage(pcxContentsOf: file)
     }
     
 }
@@ -211,7 +211,7 @@ class UnitInfoCell: NSTableCellView {
 
 class UnitDetailViewController: NSViewController {
     
-    var filesystem = TaassetsFileSystem()
+    var filesystem: FileSystem!
     fileprivate var mainPalette: Palette!
     fileprivate var textures: ModelTexturePack!
     
@@ -219,12 +219,12 @@ class UnitDetailViewController: NSViewController {
         didSet {
             if let unit = unit {
                 tempView.title = unit.object
-                let modelUrl = try! filesystem.urlForFile(at: "objects3d/" + unit.object + ".3DO")
-                let model = try! UnitModel(contentsOf: modelUrl)
-                let scriptUrl = try! filesystem.urlForFile(at: "scripts/" + unit.object + ".COB")
-                let script = try! UnitScript(contentsOf: scriptUrl)
+                let modelFile = try! filesystem.openFile(at: "objects3d/" + unit.object + ".3DO")
+                let model = try! UnitModel(contentsOf: modelFile)
+                let scriptFile = try! filesystem.openFile(at: "scripts/" + unit.object + ".COB")
+                let script = try! UnitScript(contentsOf: scriptFile)
                 let atlas = UnitTextureAtlas(for: model.textures, from: textures)
-                try! tempView.modelView.load(model, script, atlas, mainPalette)
+                try! tempView.modelView.load(model, script, atlas, filesystem, mainPalette)
                 
                 //tempSaveAtlasToFile(atlas)
             }
@@ -235,7 +235,7 @@ class UnitDetailViewController: NSViewController {
     }
     
     private func tempSaveAtlasToFile(_ atlas: UnitTextureAtlas) {
-        let pixelData = atlas.build(using: mainPalette)
+        let pixelData = atlas.build(from: filesystem, using: mainPalette)
         
         let cfdata = pixelData.withUnsafeBytes { (pixels: UnsafePointer<UInt8>) -> CFData in
             return CFDataCreate(kCFAllocatorDefault, pixels, pixelData.count)

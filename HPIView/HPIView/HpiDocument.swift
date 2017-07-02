@@ -55,7 +55,9 @@ class HpiBrowserWindowController: NSWindowController {
     lazy var mainPalette: Palette = {
         guard let url = Bundle.main.url(forResource: "PALETTE", withExtension: "PAL")
             else { fatalError("No Palette!") }
-        return Palette(contentsOf: url)
+        guard let palette = try? Palette(contentsOf: url)
+            else { fatalError("Faile to init Palette!") }
+        return palette
     }()
     
     override func awakeFromNib() {
@@ -102,7 +104,8 @@ extension HpiItem: FinderViewItem {
                 print("Selected Path: \(pathString)")
                 do {
                     let gafURL = try cache.url(for: file, atHpiPath: pathString)
-                    return try GafListing(withContentsOf: gafURL)
+                    let gafFile = try FileHandle(forReadingFrom: gafURL)
+                    return try GafListing(withContentsOf: gafFile)
                 }
                 catch {
                     return nil
@@ -257,41 +260,47 @@ extension HpiBrowserWindowController: FinderViewDelegate {
         let fileExtension = fileURL.pathExtension
         let contentView = preview.contentView
         let subview: NSView
-        if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
-            do {
-                let pcxImage = try NSImage(pcxContentsOf: fileURL)
-                let pcxView = NSImageView(frame: contentView.bounds)
-                pcxView.image = pcxImage
-                subview = pcxView
+        do {
+            if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
+                let pcxFile = try FileHandle(forReadingFrom: fileURL)
+                let image = try NSImage(pcxContentsOf: pcxFile)
+                let view = NSImageView(frame: contentView.bounds)
+                view.image = image
+                subview = view
             }
-            catch {
-                print("Faile to load image from \(file.name): \(error)")
-                let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
-                qlv.previewItem = fileURL as NSURL
-                qlv.refreshPreviewItem()
-                subview = qlv
+            else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
+                let modelFile = try FileHandle(forReadingFrom: fileURL)
+                let model = try UnitModel(contentsOf: modelFile)
+                let view = Model3DOView(frame: contentView.bounds)
+                view.load(model)
+                subview = view
+            }
+            else if fileExtension.caseInsensitiveCompare("cob") == .orderedSame {
+                let cobFile = try FileHandle(forReadingFrom: fileURL)
+                let script = try UnitScript(contentsOf: cobFile)
+                let view = CobView(frame: contentView.bounds)
+                view.load(script)
+                subview = view
+            }
+            else if fileExtension.caseInsensitiveCompare("tnt") == .orderedSame {
+                let mapFile = try FileHandle(forReadingFrom: fileURL)
+                let view = MapView(frame: contentView.bounds)
+                try view.load(contentsOf: mapFile, using: mainPalette)
+                subview = view
+            }
+            else {
+                let view = QLPreviewView(frame: contentView.bounds, style: .compact)!
+                view.previewItem = fileURL as NSURL
+                view.refreshPreviewItem()
+                subview = view
             }
         }
-        else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
-            let model = Model3DOView(frame: contentView.bounds)
-            try! model.loadModel(contentsOf: fileURL)
-            subview = model
-        }
-        else if fileExtension.caseInsensitiveCompare("cob") == .orderedSame {
-            let model = CobView(frame: contentView.bounds)
-            try! model.load(contentsOf: fileURL)
-            subview = model
-        }
-        else if fileExtension.caseInsensitiveCompare("tnt") == .orderedSame {
-            let map = MapView(frame: contentView.bounds)
-            try! map.load(contentsOf: fileURL, using: mainPalette)
-            subview = map
-        }
-        else {
-            let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
-            qlv.previewItem = fileURL as NSURL
-            qlv.refreshPreviewItem()
-            subview = qlv
+        catch {
+            print("Faile to load image from \(file.name): \(error)")
+            let view = QLPreviewView(frame: contentView.bounds, style: .compact)!
+            view.previewItem = fileURL as NSURL
+            view.refreshPreviewItem()
+            subview = view
         }
         
         subview.translatesAutoresizingMaskIntoConstraints = false
@@ -330,9 +339,10 @@ extension HpiBrowserWindowController: FinderViewDelegate {
             let contentView = preview.contentView
             let subview: NSView
 
-                let gaf = GafView(frame: contentView.bounds)
-                try gaf.load(item, from: fileURL, using: mainPalette)
-                subview = gaf
+                let view = GafView(frame: contentView.bounds)
+                let gafFile = try FileHandle(forReadingFrom: fileURL)
+                try view.load(item, from: gafFile, using: mainPalette)
+                subview = view
 
             subview.translatesAutoresizingMaskIntoConstraints = false
             preview.contentView.addSubview(subview)
@@ -527,4 +537,10 @@ class PreviewContainerView: NSView {
         return formatter
     }()
     
+}
+
+extension FileHandle: FileReadHandle {
+    var fileName: String {
+        return "???"
+    }
 }

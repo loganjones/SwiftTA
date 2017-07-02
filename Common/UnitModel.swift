@@ -25,8 +25,10 @@ struct UnitModel {
     
     var nameLookup: [String: Pieces.Index]
     
-    init(contentsOf modelURL: URL) throws {
-        let fileData = try Data(contentsOf: modelURL)
+    init<File>(contentsOf file: File) throws
+        where File: FileReadHandle
+    {
+        let fileData = file.readDataToEndOfFile()
         let model = fileData.withUnsafeBytes { UnitModel.loadModel(from: $0) }
         
         //UnitModel.dump(model)

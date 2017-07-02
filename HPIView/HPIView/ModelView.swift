@@ -133,9 +133,8 @@ class Model3DOView: NSOpenGLView {
         }
     }
     
-    func loadModel(contentsOf modelURL: URL) throws {
+    func load(_ model: UnitModel) {
         openGLContext?.makeCurrentContext()
-        let model = try UnitModel(contentsOf: modelURL)
         self.model = GLWholeModel(model)
         setNeedsDisplay(bounds)
     }

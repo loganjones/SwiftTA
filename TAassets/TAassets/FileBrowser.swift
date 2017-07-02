@@ -7,16 +7,12 @@
 //
 
 import Cocoa
-import Quartz
-import QuickLook
-import CoreGraphics
-
 
 class FileBrowserViewController: NSViewController, ContentViewController {
     
-    var filesystem = TaassetsFileSystem()
+    var filesystem = FileSystem()
     var finderView: FinderView!
-    var mainPalette: Palette!
+    var mainPalette = Palette()
     
     override func loadView() {
         let mainView = NSView()
@@ -42,8 +38,8 @@ class FileBrowserViewController: NSViewController, ContentViewController {
         finderView.setRoot(directory: FileBrowserItem.Directory(asset: filesystem.root, browser: self))
         
         do {
-            let url = try filesystem.urlForFile(at: "Palettes/PALETTE.PAL")
-            mainPalette = Palette(contentsOf: url)
+            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
+            mainPalette = Palette(contentsOf: file)
         }
         catch {
             Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
@@ -101,75 +97,66 @@ extension FileBrowserViewController: FinderViewDelegate {
         }
     }
     
-    func preview(forFile file: Asset.File, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+    func preview(forFile file: FileSystem.File, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
         
         let pathString = pathDirectories.map({ $0.name }).joined(separator: "/") + "/" + file.name
         print("Selected Path: \(pathString)")
         
-        let fileURL: URL
+        let fileHandle: FileSystem.FileHandle
         do {
-            fileURL = try filesystem.urlForFile(file, at: pathString)
+            fileHandle = try filesystem.openFile(file)
+            
+            let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
+            preview.title = file.name
+            preview.size = file.info.size
+            preview.source = file.archiveURL.lastPathComponent
+            
+            let contentView = preview.contentView
+            let subview: NSView
+            if file.hasExtension("pcx") {
+                let pcxImage = try NSImage(pcxContentsOf: fileHandle)
+                let pcxView = NSImageView(frame: contentView.bounds)
+                pcxView.image = pcxImage
+                subview = pcxView
+            }
+            else if file.hasExtension("3do") {
+                let model = try UnitModel(contentsOf: fileHandle)
+                let view = Model3DOView(frame: contentView.bounds)
+                view.load(model)
+                subview = view
+            }
+            else if file.hasExtension("cob") {
+                let script = try UnitScript(contentsOf: fileHandle)
+                let view = CobView(frame: contentView.bounds)
+                view.load(script)
+                subview = view
+            }
+            else if file.hasExtension("tnt") {
+                let view = MapView(frame: contentView.bounds)
+                try view.load(contentsOf: fileHandle, using: mainPalette)
+                subview = view
+            }
+            else {
+                let view = QuickLookView(frame: contentView.bounds)
+                try view.load(contentsOf: fileHandle)
+                subview = view
+            }
+            
+            subview.translatesAutoresizingMaskIntoConstraints = false
+            preview.contentView.addSubview(subview)
+            NSLayoutConstraint.activate([
+                subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+                subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+                subview.topAnchor.constraint(equalTo: contentView.topAnchor),
+                subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+                ])
+            
+            return preview
         }
         catch {
             print("Failed to extract \(file.name) for preview: \(error)")
             return nil
         }
-        
-        let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
-        preview.title = file.name
-        preview.size = file.info.size
-        preview.source = file.archiveURL.lastPathComponent
-        
-        let fileExtension = fileURL.pathExtension
-        let contentView = preview.contentView
-        let subview: NSView
-        if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
-            do {
-                let pcxImage = try NSImage(pcxContentsOf: fileURL)
-                let pcxView = NSImageView(frame: contentView.bounds)
-                pcxView.image = pcxImage
-                subview = pcxView
-            }
-            catch {
-                print("Faile to load image from \(file.name): \(error)")
-                let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
-                qlv.previewItem = fileURL as NSURL
-                qlv.refreshPreviewItem()
-                subview = qlv
-            }
-        }
-        else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
-            let model = Model3DOView(frame: contentView.bounds)
-            try! model.loadModel(contentsOf: fileURL)
-            subview = model
-        }
-        else if fileExtension.caseInsensitiveCompare("cob") == .orderedSame {
-            let view = CobView(frame: contentView.bounds)
-            try! view.load(contentsOf: fileURL)
-            subview = view
-        }
-        else if fileExtension.caseInsensitiveCompare("tnt") == .orderedSame {
-            let view = MapView(frame: contentView.bounds)
-            try! view.load(contentsOf: fileURL, using: mainPalette)
-            subview = view
-        }
-        else {
-            let qlv = QLPreviewView(frame: contentView.bounds, style: .compact)!
-            qlv.previewItem = fileURL as NSURL
-            qlv.refreshPreviewItem()
-            subview = qlv
-        }
-        
-        subview.translatesAutoresizingMaskIntoConstraints = false
-        preview.contentView.addSubview(subview)
-        NSLayoutConstraint.activate([
-            subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            subview.topAnchor.constraint(equalTo: contentView.topAnchor),
-            subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-            ])
-        
-        return preview
     }
     
     func preview(forGafImage item: GafItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
@@ -181,9 +168,6 @@ extension FileBrowserViewController: FinderViewDelegate {
         let pathString = pathDirectories.map({ $0.name }).joined(separator: "/")
         print("Selected Path: \(pathString)")
         
-        guard let gafUrl = try? gaf.cache.url(for: gaf.asset.info, atHpiPath: pathString)
-            else { return nil }
-        
         let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
         preview.title = item.name
         preview.size = 13
@@ -194,9 +178,9 @@ extension FileBrowserViewController: FinderViewDelegate {
             let contentView = preview.contentView
             let subview: NSView
             
-            let gaf = GafView(frame: contentView.bounds)
-            try gaf.load(item, from: gafUrl, using: mainPalette)
-            subview = gaf
+            let view = GafView(frame: contentView.bounds)
+            try view.load(item, from: try filesystem.openFile(gaf.asset), using: mainPalette)
+            subview = view
             
             subview.translatesAutoresizingMaskIntoConstraints = false
             preview.contentView.addSubview(subview)
@@ -219,23 +203,22 @@ extension FileBrowserViewController: FinderViewDelegate {
 
 enum FileBrowserItem {
     case directory(Directory)
-    case file(Asset.File)
+    case file(FileSystem.File)
     case gafArchive(GafArchive)
     case gafImage(GafItem)
     
     struct Directory {
-        var asset: Asset.Directory
+        var asset: FileSystem.Directory
         unowned var browser: FileBrowserViewController
     }
     
     struct GafArchive {
-        var asset: Asset.File
+        var asset: FileSystem.File
         unowned var browser: FileBrowserViewController
     }
     
     struct GafContents {
-        var asset: Asset.File
-        var cache: HpiFileCache
+        var asset: FileSystem.File
         var listing: GafListing
         unowned var browser: FileBrowserViewController
     }
@@ -243,7 +226,7 @@ enum FileBrowserItem {
 
 extension FileBrowserItem {
     
-    init(asset: Asset, browser: FileBrowserViewController) {
+    init(asset: FileSystem.Item, browser: FileBrowserViewController) {
         switch asset {
         case .file(let f):
             let ext = (f.name as NSString).pathExtension.lowercased()
@@ -258,8 +241,6 @@ extension FileBrowserItem {
     }
     
 }
-
-extension FileBrowserItem: NamedAsset { }
 
 extension FileBrowserItem: FinderViewItem {
     
@@ -305,7 +286,7 @@ extension FileBrowserItem.Directory: FinderViewDirectory {
     
     func index(of item: FinderViewItem) -> Int? {
         guard let item = item as? FileBrowserItem else { return nil }
-        let i = asset.items.index(where: { $0.isSimilarlyNamed(to: item.name) })
+        let i = asset.items.index(where: { FileSystem.compareNames($0.name, item.name) })
         return i
     }
     
@@ -323,9 +304,8 @@ extension FileBrowserItem.GafContents {
     init(of archive: FileBrowserItem.GafArchive, at path: [FinderViewDirectory]) throws {
         asset = archive.asset
         browser = archive.browser
-        cache = try HpiFileCache(hpiURL: asset.archiveURL)
-        let pathString = path.map({ $0.name }).joined(separator: "/") + "/" + asset.name
-        listing = try GafListing(withContentsOf: cache.url(for: asset.info, atHpiPath: pathString))
+        let file = try archive.browser.filesystem.openFile(archive.asset)
+        listing = try GafListing(withContentsOf: file)
     }
     
 }
@@ -346,7 +326,7 @@ extension FileBrowserItem.GafContents: FinderViewDirectory {
     
     func index(of item: FinderViewItem) -> Int? {
         guard let item = item as? FileBrowserItem else { return nil }
-        let i = listing.items.index(where: { item.isSimilarlyNamed(to: $0.name) })
+        let i = listing.items.index(where: { FileSystem.compareNames(item.name, $0.name) })
         return i
     }
     
