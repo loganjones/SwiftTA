@@ -27,12 +27,12 @@ class FinderView: NSView {
                                                           height: frameRect.size.height))
         tierField = FieldView(frame: NSRect(x: 0, y: 0, width: 200, height: frameRect.size.height))
         super.init(frame: frameRect)
-        horizontalScrollView.autoresizingMask = [.viewWidthSizable, .viewHeightSizable]
+        horizontalScrollView.autoresizingMask = [.width, .height]
         horizontalScrollView.borderType = .noBorder
         horizontalScrollView.hasVerticalScroller = false
         horizontalScrollView.hasHorizontalScroller = true
         addSubview(horizontalScrollView)
-        tierField.autoresizingMask = [.viewHeightSizable]
+        tierField.autoresizingMask = [.height]
         horizontalScrollView.documentView = tierField
     }
     
@@ -40,7 +40,7 @@ class FinderView: NSView {
         horizontalScrollView = NSScrollView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
         tierField = FieldView(frame: NSRect(x: 0, y: 0, width: 200, height: 100))
         super.init(coder: coder)
-        horizontalScrollView.autoresizingMask = [.viewWidthSizable, .viewHeightSizable]
+        horizontalScrollView.autoresizingMask = [.width, .height]
         horizontalScrollView.borderType = .noBorder
         horizontalScrollView.hasVerticalScroller = false
         horizontalScrollView.hasHorizontalScroller = true
@@ -48,7 +48,7 @@ class FinderView: NSView {
                                             width: bounds.size.width,
                                             height: bounds.size.height)
         tierField.frame = NSRect(x: 0, y: 0, width: 200, height: bounds.size.height)
-        tierField.autoresizingMask = [.viewHeightSizable]
+        tierField.autoresizingMask = [.height]
         addSubview(horizontalScrollView)
         horizontalScrollView.documentView = tierField
     }
@@ -85,7 +85,7 @@ class FinderView: NSView {
         else {
             nibs.removeValue(forKey: identifier)
         }
-        tiers.forEach({ $0.tableView.register(nib, forIdentifier: identifier) })
+        tiers.forEach({ $0.tableView.register(nib, forIdentifier: NSUserInterfaceItemIdentifier(rawValue: identifier)) })
     }
     
     var selectedItems: [FinderViewItem] {
@@ -259,18 +259,18 @@ class FinderView: NSView {
         init(directory dir: FinderViewDirectory, frame: NSRect, in finder: FinderView) {
             
             let scrollView = TierScrollView(frame: NSMakeRect(0, 0, frame.size.width-1, frame.size.height))
-            scrollView.autoresizingMask = [.viewHeightSizable]
+            scrollView.autoresizingMask = [.height]
             scrollView.borderType = .noBorder
             scrollView.hasVerticalScroller = true
             scrollView.hasHorizontalScroller = false
             
             let tableView = NSTableView(frame: NSMakeRect(0, 0, frame.size.width-1, frame.size.height))
-            let column = NSTableColumn(identifier: "name")
+            let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "name"))
             column.width = frame.size.width-2
             tableView.addTableColumn(column)
-            tableView.identifier = dir.name
+            tableView.identifier = NSUserInterfaceItemIdentifier(rawValue: dir.name)
             tableView.headerView = nil
-            finder.nibs.forEach({ tableView.register($1, forIdentifier: $0) })
+            finder.nibs.forEach({ tableView.register($0.value, forIdentifier: NSUserInterfaceItemIdentifier(rawValue: $0.key)) })
             
             scrollView.documentView = tableView
             
@@ -280,7 +280,7 @@ class FinderView: NSView {
             self.tableView = tableView
             super.init(frame: frame)
             
-            self.autoresizingMask = [.viewHeightSizable]
+            self.autoresizingMask = [.height]
             
             tableView.dataSource = self
             tableView.delegate = self

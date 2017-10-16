@@ -29,16 +29,16 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
         let listWidth: CGFloat = 240
         
         let scrollView = NSScrollView(frame: NSMakeRect(0, 0, listWidth, bounds.size.height))
-        scrollView.autoresizingMask = [.viewHeightSizable]
+        scrollView.autoresizingMask = [.height]
         scrollView.borderType = .noBorder
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         
         let tableView = NSTableView(frame: NSMakeRect(0, 0, listWidth, bounds.size.height))
-        let column = NSTableColumn(identifier: "name")
+        let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "name"))
         column.width = listWidth-2
         tableView.addTableColumn(column)
-        tableView.identifier = "units"
+        tableView.identifier = NSUserInterfaceItemIdentifier(rawValue: "units")
         tableView.headerView = nil
         tableView.rowHeight = UnitBrowserViewController.picSize
         
@@ -49,7 +49,7 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
         mainView.addSubview(scrollView)
         
         let detail = NSView(frame: NSMakeRect(listWidth, 0, bounds.size.width - listWidth, bounds.size.height))
-        detail.autoresizingMask = [.viewWidthSizable, .viewHeightSizable]
+        detail.autoresizingMask = [.width, .height]
         mainView.addSubview(detail)
         
         self.view = mainView
@@ -98,12 +98,12 @@ extension UnitBrowserViewController: NSTableViewDelegate {
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         
         let cell: UnitInfoCell
-        if let existing = tableView.make(withIdentifier: "UnitInfo", owner: self) as? UnitInfoCell {
+        if let existing = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "UnitInfo"), owner: self) as? UnitInfoCell {
             cell = existing
         }
         else {
             cell = UnitInfoCell()
-            cell.identifier = "UnitInfo"
+            cell.identifier = NSUserInterfaceItemIdentifier(rawValue: "UnitInfo")
         }
         
         let unit = units[row]
@@ -123,7 +123,7 @@ extension UnitBrowserViewController: NSTableViewDelegate {
             
             let controller = UnitDetailViewController()
             controller.view.frame = detailViewContainer.bounds
-            controller.view.autoresizingMask = [.viewWidthSizable, .viewWidthSizable]
+            controller.view.autoresizingMask = [.width, .width]
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
             controller.filesystem = filesystem
@@ -255,7 +255,7 @@ class UnitDetailViewController: NSViewController {
         
         let rep = NSBitmapImageRep(cgImage: image!)
         rep.size = NSSize(width: atlas.size.width, height: atlas.size.height)
-        let fileData = rep.representation(using: .PNG, properties: [:])
+        let fileData = rep.representation(using: .png, properties: [:])
         let url2 = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Desktop").appendingPathComponent("test.png")
         try? fileData?.write(to: url2, options: .atomic)
     }

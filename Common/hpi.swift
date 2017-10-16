@@ -319,7 +319,7 @@ private extension FileHandle {
             for index in 0..<data.count {
                 let tkey = (koffset &+ Int32(index)) ^ key
                 let inv = Int32(~data[index])
-                data[index] = UInt8(truncatingBitPattern: tkey ^ inv)
+                data[index] = UInt8(truncatingIfNeeded: tkey ^ inv)
             }
         }
         return data
@@ -449,7 +449,7 @@ extension HpiItem {
                 let enecrypted = p + MemoryLayout<TA_HPI_CHUNK>.size
                 let decrypted = UnsafeMutablePointer<UInt8>.allocate(capacity: compressedSize)
                 for index in 0..<compressedSize {
-                    let x = UInt8(truncatingBitPattern: index)
+                    let x = UInt8(truncatingIfNeeded: index)
                     decrypted[index] = (enecrypted[index] &- x) ^ x
                 }
                 raw = UnsafePointer<UInt8>(decrypted)

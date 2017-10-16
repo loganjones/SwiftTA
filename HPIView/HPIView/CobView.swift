@@ -18,7 +18,7 @@ class CobView: NSView {
         scroll.borderType = .noBorder
         scroll.hasVerticalScroller = true
         scroll.hasHorizontalScroller = false
-        scroll.autoresizingMask = [.viewWidthSizable, .viewHeightSizable]
+        scroll.autoresizingMask = [.width, .height]
         
         let contentSize = scroll.contentSize
         let text = NSTextView(frame: NSRect(x: 0, y: 0, width: contentSize.width, height: contentSize.height))
@@ -26,10 +26,10 @@ class CobView: NSView {
         text.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
         text.isVerticallyResizable = true
         text.isHorizontallyResizable = false
-        text.autoresizingMask = [.viewWidthSizable]
+        text.autoresizingMask = [.width]
         text.textContainer?.containerSize = NSSize(width: contentSize.width, height: CGFloat.greatestFiniteMagnitude)
         text.textContainer?.widthTracksTextView = true
-        text.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: 1)
+        text.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
         text.isEditable = false
         text.isSelectable = true
         self.textView = text

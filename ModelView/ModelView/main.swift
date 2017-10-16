@@ -19,10 +19,10 @@ var gear2: GLuint = 0
 var gear3: GLuint = 0
 var angle: GLfloat = 0.0
 
-var t0 = -1;
-var frames = 0;
+var t0 = -1
+var frames = 0
 
-let π = GLfloat(M_PI)
+let π = GLfloat.pi
 
 func printTimeElapsedWhenRunningCode(title:String, operation:()->()) {
     let startTime = CFAbsoluteTimeGetCurrent()
