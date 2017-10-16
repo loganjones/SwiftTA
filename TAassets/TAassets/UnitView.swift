@@ -19,6 +19,8 @@ class UnitView: NSOpenGLView {
     private var loadTime: Double = 0
     private var shouldStartMoving = false
     
+    private var viewportSize = CGSize()
+    
     enum DrawMode: Int {
         case solid
         case wireframe
@@ -53,6 +55,10 @@ class UnitView: NSOpenGLView {
     
     deinit {
         CVDisplayLinkStop(displayLink!)
+    }
+    
+    override var frame: NSRect {
+        didSet { viewportSize = convertToBacking(bounds).size }
     }
     
     override func prepareOpenGL() {
@@ -99,7 +105,7 @@ class UnitView: NSOpenGLView {
     
     private func drawScene() {
         
-        reshape(viewport: convertToBacking(bounds).size)
+        reshape(viewport: viewportSize)
         initScene()
         
         glClearColor(1, 1, 1, 1)
