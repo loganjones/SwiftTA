@@ -25,16 +25,16 @@ class MapBrowserViewController: NSViewController, ContentViewController {
         let listWidth: CGFloat = 240
         
         let scrollView = NSScrollView(frame: NSMakeRect(0, 0, listWidth, bounds.size.height))
-        scrollView.autoresizingMask = [.viewHeightSizable]
+        scrollView.autoresizingMask = [.height]
         scrollView.borderType = .noBorder
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         
         let tableView = NSTableView(frame: NSMakeRect(0, 0, listWidth, bounds.size.height))
-        let column = NSTableColumn(identifier: "name")
+        let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "name"))
         column.width = listWidth-2
         tableView.addTableColumn(column)
-        tableView.identifier = "maps"
+        tableView.identifier = NSUserInterfaceItemIdentifier(rawValue: "maps")
         tableView.headerView = nil
         tableView.rowHeight = 32
         
@@ -45,7 +45,7 @@ class MapBrowserViewController: NSViewController, ContentViewController {
         mainView.addSubview(scrollView)
         
         let detail = NSView(frame: NSMakeRect(listWidth, 0, bounds.size.width - listWidth, bounds.size.height))
-        detail.autoresizingMask = [.viewWidthSizable, .viewHeightSizable]
+        detail.autoresizingMask = [.width, .height]
         mainView.addSubview(detail)
         
         self.view = mainView
@@ -84,12 +84,12 @@ extension MapBrowserViewController: NSTableViewDelegate {
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         
         let cell: MapInfoCell
-        if let existing = tableView.make(withIdentifier: "MapInfo", owner: self) as? MapInfoCell {
+        if let existing = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "MapInfo"), owner: self) as? MapInfoCell {
             cell = existing
         }
         else {
             cell = MapInfoCell()
-            cell.identifier = "MapInfo"
+            cell.identifier = NSUserInterfaceItemIdentifier(rawValue: "MapInfo")
         }
         
         let map = maps[row]
@@ -106,7 +106,7 @@ extension MapBrowserViewController: NSTableViewDelegate {
             
             let controller = MapDetailViewController()
             controller.view.frame = detailViewContainer.bounds
-            controller.view.autoresizingMask = [.viewWidthSizable, .viewWidthSizable]
+            controller.view.autoresizingMask = [.width, .width]
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
             controller.filesystem = filesystem

@@ -13,7 +13,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     override init() {
         super.init()
-        TaassetsDocumentController.shared()
+        let _ = TaassetsDocumentController.shared
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {

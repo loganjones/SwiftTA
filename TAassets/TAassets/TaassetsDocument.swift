@@ -14,8 +14,8 @@ class TaassetsDocument: NSDocument {
 
     override func makeWindowControllers() {
         // Returns the Storyboard that contains your Document window.
-        let storyboard = NSStoryboard(name: "Main", bundle: nil)
-        let windowController = storyboard.instantiateController(withIdentifier: "Document Window Controller") as! NSWindowController
+        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
+        let windowController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Document Window Controller")) as! NSWindowController
         let viewController = windowController.contentViewController as! TaassetsViewController
         viewController.filesystem = filesystem
         self.addWindowController(windowController)
@@ -41,7 +41,7 @@ class TaassetsDocumentController: NSDocumentController {
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
         panel.begin { result in
-            guard result == NSFileHandlingPanelOKButton else { return }
+            guard result == .OK else { return }
             guard let selectedURL = panel.urls.first else { return }
             self.openDocument(withContentsOf: selectedURL, display: true) { (document, wasOpened, error) in
                 if let document = document {
@@ -78,7 +78,7 @@ class TaassetsViewController: NSViewController {
         // There will be nothing selected the first time this view appears.
         // Select a default in this case.
         if selectedButton == nil {
-            unitsButton.state = 1
+            unitsButton.state = .on
             didChangeSelection(unitsButton)
         }
     }
@@ -87,12 +87,12 @@ class TaassetsViewController: NSViewController {
         
         // Disallow deselcetion (toggling).
         // A selected button can only be deselected by selecting something else.
-        guard sender.state == 1, !(sender === selectedButton) else {
-            sender.state = 1
+        guard sender.state == .on, !(sender === selectedButton) else {
+            sender.state = .on
             return
         }
         
-        selectedButton?.state = 0
+        selectedButton?.state = .off
         selectedButton = sender
         showSelectedContent(for: sender)
     }
@@ -117,7 +117,7 @@ class TaassetsViewController: NSViewController {
         
         controller.filesystem = filesystem
         controller.view.frame = contentView.bounds
-        controller.view.autoresizingMask = [.viewWidthSizable, .viewHeightSizable]
+        controller.view.autoresizingMask = [.width, .height]
         contentView.addSubview(controller.view)
         selectedViewController = controller
     }

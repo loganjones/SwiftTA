@@ -19,7 +19,7 @@ class FileBrowserViewController: NSViewController, ContentViewController {
         
         let finder = FinderView(frame: NSRect(x: 0, y: 0, width: 320, height: 480))
         finder.translatesAutoresizingMaskIntoConstraints = false
-        finder.register(NSNib(nibNamed: "HpiFinderRow", bundle: nil), forIdentifier: "HpiItem")
+        finder.register(NSNib(nibNamed: NSNib.Name(rawValue: "HpiFinderRow"), bundle: nil), forIdentifier: "HpiItem")
         finder.delegate = self
         mainView.addSubview(finder)
         
@@ -53,7 +53,7 @@ extension FileBrowserViewController: FinderViewDelegate {
         
         guard let item = item as? FileBrowserItem
             else { return nil }
-        guard let view = tableView.make(withIdentifier: "HpiItem", owner: finder) as? NSTableCellView
+        guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "HpiItem"), owner: finder) as? NSTableCellView
             else { return nil }
         
         view.textField?.stringValue = item.name
@@ -61,15 +61,15 @@ extension FileBrowserViewController: FinderViewDelegate {
         switch item {
             
         case .directory:
-            view.imageView?.image = NSImage(named: NSImageNameFolder)
+            view.imageView?.image = NSImage(named: .folder)
             
         case .file, .gafArchive:
             let ext = URL(fileURLWithPath: item.name, isDirectory: false).pathExtension.lowercased()
-            let icon = NSWorkspace.shared().icon(forFileType: ext)
+            let icon = NSWorkspace.shared.icon(forFileType: ext)
             view.imageView?.image = icon
             
         case .gafImage:
-            let icon = NSWorkspace.shared().icon(forFileType: "pcx")
+            let icon = NSWorkspace.shared.icon(forFileType: "pcx")
             view.imageView?.image = icon
             
         }

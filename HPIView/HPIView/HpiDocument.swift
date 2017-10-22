@@ -17,7 +17,7 @@ class HpiDocument: NSDocument {
     var root: HpiItem.Directory?
     
     override func makeWindowControllers() {
-        let controller = HpiBrowserWindowController(windowNibName: "HpiBrowserWindow")
+        let controller = HpiBrowserWindowController(windowNibName: NSNib.Name(rawValue: "HpiBrowserWindow"))
         addWindowController(controller)
     }
     
@@ -61,7 +61,7 @@ class HpiBrowserWindowController: NSWindowController {
     }()
     
     override func awakeFromNib() {
-        finder.register(NSNib(nibNamed: "HpiFinderRow", bundle: nil), forIdentifier: "HpiItem")
+        finder.register(NSNib(nibNamed: NSNib.Name(rawValue: "HpiFinderRow"), bundle: nil), forIdentifier: "HpiItem")
         finder.delegate = self
         if let root = hpiDocument.root {
             finder.setRoot(directory: root)
@@ -192,7 +192,7 @@ extension HpiBrowserWindowController: FinderViewDelegate {
     
     func rowView(for item: HpiItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
     
-        guard let view = tableView.make(withIdentifier: "HpiItem", owner: finder) as? NSTableCellView
+        guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "HpiItem"), owner: finder) as? NSTableCellView
             else { return nil }
         
         view.textField?.stringValue = item.name
@@ -201,11 +201,11 @@ extension HpiBrowserWindowController: FinderViewDelegate {
             
         case .file:
             let ext = URL(fileURLWithPath: item.name, isDirectory: false).pathExtension.lowercased()
-            let icon = NSWorkspace.shared().icon(forFileType: ext)
+            let icon = NSWorkspace.shared.icon(forFileType: ext)
             view.imageView?.image = icon
             
         case .directory:
-            view.imageView?.image = NSImage(named: NSImageNameFolder)
+            view.imageView?.image = NSImage(named: NSImage.Name.folder)
         }
         
         return view
@@ -213,12 +213,12 @@ extension HpiBrowserWindowController: FinderViewDelegate {
     
     func rowView(for item: GafItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
         
-        guard let view = tableView.make(withIdentifier: "HpiItem", owner: finder) as? NSTableCellView
+        guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "HpiItem"), owner: finder) as? NSTableCellView
             else { return nil }
         
         view.textField?.stringValue = item.name
         
-        let icon = NSWorkspace.shared().icon(forFileType: "pcx")
+        let icon = NSWorkspace.shared.icon(forFileType: "pcx")
         view.imageView?.image = icon
         
         return view
@@ -386,7 +386,7 @@ extension HpiBrowserWindowController {
         panel.canChooseDirectories = true
         panel.beginSheetModal(for: window) {
             switch $0 {
-            case NSFileHandlingPanelOKButton:
+            case .OK:
                 if let url = panel.url { self.extractItems(items, to: url) }
             default:
                 ()

@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B5C556451E2C86A2001BEFAB"
-               BuildableName = "TAassets.app"
-               BlueprintName = "TAassets"
-               ReferencedContainer = "container:TAassets.xcodeproj">
+               BlueprintIdentifier = "B50F6A491D87A54B0016C15B"
+               BuildableName = "HPIView.app"
+               BlueprintName = "HPIView"
+               ReferencedContainer = "container:HPIView.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,34 +29,14 @@
       language = ""
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B5C556581E2C86A2001BEFAB"
-               BuildableName = "TAassetsTests.xctest"
-               BlueprintName = "TAassetsTests"
-               ReferencedContainer = "container:TAassets.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B5C556631E2C86A2001BEFAB"
-               BuildableName = "TAassetsUITests.xctest"
-               BlueprintName = "TAassetsUITests"
-               ReferencedContainer = "container:TAassets.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B5C556451E2C86A2001BEFAB"
-            BuildableName = "TAassets.app"
-            BlueprintName = "TAassets"
-            ReferencedContainer = "container:TAassets.xcodeproj">
+            BlueprintIdentifier = "B50F6A491D87A54B0016C15B"
+            BuildableName = "HPIView.app"
+            BlueprintName = "HPIView"
+            ReferencedContainer = "container:HPIView.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -77,10 +57,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B5C556451E2C86A2001BEFAB"
-            BuildableName = "TAassets.app"
-            BlueprintName = "TAassets"
-            ReferencedContainer = "container:TAassets.xcodeproj">
+            BlueprintIdentifier = "B50F6A491D87A54B0016C15B"
+            BuildableName = "HPIView.app"
+            BlueprintName = "HPIView"
+            ReferencedContainer = "container:HPIView.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -96,10 +76,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B5C556451E2C86A2001BEFAB"
-            BuildableName = "TAassets.app"
-            BlueprintName = "TAassets"
-            ReferencedContainer = "container:TAassets.xcodeproj">
+            BlueprintIdentifier = "B50F6A491D87A54B0016C15B"
+            BuildableName = "HPIView.app"
+            BlueprintName = "HPIView"
+            ReferencedContainer = "container:HPIView.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
