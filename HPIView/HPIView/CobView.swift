@@ -260,21 +260,21 @@ private func decode(_ script: UnitScript, at offset: UnitScript.Code.Index, stac
             + ";" )
         return offset + 1
         
-    case .pushConstant:
+    case .pushImmediate:
         let value = code[offset + 1]
         stack.append(.constant(value))
         printLine(instructionString(for: instruction, at: offset) + "stack push value")
         printLine(valueString(for: value, at: offset+1) + "value: \(value)")
         return offset + 2
         
-    case .pushLocalVariable:
+    case .pushLocal:
         let index = code[offset + 1]
         stack.append(.local(index))
         printLine(instructionString(for: instruction, at: offset) + "stack push local")
         printLine(valueString(for: index, at: offset+1) + "local: \(index)")
         return offset + 2
         
-    case .pushStaticVariable:
+    case .pushStatic:
         let index = code[offset + 1]
         stack.append(.`static`(index))
         printLine(instructionString(for: instruction, at: offset) + "stack push static")
@@ -285,7 +285,7 @@ private func decode(_ script: UnitScript, at offset: UnitScript.Code.Index, stac
         printLine(instructionString(for: instruction, at: offset) + "allocate local")
         return offset + 1
         
-    case .setLocalVariable:
+    case .setLocal:
         let index = code[offset + 1]
         let value = stack.pop()
         printLine(instructionString(for: instruction, at: offset) + "set local variable")
@@ -293,7 +293,7 @@ private func decode(_ script: UnitScript, at offset: UnitScript.Code.Index, stac
         printLine(statementString() + StackItem.local(index).expand() + " = " + value.expand() + ";")
         return offset + 2
         
-    case .setStaticVariable:
+    case .setStatic:
         let index = code[offset + 1]
         let value = stack.pop()
         printLine(instructionString(for: instruction, at: offset) + "set static variable")

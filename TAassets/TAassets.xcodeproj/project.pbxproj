@@ -30,7 +30,7 @@
 		B5E26F0B1ED9EB05006C329B /* UnitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EFE1ED9EB05006C329B /* UnitModel.swift */; };
 		B5E26F0C1ED9EB05006C329B /* UnitObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26EFF1ED9EB05006C329B /* UnitObject.swift */; };
 		B5E26F0D1ED9EB05006C329B /* UnitScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F001ED9EB05006C329B /* UnitScript.swift */; };
-		B5E26F0E1ED9EB05006C329B /* UnitScriptVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F011ED9EB05006C329B /* UnitScriptVM.swift */; };
+		B5E26F0E1ED9EB05006C329B /* UnitScript+VM.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F011ED9EB05006C329B /* UnitScript+VM.swift */; };
 		B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F021ED9EB05006C329B /* Utility.swift */; };
 		B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F371ED9F0ED006C329B /* GafView.swift */; };
 		B5E26F3A1ED9F104006C329B /* PcxImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F391ED9F104006C329B /* PcxImage.swift */; };
@@ -42,6 +42,7 @@
 		B5E26F4E1EE3BFB4006C329B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4D1EE3BFB4006C329B /* MapView.swift */; };
 		B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4F1EE4813A006C329B /* MapBrowser.swift */; };
 		B5E26F521EE48A97006C329B /* Filesystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F511EE48A97006C329B /* Filesystem.swift */; };
+		F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -77,7 +78,7 @@
 		B5E26EFE1ED9EB05006C329B /* UnitModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitModel.swift; sourceTree = "<group>"; };
 		B5E26EFF1ED9EB05006C329B /* UnitObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitObject.swift; sourceTree = "<group>"; };
 		B5E26F001ED9EB05006C329B /* UnitScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitScript.swift; sourceTree = "<group>"; };
-		B5E26F011ED9EB05006C329B /* UnitScriptVM.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitScriptVM.swift; sourceTree = "<group>"; };
+		B5E26F011ED9EB05006C329B /* UnitScript+VM.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+VM.swift"; sourceTree = "<group>"; };
 		B5E26F021ED9EB05006C329B /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		B5E26F371ED9F0ED006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GafView.swift; path = ../../HPIView/HPIView/GafView.swift; sourceTree = "<group>"; };
 		B5E26F391ED9F104006C329B /* PcxImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PcxImage.swift; path = ../../HPIView/HPIView/PcxImage.swift; sourceTree = "<group>"; };
@@ -90,6 +91,7 @@
 		B5E26F4D1EE3BFB4006C329B /* MapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MapView.swift; path = ../../HPIView/HPIView/MapView.swift; sourceTree = "<group>"; };
 		B5E26F4F1EE4813A006C329B /* MapBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapBrowser.swift; sourceTree = "<group>"; };
 		B5E26F511EE48A97006C329B /* Filesystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Filesystem.swift; sourceTree = "<group>"; };
+		F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitScript+Instructions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,7 +182,8 @@
 				B5E26F3F1EE37211006C329B /* UnitModel+Instance.swift */,
 				B5E26EFF1ED9EB05006C329B /* UnitObject.swift */,
 				B5E26F001ED9EB05006C329B /* UnitScript.swift */,
-				B5E26F011ED9EB05006C329B /* UnitScriptVM.swift */,
+				F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */,
+				B5E26F011ED9EB05006C329B /* UnitScript+VM.swift */,
 				B5E26F3D1EDB4A02006C329B /* UnitTextureAtlas.swift */,
 				B5E26F021ED9EB05006C329B /* Utility.swift */,
 			);
@@ -262,7 +265,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5E26F061ED9EB05006C329B /* ModelTexturePack.swift in Sources */,
-				B5E26F0E1ED9EB05006C329B /* UnitScriptVM.swift in Sources */,
+				B5E26F0E1ED9EB05006C329B /* UnitScript+VM.swift in Sources */,
 				B5E26F0A1ED9EB05006C329B /* UnitInfo.swift in Sources */,
 				B5E26F3C1ED9F11E006C329B /* CocoaUtility.swift in Sources */,
 				B5E26F041ED9EB05006C329B /* Geometry.swift in Sources */,
@@ -274,6 +277,7 @@
 				B5E26F481EE375B5006C329B /* OpenGL+Extensions.swift in Sources */,
 				B5E26F441EE3745F006C329B /* UnitView.swift in Sources */,
 				B5D432FA1F0995CC005B468E /* QuickLookView.swift in Sources */,
+				F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */,
 				B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */,
 				B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */,
 				B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */,

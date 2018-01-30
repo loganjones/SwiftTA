@@ -141,12 +141,12 @@ extension UnitScript {
         case waitForTurn            = 0x10011000
         case waitForMove            = 0x10012000
         case sleep                  = 0x10013000
-        case pushConstant           = 0x10021001
-        case pushLocalVariable      = 0x10021002
-        case pushStaticVariable     = 0x10021004
+        case pushImmediate          = 0x10021001
+        case pushLocal              = 0x10021002
+        case pushStatic             = 0x10021004
         case stackAllocate          = 0x10022000
-        case setLocalVariable       = 0x10023002
-        case setStaticVariable      = 0x10023004
+        case setLocal               = 0x10023002
+        case setStatic              = 0x10023004
         case popStack               = 0x10024000
         case add                    = 0x10031000
         case subtract               = 0x10032000
