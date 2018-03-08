@@ -87,6 +87,41 @@ extension Array {
     public subscript(index: UInt16) -> Element { return self[Int(index)] }
 }
 
+extension Array {
+    
+    init(count: Int, eachValue valueInit: (Int) -> Element ) {
+        var a = Array<Element>()
+        a.reserveCapacity(count)
+        for i in 0..<count {
+            a.append(valueInit(i))
+        }
+        self = a
+    }
+    
+    mutating func replaceElements<S>(withContentsOf s: S, startingAt index: Index = 0) where Element == S.Element, S : Sequence {
+        var i = index
+        for e in s {
+            guard i < count else { break }
+            self[i] = e
+            i += 1
+        }
+    }
+    
+    var indexRange: CountableRange<Index> {
+        return startIndex..<endIndex
+    }
+    
+    func contains(index i: Index) -> Bool {
+        return indexRange.contains(i)
+    }
+    
+    public subscript(safe index: Index) -> Element? {
+        guard contains(index: index) else { return nil }
+        return self[index]
+    }
+    
+}
+
 // MARK:- String Formatters
 
 extension UInt8 {
