@@ -42,8 +42,20 @@
 		B5E26F4E1EE3BFB4006C329B /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4D1EE3BFB4006C329B /* MapView.swift */; };
 		B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4F1EE4813A006C329B /* MapBrowser.swift */; };
 		B5E26F521EE48A97006C329B /* Filesystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F511EE48A97006C329B /* Filesystem.swift */; };
+		F09272362051E214007C51EC /* UnitScript+CobDecompile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09272352051E214007C51EC /* UnitScript+CobDecompile.swift */; };
+		F092723E205206E9007C51EC /* CobDecompileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F092723D205206E9007C51EC /* CobDecompileTests.swift */; };
 		F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F0927240205206E9007C51EC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5C5563E1E2C86A2001BEFAB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B5C556451E2C86A2001BEFAB;
+			remoteInfo = TAassets;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		B51FF3711EECA1EC009B509A /* FileReadHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
@@ -91,6 +103,10 @@
 		B5E26F4D1EE3BFB4006C329B /* MapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MapView.swift; path = ../../HPIView/HPIView/MapView.swift; sourceTree = "<group>"; };
 		B5E26F4F1EE4813A006C329B /* MapBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapBrowser.swift; sourceTree = "<group>"; };
 		B5E26F511EE48A97006C329B /* Filesystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Filesystem.swift; sourceTree = "<group>"; };
+		F09272352051E214007C51EC /* UnitScript+CobDecompile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitScript+CobDecompile.swift"; sourceTree = "<group>"; };
+		F092723B205206E8007C51EC /* TAassetsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TAassetsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F092723D205206E9007C51EC /* CobDecompileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CobDecompileTests.swift; sourceTree = "<group>"; };
+		F092723F205206E9007C51EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitScript+Instructions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -103,6 +119,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F0927238205206E8007C51EC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -111,6 +134,7 @@
 			children = (
 				B5E26EEF1ED9EB05006C329B /* Common */,
 				B5C556481E2C86A2001BEFAB /* TAassets */,
+				F092723C205206E9007C51EC /* TAassetsTests */,
 				B5C556471E2C86A2001BEFAB /* Products */,
 				B5C5567C1E2D5CF1001BEFAB /* Frameworks */,
 			);
@@ -120,6 +144,7 @@
 			isa = PBXGroup;
 			children = (
 				B5C556461E2C86A2001BEFAB /* TAassets.app */,
+				F092723B205206E8007C51EC /* TAassetsTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -182,6 +207,7 @@
 				B5E26F3F1EE37211006C329B /* UnitModel+Instance.swift */,
 				B5E26EFF1ED9EB05006C329B /* UnitObject.swift */,
 				B5E26F001ED9EB05006C329B /* UnitScript.swift */,
+				F09272352051E214007C51EC /* UnitScript+CobDecompile.swift */,
 				F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */,
 				B5E26F011ED9EB05006C329B /* UnitScript+VM.swift */,
 				B5E26F3D1EDB4A02006C329B /* UnitTextureAtlas.swift */,
@@ -189,6 +215,15 @@
 			);
 			name = Common;
 			path = ../Common;
+			sourceTree = "<group>";
+		};
+		F092723C205206E9007C51EC /* TAassetsTests */ = {
+			isa = PBXGroup;
+			children = (
+				F092723D205206E9007C51EC /* CobDecompileTests.swift */,
+				F092723F205206E9007C51EC /* Info.plist */,
+			);
+			path = TAassetsTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -211,13 +246,31 @@
 			productReference = B5C556461E2C86A2001BEFAB /* TAassets.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F092723A205206E8007C51EC /* TAassetsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F0927242205206E9007C51EC /* Build configuration list for PBXNativeTarget "TAassetsTests" */;
+			buildPhases = (
+				F0927237205206E8007C51EC /* Sources */,
+				F0927238205206E8007C51EC /* Frameworks */,
+				F0927239205206E8007C51EC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F0927241205206E9007C51EC /* PBXTargetDependency */,
+			);
+			name = TAassetsTests;
+			productName = TAassetsTests;
+			productReference = F092723B205206E8007C51EC /* TAassetsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		B5C5563E1E2C86A2001BEFAB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0820;
+				LastSwiftUpdateCheck = 0920;
 				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = "Logan Jones";
 				TargetAttributes = {
@@ -225,6 +278,11 @@
 						CreatedOnToolsVersion = 8.2.1;
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
+					};
+					F092723A205206E8007C51EC = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+						TestTargetID = B5C556451E2C86A2001BEFAB;
 					};
 				};
 			};
@@ -242,6 +300,7 @@
 			projectRoot = "";
 			targets = (
 				B5C556451E2C86A2001BEFAB /* TAassets */,
+				F092723A205206E8007C51EC /* TAassetsTests */,
 			);
 		};
 /* End PBXProject section */
@@ -254,6 +313,13 @@
 				B5C556841E3058A9001BEFAB /* HpiFinderRow.xib in Resources */,
 				B5C556501E2C86A2001BEFAB /* Assets.xcassets in Resources */,
 				B5C556531E2C86A2001BEFAB /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F0927239205206E8007C51EC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -285,6 +351,7 @@
 				B5E26F401EE37211006C329B /* UnitModel+Instance.swift in Sources */,
 				B52A67471EC3F35900698DEF /* CobView.swift in Sources */,
 				B5C5564E1E2C86A2001BEFAB /* TaassetsDocument.swift in Sources */,
+				F09272362051E214007C51EC /* UnitScript+CobDecompile.swift in Sources */,
 				B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */,
 				B5C5568F1E3437EF001BEFAB /* ModelView.swift in Sources */,
 				B5C556821E2F1747001BEFAB /* FinderView.swift in Sources */,
@@ -299,7 +366,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F0927237205206E8007C51EC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F092723E205206E9007C51EC /* CobDecompileTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F0927241205206E9007C51EC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B5C556451E2C86A2001BEFAB /* TAassets */;
+			targetProxy = F0927240205206E9007C51EC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		B5C556511E2C86A2001BEFAB /* Main.storyboard */ = {
@@ -443,6 +526,46 @@
 			};
 			name = Release;
 		};
+		F0927243205206E9007C51EC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = TAassetsTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = SwiftTA.TAassetsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TAassets.app/Contents/MacOS/TAassets";
+			};
+			name = Debug;
+		};
+		F0927244205206E9007C51EC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = TAassetsTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = SwiftTA.TAassetsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TAassets.app/Contents/MacOS/TAassets";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -460,6 +583,15 @@
 			buildConfigurations = (
 				B5C5566E1E2C86A2001BEFAB /* Debug */,
 				B5C5566F1E2C86A2001BEFAB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F0927242205206E9007C51EC /* Build configuration list for PBXNativeTarget "TAassetsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F0927243205206E9007C51EC /* Debug */,
+				F0927244205206E9007C51EC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

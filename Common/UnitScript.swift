@@ -264,6 +264,133 @@ extension UnitScript {
         /// #define VETERAN_LEVEL		32
         /// #define ON_ROAD				34
     }
+    
+    enum ExplodeType: CodeUnit {
+        
+        /// #define SHATTER            1        // The piece will shatter instead of remaining whole
+        case shatter            = 1
+        
+        /// #define EXPLODE_ON_HIT        2        // The piece will explode when it hits the ground
+        case explodeOnHit       = 2
+        
+        /// #define FALL            4        // The piece will fall due to gravity instead of just flying off
+        case fall               = 4
+        
+        /// #define SMOKE            8        // A smoke trail will follow the piece through the air
+        case smoke              = 8
+        
+        /// #define FIRE            16        // A fire trail will follow the piece through the air
+        case fire               = 16
+        
+        /// #define BITMAPONLY        32        // The piece will not fly off or shatter or anything.  Only a bitmap explosion will be rendered.
+        case bitmapOnly         = 32
+        
+        
+        /// #define BITMAP1            256
+        case bitmap1            = 256
+        
+        /// #define BITMAP2            512
+        case bitmap2            = 512
+        
+        /// #define BITMAP3            1024
+        case bitmap3            = 1024
+        
+        /// #define BITMAP4            2048
+        case bitmap4            = 2048
+        
+        /// #define BITMAP5            4096
+        case bitmap5            = 4096
+        
+        /// #define BITMAPNUKE        8192
+        case bitmapNuke         = 8192
+        
+        /// #define BITMAPMASK        16128    // Mask of the possible bitmap bits
+        case bitmapMask         = 16128
+        
+    }
+    
+    struct ExplodeTypeSet: OptionSet {
+        let rawValue: CodeUnit
+        
+        /// #define SHATTER            1        // The piece will shatter instead of remaining whole
+        static let shatter = ExplodeTypeSet(rawValue: 1)
+        
+        /// #define EXPLODE_ON_HIT        2        // The piece will explode when it hits the ground
+        static let explodeOnHit = ExplodeTypeSet(rawValue: 2)
+        
+        /// #define FALL            4        // The piece will fall due to gravity instead of just flying off
+        static let fall = ExplodeTypeSet(rawValue: 4)
+        
+        /// #define SMOKE            8        // A smoke trail will follow the piece through the air
+        static let smoke = ExplodeTypeSet(rawValue: 8)
+        
+        /// #define FIRE            16        // A fire trail will follow the piece through the air
+        static let fire = ExplodeTypeSet(rawValue: 16)
+        
+        /// #define BITMAPONLY        32        // The piece will not fly off or shatter or anything.  Only a bitmap explosion will be rendered.
+        static let bitmapOnly = ExplodeTypeSet(rawValue: 32)
+        
+        
+        /// #define BITMAP1            256
+        static let bitmap1 = ExplodeTypeSet(rawValue: 256)
+        
+        /// #define BITMAP2            512
+        static let bitmap2 = ExplodeTypeSet(rawValue: 512)
+        
+        /// #define BITMAP3            1024
+        static let bitmap3 = ExplodeTypeSet(rawValue: 1024)
+        
+        /// #define BITMAP4            2048
+        static let bitmap4 = ExplodeTypeSet(rawValue: 2048)
+        
+        /// #define BITMAP5            4096
+        static let bitmap5 = ExplodeTypeSet(rawValue: 4096)
+        
+        /// #define BITMAPNUKE        8192
+        static let bitmapNuke = ExplodeTypeSet(rawValue: 8192)
+        
+        /// #define BITMAPMASK        16128    // Mask of the possible bitmap bits
+        static let bitmapMask = ExplodeTypeSet(rawValue: 16128)
+    
+    }
+    
+    enum SfxType: CodeUnit {
+        
+        // Vector-based special effects
+        
+        /// #define SFXTYPE_VTOL            0
+        case vtol           = 0
+        
+        /// #define SFXTYPE_THRUST            1
+        case thrust         = 1
+        
+        /// #define    SFXTYPE_WAKE1            2
+        case wake1          = 2
+        
+        /// #define    SFXTYPE_WAKE2            3
+        case wake2          = 3
+        
+        /// #define    SFXTYPE_REVERSEWAKE1    4
+        case reverseWake1   = 4
+        
+        /// #define    SFXTYPE_REVERSEWAKE2    5
+        case reverseWake2   = 5
+        
+        
+        // Point-based (piece origin) special effects
+        /// #define SFXTYPE_POINTBASED    256
+        case pointBased     = 256
+        
+        /// #define SFXTYPE_WHITESMOKE    (SFXTYPE_POINTBASED | 1)
+        case whiteSmoke     = 257
+        
+        /// #define SFXTYPE_BLACKSMOKE    (SFXTYPE_POINTBASED | 2)
+        case blackSmoke     = 258
+        
+        /// #define SFXTYPE_SUBBUBBLES    (SFXTYPE_POINTBASED | 3)
+        case subBubbles     = 259
+        
+    }
 
     enum Animation {
         case setPosition(SetPosition)
