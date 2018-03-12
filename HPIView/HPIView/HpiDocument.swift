@@ -105,7 +105,8 @@ extension HpiItem: FinderViewItem {
                 do {
                     let gafURL = try cache.url(for: file, atHpiPath: pathString)
                     let gafFile = try FileHandle(forReadingFrom: gafURL)
-                    return try GafListing(withContentsOf: gafFile)
+                    let listing = try GafListing(withContentsOf: gafFile)
+                    return BrowserGafFile(name: file.name, listing: listing)
                 }
                 catch {
                     return nil
@@ -154,24 +155,27 @@ extension GafItem: FinderViewItem {
     
 }
 
-extension GafListing: FinderViewDirectory {
+struct BrowserGafFile: FinderViewDirectory {
+    
+    var name: String
+    var listing: GafListing
     
     var numberOfItems: Int {
-        return items.count
+        return listing.items.count
     }
     
     func item(at index: Int) -> FinderViewItem {
-        return items[index]
+        return listing.items[index]
     }
     
     func index(of item: FinderViewItem) -> Int? {
         guard let other = item as? GafItem else { return nil }
-        let i = items.index(where: { $0.name == other.name })
+        let i = listing.items.index(where: { $0.name == other.name })
         return i
     }
     
     func index(where predicate: (FinderViewItem) -> Bool) -> Int? {
-        return items.index(where: predicate)
+        return listing.items.index(where: predicate)
     }
     
 }
@@ -318,9 +322,9 @@ extension HpiBrowserWindowController: FinderViewDelegate {
     func preview(for item: GafItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
         
         // MORE TEMP
-        guard let listing = pathDirectories.last as? GafListing,
+        guard let gafFile = pathDirectories.last as? BrowserGafFile,
             let parent = pathDirectories[pathDirectories.endIndex-2] as? HpiItem.Directory,
-            let i = parent.items.index(where: { $0.name == listing.name }),
+            let i = parent.items.index(where: { $0.name == gafFile.name }),
             case .file(let file) = parent.items[i]
             else { return nil }
         

@@ -28,17 +28,12 @@ enum GafFrameCompressionMethod: UInt8 {
 
 struct GafListing {
     
-    // TEMP
-    var name: String
-    
     var items: [GafItem]
     
     /// Parse & load a GAF archive into a list of GafItems.
     init<File>(withContentsOf gaf: File) throws
         where File: FileReadHandle
     {
-        name = gaf.fileName
-        
         let fileHeader = try gaf.readValue(ofType: TA_GAF_HEADER.self)
         guard fileHeader.version == TA_GAF_VERSION_STANDARD else { throw LoadError.badGafVersion(fileHeader.version) }
         
