@@ -171,7 +171,7 @@ extension UInt32 {
 extension String {
     
     func padLeft(with character: String, toLength length: Int) -> String {
-        let padCount = length - self.characters.count
+        let padCount = length - self.count
         guard padCount > 0 else { return self }
         return String(repeating: character, count: padCount) + self
     }
@@ -179,7 +179,7 @@ extension String {
     func splitEvery(_ stride: Int, with splitter: String) -> String {
         var out = ""
         var counter = 0
-        for c in characters {
+        for c in self {
             if counter == stride {
                 out.append(splitter)
                 counter = 1

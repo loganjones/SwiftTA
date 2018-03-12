@@ -15,6 +15,8 @@
 		B50F6A581D87A54B0016C15B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A561D87A54B0016C15B /* MainMenu.xib */; };
 		B51FF36E1EEC6711009B509A /* Filesystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF36D1EEC66F4009B509A /* Filesystem.swift */; };
 		B51FF3701EEC966E009B509A /* FileReadHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF36F1EEC966E009B509A /* FileReadHandle.swift */; };
+		B53524E32055BB5B007A2A2C /* UnitScript+CobDecompile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56086742055B519005AAEC6 /* UnitScript+CobDecompile.swift */; };
+		B53524E42055BB70007A2A2C /* UnitScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F201ED9EB80006C329B /* UnitScript.swift */; };
 		B553EE361DDFE2270033C70D /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE351DDFE2270033C70D /* ModelView.swift */; };
 		B553EE381DE004AB0033C70D /* FinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE371DE004AB0033C70D /* FinderView.swift */; };
 		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
@@ -28,7 +30,6 @@
 		B5E26F291ED9EB80006C329B /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */; };
 		B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1E1ED9EB80006C329B /* UnitModel.swift */; };
 		B5E26F2B1ED9EB80006C329B /* UnitObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1F1ED9EB80006C329B /* UnitObject.swift */; };
-		B5E26F2C1ED9EB80006C329B /* UnitScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F201ED9EB80006C329B /* UnitScript.swift */; };
 		B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F221ED9EB80006C329B /* Utility.swift */; };
 		B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F2F1ED9ECE9006C329B /* CobView.swift */; };
 		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
@@ -51,6 +52,7 @@
 		B51FF36F1EEC966E009B509A /* FileReadHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
 		B553EE351DDFE2270033C70D /* ModelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelView.swift; sourceTree = "<group>"; };
 		B553EE371DE004AB0033C70D /* FinderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FinderView.swift; sourceTree = "<group>"; };
+		B56086742055B519005AAEC6 /* UnitScript+CobDecompile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+CobDecompile.swift"; sourceTree = "<group>"; };
 		B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		B58ECAC01DC6BE90005F231F /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HpiFileCache.swift; sourceTree = "<group>"; };
@@ -169,6 +171,7 @@
 				B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */,
 				B5E26F1F1ED9EB80006C329B /* UnitObject.swift */,
 				B5E26F201ED9EB80006C329B /* UnitScript.swift */,
+				B56086742055B519005AAEC6 /* UnitScript+CobDecompile.swift */,
 				B5E26F221ED9EB80006C329B /* Utility.swift */,
 			);
 			name = Common;
@@ -274,7 +277,8 @@
 				B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */,
 				B553EE361DDFE2270033C70D /* ModelView.swift in Sources */,
 				B5E26F361ED9EFE6006C329B /* CocoaUtility.swift in Sources */,
-				B5E26F2C1ED9EB80006C329B /* UnitScript.swift in Sources */,
+				B53524E42055BB70007A2A2C /* UnitScript.swift in Sources */,
+				B53524E32055BB5B007A2A2C /* UnitScript+CobDecompile.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
