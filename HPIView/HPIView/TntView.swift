@@ -40,7 +40,7 @@ class TntView: NSView {
         let map = try MapModel(contentsOf: tntFile)
         switch map {
         case .ta(let model):
-            let contentView = TaMapTileView(frame: NSRect(x: 0, y: 0, width: model.resolution.width, height: model.resolution.height))
+            let contentView = TaMapTileView(frame: NSRect(size: model.resolution))
             contentView.map = model
             contentView.palette = palette
             scrollView.documentView = contentView
