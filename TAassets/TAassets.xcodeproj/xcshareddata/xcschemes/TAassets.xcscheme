@@ -33,7 +33,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B5C556581E2C86A2001BEFAB"
+               BlueprintIdentifier = "F092723A205206E8007C51EC"
                BuildableName = "TAassetsTests.xctest"
                BlueprintName = "TAassetsTests"
                ReferencedContainer = "container:TAassets.xcodeproj">

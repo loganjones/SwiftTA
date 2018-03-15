@@ -22,7 +22,7 @@
 typedef struct TA_TNT_HEADER
 {
     /// Specifies the TNT version of this map
-	uint32_t		version;
+	int32_t         version;
 
     /// The width and height of this map in map-units.
     /// A map-unit is 16x16 pixels, so to find the pixel width or height,
@@ -47,7 +47,7 @@ typedef struct TA_TNT_HEADER
 typedef struct TA_TNT_EXT_HEADER
 {
     /// Specifies the location of an array that contains indicies into the
-    /// tile array. This array consists of WORD[ (Width/2)*(Height/2) ].
+    /// tile array. This array consists of uint16_t[ (Width/2)*(Height/2) ].
     /// This array specifies the arrangement of the tiles on the map.
 	uint32_t		offsetToTileIndexArray;
 

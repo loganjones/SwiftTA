@@ -68,8 +68,7 @@ class GafView: NSImageView {
             if frameInfo.numberOfSubFrames == 0,
                 let frameData = try? GafItem.read(frame: frameInfo, from: gaf) {
                 self.image = NSImage(imageIndices: frameData,
-                                     imageWidth: Int(frameInfo.width),
-                                     imageHeight: Int(frameInfo.height),
+                                     size: frameInfo.size,
                                      palette: palette)
             }
         }
@@ -83,15 +82,19 @@ class GafView: NSImageView {
     
 }
 
-extension NSImage {
+extension TA_GAF_FRAME_DATA {
+    var size: Size2D {
+        return Size2D(width: Int(width), height: Int(height))
+    }
+}
+
+extension Palette {
     
-    convenience init(imageIndices: Data, imageWidth: Int, imageHeight: Int, palette: Palette) {
-        
-        let size = (width: imageWidth, height: imageHeight)
-        let cfdata = imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) -> CFData in
-            
-            var pixelData = Data(count: size.width * size.height * 3)
-            return pixelData.withUnsafeMutableBytes({ (pixels: UnsafeMutablePointer<UInt8>) -> CFData in
+    func mapIndices(_ imageIndices: Data, size: Size2D) -> Data {
+        let palette = self
+        var pixelData = Data(count: size.area * 3)
+        pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
+            imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
                 var pixel = pixels
                 var raw = indices
                 for _ in 0..<(size.width * size.height) {
@@ -102,29 +105,64 @@ extension NSImage {
                     pixel += 3
                     raw += 1
                 }
-                return CFDataCreate(kCFAllocatorDefault, pixels, pixelData.count)
-            })
-            
+            }
         }
-        let image = CGImage(width: size.width,
-                            height: size.height,
-                            bitsPerComponent: 8,
-                            bitsPerPixel: 24,
-                            bytesPerRow: size.width * 3,
-                            space: CGColorSpaceCreateDeviceRGB(),
-                            bitmapInfo: [],
-                            provider: CGDataProvider(data: cfdata)!,
-                            decode: nil,
-                            shouldInterpolate: false,
-                            intent: .defaultIntent)
-        self.init(cgImage: image!, size: NSSize(width: size.width, height: size.height))
+        return pixelData
     }
     
-    enum LoadError: Error {
-        case failedToOpenGAF
-        case noFrames
-        case unsupportedFrameCompression(UInt8)
+    func mapIndicesFlipped(_ imageIndices: Data, size: Size2D) -> Data {
+        let palette = self
+        var pixelData = Data(count: size.area * 3)
+        pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
+            imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
+                var line = pixels + ((size.area - size.width) * 3)
+                var raw = indices
+                for _ in 0..<size.height {
+                    var pixel = line
+                    for _ in 0..<size.width {
+                        let colorIndex = raw.pointee
+                        pixel[0] = palette[colorIndex].red
+                        pixel[1] = palette[colorIndex].green
+                        pixel[2] = palette[colorIndex].blue
+                        pixel += 3
+                        raw += 1
+                    }
+                    line -= size.width * 3
+                }
+            }
+        }
+        return pixelData
     }
+    
+}
+
+extension CGImage {
+    
+    static func createWith(imageIndices: Data, size: Size2D, palette: Palette, isFlipped: Bool = false) -> CGImage {
+        let data = isFlipped ? palette.mapIndicesFlipped(imageIndices, size: size) : palette.mapIndices(imageIndices, size: size)
+        return CGImage(
+            width: size.width,
+            height: size.height,
+            bitsPerComponent: 8,
+            bitsPerPixel: 24,
+            bytesPerRow: size.width * 3,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: [],
+            provider: CGDataProvider(data: data as CFData)!,
+            decode: nil,
+            shouldInterpolate: false,
+            intent: .defaultIntent)!
+    }
+    
+}
+
+extension NSImage {
+    
+    convenience init(imageIndices: Data, size: Size2D, palette: Palette) {
+        let image = CGImage.createWith(imageIndices: imageIndices, size: size, palette: palette)
+        self.init(cgImage: image, size: NSSize(width: size.width, height: size.height))
+    }
+    
 }
 
 struct Palette {

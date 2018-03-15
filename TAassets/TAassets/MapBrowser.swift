@@ -185,7 +185,7 @@ class MapDetailViewController: NSViewController {
         private unowned let titleLabel: NSTextField
         private unowned let sizeLabel: NSTextField
         private unowned let sourceLabel: NSTextField
-        unowned let mapView: MapView
+        unowned let mapView: TntView
         
         override init(frame frameRect: NSRect) {
             let titleLabel = NSTextField(labelWithString: "Title")
@@ -197,7 +197,7 @@ class MapDetailViewController: NSViewController {
             let sourceLabel = NSTextField(labelWithString: "None")
             sourceLabel.font = NSFont.systemFont(ofSize: 9)
             sourceLabel.textColor = NSColor.secondaryLabelColor
-            let contentBox = MapView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
+            let contentBox = TntView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
             
             self.titleLabel = titleLabel
             self.sizeLabel = sizeLabel

@@ -288,7 +288,7 @@ extension HpiBrowserWindowController: FinderViewDelegate {
             }
             else if fileExtension.caseInsensitiveCompare("tnt") == .orderedSame {
                 let mapFile = try FileHandle(forReadingFrom: fileURL)
-                let view = MapView(frame: contentView.bounds)
+                let view = TntView(frame: contentView.bounds)
                 try view.load(contentsOf: mapFile, using: mainPalette)
                 subview = view
             }
