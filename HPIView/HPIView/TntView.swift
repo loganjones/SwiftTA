@@ -67,15 +67,16 @@ class TaMapTileView: NSView {
         NSColor.black.setFill()
         context.fill(dirtyRect)
         
+        let tileSize = map.tileSet.tileSize
         var cache: [Int: CGImage] = [:]
         map.eachTile(in: dirtyRect) { (tile, index, column, row) in
             let image: CGImage
             if let cached = cache[index] { image = cached }
             else {
-                image = CGImage.createWith(imageIndices: tile, size: map.tileSize, palette: palette, isFlipped: true)
+                image = CGImage.createWith(imageIndices: tile, size: tileSize, palette: palette, isFlipped: true)
                 cache[index] = image
             }
-            context.draw(image, in: CGRect(x: column * map.tileSize.width, y: row * map.tileSize.height, width: image.width, height: image.height))
+            context.draw(image, in: CGRect(x: column * tileSize.width, y: row * tileSize.height, width: image.width, height: image.height))
         }
         
     }

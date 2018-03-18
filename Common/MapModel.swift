@@ -66,28 +66,18 @@ struct TaMapModel {
     
     var mapSize: Size2D
     
-    var tileCount: Int
-    var tiles: Data
-    let tileSize = Size2D(width: 32, height: 32)
+    var tileSet: TileSet
+    var tileIndexMap: TileIndexMap
     
-    fileprivate var tileIndexMap: TileIndexMap
+    var heightMap: [Int]
+    var featureMap: [Int?]
+    var features: [String]
     
     var minimap: MinimapImage
     
 }
 
 extension TaMapModel {
-    
-    func tile(at index: Int) -> Data? {
-        guard (0..<tileCount).contains(index) else { return nil }
-        return _tile(at: index)
-    }
-    
-    fileprivate func _tile(at index: Int) -> Data {
-        let count = tileSize.area
-        let offset = index * count
-        return tiles.subdata(in: offset..<(offset + count))
-    }
     
     var resolution: Size2D {
         return mapSize * 16
@@ -98,16 +88,18 @@ extension TaMapModel {
 extension TaMapModel {
     
     func tileColumns(in rect: NSRect) -> CountableClosedRange<Int> {
-        let start = Int(floor(rect.minX)) / tileSize.width
-        var end = Int(ceil(rect.maxX)) / tileSize.width
-        if CGFloat(end * tileSize.width) < rect.maxX { end += 1 }
+        let tileWidth = tileSet.tileSize.width
+        let start = Int(floor(rect.minX)) / tileWidth
+        var end = Int(ceil(rect.maxX)) / tileWidth
+        if CGFloat(end * tileWidth) < rect.maxX { end += 1 }
         return max(start,0)...min(end, tileIndexMap.size.width-1)
     }
     
     func tileRows(in rect: NSRect) -> CountableClosedRange<Int> {
-        let start = Int(floor(rect.minY)) / tileSize.height
-        var end = Int(ceil(rect.maxY)) / tileSize.height
-        if CGFloat(end * tileSize.height) < rect.maxY { end += 1 }
+        let tileheight = tileSet.tileSize.height
+        let start = Int(floor(rect.minY)) / tileheight
+        var end = Int(ceil(rect.maxY)) / tileheight
+        if CGFloat(end * tileheight) < rect.maxY { end += 1 }
         return max(start,0)...min(end, tileIndexMap.size.height-1)
     }
     
@@ -115,7 +107,7 @@ extension TaMapModel {
         let rows = tileRows(in: rect)
         let columns = tileColumns(in: rect)
         tileIndexMap.eachIndex(inColumns: columns, rows: rows) { (index, column, row) in
-            let tile = _tile(at: index)
+            let tile = tileSet[index]
             visit(tile, index, column, row)
         }
     }
@@ -128,15 +120,31 @@ private extension TaMapModel {
         self.mapSize = mapSize
         
         let header = try tntFile.readValue(ofType: TA_TNT_EXT_HEADER.self)
+        let seaLevel = Int(header.seaLevel)
         
         tntFile.seek(toFileOffset: header.offsetToTileIndexArray)
         let tileIndexCount = mapSize / 2
         let tileIndexData = try tntFile.readData(verifyingLength: tileIndexCount.area * MemoryLayout<UInt16>.size)
         tileIndexMap = TileIndexMap(indices: tileIndexData, size: tileIndexCount)
         
+        tntFile.seek(toFileOffset: header.offsetToMapInfoArray)
+        let entries = try tntFile.readArray(ofType: TA_TNT_MAP_ENTRY.self, count: mapSize.area)
+        heightMap = entries.map { Int($0.elevation) - seaLevel }
+        
         tntFile.seek(toFileOffset: header.offsetToTileArray)
-        tiles = try tntFile.readData(verifyingLength: Int(header.numberOfTiles) * tileSize.area)
-        tileCount = Int(header.numberOfTiles)
+        let tileSize = Size2D(width: 32, height: 32)
+        let tiles = try tntFile.readData(verifyingLength: Int(header.numberOfTiles) * tileSize.area)
+        tileSet = TileSet(tiles: tiles, count: Int(header.numberOfTiles), tileSize: tileSize)
+        
+        tntFile.seek(toFileOffset: header.offsetToFeatureEntryArray)
+        features = try tntFile.readArray(ofType: TA_TNT_FEATURE_ENTRY.self, count: Int(header.numberOfFeatures)).map { $0.nameString }
+        
+        let featureIndexRange = 0..<features.count
+        featureMap = entries.map {
+            let i = Int($0.special)
+            guard featureIndexRange.contains(i) else { return nil }
+            return i
+        }
         
         tntFile.seek(toFileOffset: header.offsetToMiniMap)
         minimap = try MinimapImage.readFrom(file: tntFile)
@@ -145,7 +153,37 @@ private extension TaMapModel {
     
 }
 
-private extension TaMapModel {
+private extension TA_TNT_FEATURE_ENTRY {
+    var nameString: String {
+        var tuple = self.name
+        return withUnsafePointer(to: &tuple) {
+            $0.withMemoryRebound(to: UInt8.self, capacity: 128) { String(cString: $0) }
+        }
+    }
+}
+
+extension TaMapModel {
+    
+    struct TileSet {
+        var tiles: Data
+        var count: Int
+        let tileSize: Size2D
+        
+        subscript(index: Int) -> Data {
+            let count = tileSize.area
+            let offset = index * count
+            return tiles.subdata(in: offset..<(offset + count))
+        }
+        
+        subscript(safe index: Int) -> Data? {
+            guard (0..<count).contains(index) else { return nil }
+            return self[index]
+        }
+    }
+    
+}
+
+extension TaMapModel {
     
     struct TileIndexMap {
         var indices: Data

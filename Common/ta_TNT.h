@@ -52,7 +52,7 @@ typedef struct TA_TNT_EXT_HEADER
 	uint32_t		offsetToTileIndexArray;
 
     /// Specifies the location of an array that contains information on each
-    /// map-unit in the map. This array consists of uint32_t[ Width*Height ].
+    /// map-unit in the map. This array consists of TA_TNT_MAP_ENTRY[ Width*Height ].
 	uint32_t		offsetToMapInfoArray;
 
     /// Specifies the location of an array that contains the garphic tiles
