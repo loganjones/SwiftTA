@@ -27,6 +27,7 @@ class UnitTextureAtlas {
     struct GafContent {
         var file: FileSystem.File
         var item: GafItem
+        var size: Size2D
     }
     
     init(for modelTextures: [UnitModel.Texture], from texPack: ModelTexturePack) {
@@ -96,11 +97,9 @@ private extension UnitTextureAtlas {
             }
         case .gafItem(let gaf):
             let file = try! filesystem.openFile(gaf.file)
-            let frameEntry = gaf.item.frames[0]
-            file.seek(toFileOffset: frameEntry.offsetToFrameData)
-            let frameInfo = try! file.readValue(ofType: TA_GAF_FRAME_DATA.self)
-            if frameInfo.numberOfSubFrames == 0, let frameData = try? GafItem.read(frame: frameInfo, from: file) {
-                frameData.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
+            let offsetToFrameData = gaf.item.frameOffsets[0]
+            if let frame = try? GafItem.extractFrame(from: file, at: offsetToFrameData) {
+                frame.data.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
                     var raw = indices
                     for row in texture.location.top ..< texture.location.bottom {
                         for col in texture.location.left ..< texture.location.right {
@@ -116,7 +115,6 @@ private extension UnitTextureAtlas {
                     }
                 }
             }
-            ()
         case .notFound:
             ()
         }
@@ -178,7 +176,7 @@ extension UnitTextureAtlas.Content {
     var size: Size2D {
         switch self {
         case .color: return Size2D(width: 8, height: 8)
-        case .gafItem(let gaf): return gaf.item.size
+        case .gafItem(let gaf): return gaf.size
         case .notFound: return Size2D.zero
         }
     }

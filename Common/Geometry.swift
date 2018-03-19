@@ -8,7 +8,7 @@
 
 import Foundation
 
-// MARK:- Size
+// MARK:- Size & Point
 
 struct Size2D {
     var width: Int
@@ -49,6 +49,44 @@ extension Size2D {
         size.height *= multiplier
     }
     
+}
+
+extension Size2D: Equatable {
+    static func ==(lhs: Size2D, rhs: Size2D) -> Bool {
+        return lhs.width == rhs.width && lhs.height == rhs.height
+    }
+}
+
+struct Point2D {
+    var x: Int
+    var y: Int
+}
+
+extension Point2D {
+    static var zero: Point2D { return Point2D(x: 0, y: 0) }
+}
+
+extension Point2D: CustomStringConvertible {
+    var description: String { return "(\(x), \(y))" }
+}
+
+extension Point2D {
+    init(_ tuple: (Int, Int)) {
+        x = tuple.0
+        y = tuple.1
+    }
+}
+
+extension Point2D {
+    static func - (lhs: Point2D, rhs: Point2D) -> Point2D {
+        return Point2D(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
+    }
+}
+
+extension Point2D: Equatable {
+    static func ==(lhs: Point2D, rhs: Point2D) -> Bool {
+        return lhs.x == rhs.x && lhs.y == rhs.y
+    }
 }
 
 // MARK:- Vertex & Vector
