@@ -45,16 +45,31 @@ extension String {
 
 extension CGImage {
     
-    static func createWith(imageIndices: Data, size: Size2D, palette: Palette, isFlipped: Bool = false) -> CGImage {
-        let data = isFlipped ? palette.mapIndicesFlipped(imageIndices, size: size) : palette.mapIndices(imageIndices, size: size)
+    static func createWith(imageIndices: Data, size: Size2D, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) -> CGImage {
+        let bitsPerPixel: Int
+        let bytesPerRow: Int
+        let bitmapInfo: CGBitmapInfo
+        let data: Data
+        if useTransparency {
+            bitsPerPixel = 32
+            bytesPerRow = size.width * 4
+            bitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
+            data = isFlipped ? palette.mapIndicesRgbaFlipped(imageIndices, size: size) : palette.mapIndicesRgba(imageIndices, size: size)
+        }
+        else {
+            bitsPerPixel = 24
+            bytesPerRow = size.width * 3
+            bitmapInfo = []
+            data = isFlipped ? palette.mapIndicesRgbFlipped(imageIndices, size: size) : palette.mapIndicesRgb(imageIndices, size: size)
+        }
         return CGImage(
             width: size.width,
             height: size.height,
             bitsPerComponent: 8,
-            bitsPerPixel: 24,
-            bytesPerRow: size.width * 3,
+            bitsPerPixel: bitsPerPixel,
+            bytesPerRow: bytesPerRow,
             space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: [],
+            bitmapInfo: bitmapInfo,
             provider: CGDataProvider(data: data as CFData)!,
             decode: nil,
             shouldInterpolate: false,
@@ -65,8 +80,8 @@ extension CGImage {
 
 extension NSImage {
     
-    convenience init(imageIndices: Data, size: Size2D, palette: Palette) {
-        let image = CGImage.createWith(imageIndices: imageIndices, size: size, palette: palette)
+    convenience init(imageIndices: Data, size: Size2D, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) {
+        let image = CGImage.createWith(imageIndices: imageIndices, size: size, palette: palette, useTransparency: useTransparency, isFlipped: isFlipped)
         self.init(cgImage: image, size: NSSize(size))
     }
     
