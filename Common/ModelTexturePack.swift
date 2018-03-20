@@ -57,7 +57,10 @@ private extension ModelTexturePack.Gaf {
 
     static func load(contentsOf file: FileSystem.FileHandle) throws -> [ModelTexturePack.Gaf] {
         let listing = try GafListing(withContentsOf: file)
-        return listing.items.map { ModelTexturePack.Gaf(file: file.file, item: $0) }
+        return try listing.items.map {
+            let texSize = try $0.frameInfo(ofFrameAtIndex: 0, from: file).size
+            return ModelTexturePack.Gaf(file: file.file, item: $0, size: texSize)
+        }
     }
     
 }

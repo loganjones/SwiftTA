@@ -30,12 +30,23 @@ struct Palette {
     }
     
     init(_ data: Data) {
-        entries = data.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) -> Array<Color> in
+        var colors = data.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) -> Array<Color> in
             let raw = UnsafeRawPointer(bytes)
             let p = raw.bindMemory(to: Color.self, capacity: 256)
             let buf = UnsafeBufferPointer<Color>(start: p, count: 256)
             return Array(buf)
         }
+        
+        // TEMP for TA
+        for i in colors.indexRange {
+            switch TaPaletteIndex(rawValue: i) {
+            case .clear?, .clear2?: colors[i].alpha = 0
+            case .shadow?: colors[i].alpha = 100
+            default: colors[i].alpha = 255
+            }
+        }
+        
+        entries = colors
     }
     
     init() { entries = Array(repeating: Color.white, count: 255) }
@@ -57,7 +68,7 @@ extension Palette.Color {
 
 extension Palette {
     
-    func mapIndices(_ imageIndices: Data, size: Size2D) -> Data {
+    func mapIndicesRgb(_ imageIndices: Data, size: Size2D) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 3)
         pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
@@ -77,7 +88,7 @@ extension Palette {
         return pixelData
     }
     
-    func mapIndicesFlipped(_ imageIndices: Data, size: Size2D) -> Data {
+    func mapIndicesRgbFlipped(_ imageIndices: Data, size: Size2D) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 3)
         pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
@@ -101,4 +112,67 @@ extension Palette {
         return pixelData
     }
     
+    func mapIndicesRgba(_ imageIndices: Data, size: Size2D) -> Data {
+        let palette = self
+        var pixelData = Data(count: size.area * 4)
+        pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
+            imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
+                var pixel = pixels
+                var raw = indices
+                for _ in 0..<(size.width * size.height) {
+                    let colorIndex = raw.pointee
+                    pixel[0] = palette[colorIndex].red
+                    pixel[1] = palette[colorIndex].green
+                    pixel[2] = palette[colorIndex].blue
+                    pixel[3] = palette[colorIndex].alpha
+                    pixel += 4
+                    raw += 1
+                }
+            }
+        }
+        return pixelData
+    }
+    
+    func mapIndicesRgbaFlipped(_ imageIndices: Data, size: Size2D) -> Data {
+        let palette = self
+        var pixelData = Data(count: size.area * 4)
+        pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
+            imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
+                var line = pixels + ((size.area - size.width) * 4)
+                var raw = indices
+                for _ in 0..<size.height {
+                    var pixel = line
+                    for _ in 0..<size.width {
+                        let colorIndex = raw.pointee
+                        pixel[0] = palette[colorIndex].red
+                        pixel[1] = palette[colorIndex].green
+                        pixel[2] = palette[colorIndex].blue
+                        pixel[3] = palette[colorIndex].alpha
+                        pixel += 4
+                        raw += 1
+                    }
+                    line -= size.width * 4
+                }
+            }
+        }
+        return pixelData
+    }
+    
+}
+
+enum TaPaletteIndex: Int {
+    case clear      = 0
+    case clear2     = 9
+    case shadow     = 10
+    case cyan       = 100
+    case black      = 245
+    case lightGrey2 = 246
+    case lightGrey  = 247
+    case darkGrey   = 248
+    case red        = 249
+    case green      = 250
+    case yellow     = 251
+    case blue       = 252
+    case lightBlue  = 254
+    case white      = 255
 }

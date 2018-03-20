@@ -297,7 +297,7 @@ private extension RangeReplaceableCollection {
 
 // MARK:- Geometry 3DO Extensions
 
-let ANGULAR_CONSTANT = 182.0
+let ANGULAR_CONSTANT = 65536.0 / 360.0
 let LINEAR_CONSTANT = 163840.0 / 2.5
 
 extension Vertex3 {
