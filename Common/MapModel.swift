@@ -83,6 +83,16 @@ extension TaMapModel {
         return mapSize * 16
     }
     
+    // TEMP
+    func height(at point: Point2D) -> Int {
+        let index = (point.y * mapSize.width) + point.x
+        return heightMap[index]
+    }
+    func featureIndex(at point: Point2D) -> Int? {
+        let index = (point.y * mapSize.width) + point.x
+        return featureMap[index]
+    }
+    
 }
 
 extension TaMapModel {
