@@ -58,6 +58,7 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
     }
     
     override func viewDidLoad() {
+        let begin = Date()
         let unitsDirectory = filesystem.root[directory: "units"] ?? FileSystem.Directory()
         let units = unitsDirectory.items
             .flatMap { $0.asFile() }
@@ -65,6 +66,8 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
             .flatMap { try? filesystem.openFile($0) }
             .map { UnitInfo(contentsOf: $0) }
         self.units = units
+        let end = Date()
+        print("UnitInfo list load time: \(end.timeIntervalSince(begin)) seconds")
         
         do {
             let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")

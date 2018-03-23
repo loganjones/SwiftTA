@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B51FF3721EECA1F3009B509A /* FileReadHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF3711EECA1EC009B509A /* FileReadHandle.swift */; };
 		B52A67471EC3F35900698DEF /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A67461EC3F35900698DEF /* CobView.swift */; };
+		B5B258622063405800DD6A15 /* TdfParseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B258612063405800DD6A15 /* TdfParseTests.swift */; };
 		B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556491E2C86A2001BEFAB /* AppDelegate.swift */; };
 		B5C5564E1E2C86A2001BEFAB /* TaassetsDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5564D1E2C86A2001BEFAB /* TaassetsDocument.swift */; };
 		B5C556501E2C86A2001BEFAB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5C5564F1E2C86A2001BEFAB /* Assets.xcassets */; };
@@ -40,6 +41,7 @@
 		B5E26F4E1EE3BFB4006C329B /* TntView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4D1EE3BFB4006C329B /* TntView.swift */; };
 		B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4F1EE4813A006C329B /* MapBrowser.swift */; };
 		B5E26F521EE48A97006C329B /* Filesystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F511EE48A97006C329B /* Filesystem.swift */; };
+		F021E3A02062F93A00D3BD39 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F021E39F2062F93A00D3BD39 /* TdfParser.swift */; };
 		F09272362051E214007C51EC /* UnitScript+CobDecompile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09272352051E214007C51EC /* UnitScript+CobDecompile.swift */; };
 		F092723E205206E9007C51EC /* CobDecompileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F092723D205206E9007C51EC /* CobDecompileTests.swift */; };
 		F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */; };
@@ -62,6 +64,7 @@
 /* Begin PBXFileReference section */
 		B51FF3711EECA1EC009B509A /* FileReadHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
 		B52A67461EC3F35900698DEF /* CobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CobView.swift; path = ../../HPIView/HPIView/CobView.swift; sourceTree = "<group>"; };
+		B5B258612063405800DD6A15 /* TdfParseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParseTests.swift; sourceTree = "<group>"; };
 		B5C556461E2C86A2001BEFAB /* TAassets.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TAassets.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5C556491E2C86A2001BEFAB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B5C5564D1E2C86A2001BEFAB /* TaassetsDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaassetsDocument.swift; sourceTree = "<group>"; };
@@ -103,6 +106,7 @@
 		B5E26F4D1EE3BFB4006C329B /* TntView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TntView.swift; path = ../../HPIView/HPIView/TntView.swift; sourceTree = "<group>"; };
 		B5E26F4F1EE4813A006C329B /* MapBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapBrowser.swift; sourceTree = "<group>"; };
 		B5E26F511EE48A97006C329B /* Filesystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Filesystem.swift; sourceTree = "<group>"; };
+		F021E39F2062F93A00D3BD39 /* TdfParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
 		F09272352051E214007C51EC /* UnitScript+CobDecompile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitScript+CobDecompile.swift"; sourceTree = "<group>"; };
 		F092723B205206E8007C51EC /* TAassetsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TAassetsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F092723D205206E9007C51EC /* CobDecompileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CobDecompileTests.swift; sourceTree = "<group>"; };
@@ -205,6 +209,7 @@
 				B5E26EF91ED9EB05006C329B /* ta_GAF.h */,
 				B5E26EFA1ED9EB05006C329B /* ta_HPI.h */,
 				B5E26F4A1EE3AF6B006C329B /* ta_TNT.h */,
+				F021E39F2062F93A00D3BD39 /* TdfParser.swift */,
 				B5E26EFC1ED9EB05006C329B /* UnitData.swift */,
 				B5E26EFD1ED9EB05006C329B /* UnitInfo.swift */,
 				B5E26EFE1ED9EB05006C329B /* UnitModel.swift */,
@@ -227,6 +232,7 @@
 			isa = PBXGroup;
 			children = (
 				F092723D205206E9007C51EC /* CobDecompileTests.swift */,
+				B5B258612063405800DD6A15 /* TdfParseTests.swift */,
 				F092723F205206E9007C51EC /* Info.plist */,
 			);
 			path = TAassetsTests;
@@ -353,6 +359,7 @@
 				F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */,
 				B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */,
 				B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */,
+				F021E3A02062F93A00D3BD39 /* TdfParser.swift in Sources */,
 				B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */,
 				B5E26F091ED9EB05006C329B /* UnitData.swift in Sources */,
 				B5E26F401EE37211006C329B /* UnitModel+Instance.swift in Sources */,
@@ -378,6 +385,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5B258622063405800DD6A15 /* TdfParseTests.swift in Sources */,
 				F092723E205206E9007C51EC /* CobDecompileTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
