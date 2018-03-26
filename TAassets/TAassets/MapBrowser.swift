@@ -54,11 +54,14 @@ class MapBrowserViewController: NSViewController, ContentViewController {
     }
     
     override func viewDidLoad() {
+        let begin = Date()
         let mapsDirectory = filesystem.root[directory: "maps"] ?? FileSystem.Directory()
         let maps = mapsDirectory.items
             .flatMap { $0.asFile() }
             .filter { $0.hasExtension("ota") }
         self.maps = maps
+        let end = Date()
+        print("Map list load time: \(end.timeIntervalSince(begin)) seconds")
         
         do {
             let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
@@ -92,8 +95,8 @@ extension MapBrowserViewController: NSTableViewDelegate {
             cell.identifier = NSUserInterfaceItemIdentifier(rawValue: "MapInfo")
         }
         
-        let map = maps[row]
-        cell.name = (map.name as NSString).deletingPathExtension
+        let file = maps[row]
+        cell.name = file.baseName
         return cell
     }
     
@@ -109,9 +112,7 @@ extension MapBrowserViewController: NSTableViewDelegate {
             controller.view.autoresizingMask = [.width, .width]
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
-            controller.filesystem = filesystem
-            controller.mainPalette = mainPalette
-            controller.map = maps[row]
+            try? controller.loadMap(in: maps[row], from: filesystem, using: mainPalette)
         }
         else {
             detailViewController?.view.removeFromSuperview()
@@ -152,24 +153,6 @@ class MapInfoCell: NSTableCellView {
 
 class MapDetailViewController: NSViewController {
     
-    var filesystem: FileSystem!
-    fileprivate var mainPalette: Palette!
-    
-    var map: FileSystem.File? {
-        didSet {
-            if let map = map {
-                let mapName = (map.name as NSString).deletingPathExtension
-                tempView.title = mapName
-                
-                let file = try! filesystem.openFile(at: "maps/" + mapName + ".tnt")
-                try! tempView.mapView.load(contentsOf: file, using: mainPalette)
-            }
-            else {
-                
-            }
-        }
-    }
-    
     private var tempView: TempView { return view as! TempView }
     
     override func loadView() {
@@ -179,13 +162,18 @@ class MapDetailViewController: NSViewController {
         self.view = mainView
     }
     
+    func loadMap(in otaFile: FileSystem.File, from filesystem: FileSystem, using palette: Palette) throws {
+        let name = otaFile.baseName
+        tempView.title = name
+        try tempView.mapView.load(name, from: filesystem, using: palette)
+    }
     
     private class TempView: NSView {
         
         private unowned let titleLabel: NSTextField
         private unowned let sizeLabel: NSTextField
         private unowned let sourceLabel: NSTextField
-        unowned let mapView: TntView
+        unowned let mapView: MapView
         
         override init(frame frameRect: NSRect) {
             let titleLabel = NSTextField(labelWithString: "Title")
@@ -197,7 +185,7 @@ class MapDetailViewController: NSViewController {
             let sourceLabel = NSTextField(labelWithString: "None")
             sourceLabel.font = NSFont.systemFont(ofSize: 9)
             sourceLabel.textColor = NSColor.secondaryLabelColor
-            let contentBox = TntView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
+            let contentBox = MapView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
             
             self.titleLabel = titleLabel
             self.sizeLabel = sizeLabel

@@ -10,6 +10,8 @@ import Foundation
 
 struct Palette {
     
+    private let entries: [Color]
+    
     struct Color {
         var red: UInt8
         var green: UInt8
@@ -17,7 +19,21 @@ struct Palette {
         var alpha: UInt8
     }
     
-    private let entries: [Color]
+    subscript(index: Int) -> Color {
+        return entries[index]
+    }
+    
+    subscript(index: UInt8) -> Color {
+        return entries[Int(index)]
+    }
+    
+    subscript(index: TaPaletteIndex) -> Color {
+        return entries[index.rawValue]
+    }
+    
+}
+
+extension Palette {
     
     init(contentsOf url: URL) throws {
         let data = try Data(contentsOf: url)
@@ -51,19 +67,23 @@ struct Palette {
     
     init() { entries = Array(repeating: Color.white, count: 255) }
     
-    subscript(index: Int) -> Color {
-        return entries[index]
-    }
-    
-    subscript(index: UInt8) -> Color {
-        return entries[Int(index)]
-    }
-    
 }
 
 extension Palette.Color {
     static let white = Palette.Color(red: UInt8.max, green: UInt8.max, blue: UInt8.max, alpha: UInt8.max)
     static let black = Palette.Color(red: UInt8.min, green: UInt8.min, blue: UInt8.min, alpha: UInt8.max)
+    static let shadow = Palette.Color(red: 0, green: 0, blue: 0, alpha: 100)
+}
+
+extension Palette {
+    
+    static let shadow: Palette = {
+        var colors = Array(repeating: Color.shadow, count: 255)
+        colors[TaPaletteIndex.clear.rawValue].alpha = 0
+        colors[TaPaletteIndex.clear2.rawValue].alpha = 0
+        return Palette(entries: colors)
+    }()
+    
 }
 
 extension Palette {

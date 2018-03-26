@@ -69,6 +69,7 @@ struct TaMapModel {
     var tileSet: TileSet
     var tileIndexMap: TileIndexMap
     
+    var seaLevel: Int
     var heightMap: [Int]
     var featureMap: [Int?]
     var features: [String]
@@ -130,7 +131,7 @@ private extension TaMapModel {
         self.mapSize = mapSize
         
         let header = try tntFile.readValue(ofType: TA_TNT_EXT_HEADER.self)
-        let seaLevel = Int(header.seaLevel)
+        seaLevel = Int(header.seaLevel)
         
         tntFile.seek(toFileOffset: header.offsetToTileIndexArray)
         let tileIndexCount = mapSize / 2
@@ -139,7 +140,7 @@ private extension TaMapModel {
         
         tntFile.seek(toFileOffset: header.offsetToMapInfoArray)
         let entries = try tntFile.readArray(ofType: TA_TNT_MAP_ENTRY.self, count: mapSize.area)
-        heightMap = entries.map { Int($0.elevation) - seaLevel }
+        heightMap = entries.map { Int($0.elevation) }
         
         tntFile.seek(toFileOffset: header.offsetToTileArray)
         let tileSize = Size2D(width: 32, height: 32)

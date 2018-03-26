@@ -209,6 +209,10 @@ extension FileSystem.File {
         return (name as NSString).pathExtension.caseInsensitiveCompare(ext) == .orderedSame
     }
     
+    var baseName: String {
+        return (name as NSString).deletingPathExtension
+    }
+    
 }
 
 extension FileSystem.Item {

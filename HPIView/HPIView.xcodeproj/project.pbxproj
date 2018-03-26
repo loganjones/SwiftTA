@@ -26,10 +26,7 @@
 		B5E26F241ED9EB80006C329B /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F121ED9EB80006C329B /* Geometry.swift */; };
 		B5E26F251ED9EB80006C329B /* hpi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F131ED9EB80006C329B /* hpi.swift */; };
 		B5E26F271ED9EB80006C329B /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F161ED9EB80006C329B /* pcx.swift */; };
-		B5E26F281ED9EB80006C329B /* UnitData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1C1ED9EB80006C329B /* UnitData.swift */; };
-		B5E26F291ED9EB80006C329B /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */; };
 		B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1E1ED9EB80006C329B /* UnitModel.swift */; };
-		B5E26F2B1ED9EB80006C329B /* UnitObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1F1ED9EB80006C329B /* UnitObject.swift */; };
 		B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F221ED9EB80006C329B /* Utility.swift */; };
 		B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F2F1ED9ECE9006C329B /* CobView.swift */; };
 		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
@@ -269,16 +266,13 @@
 				F0D9A49C2059F6D90081DC15 /* TntView.swift in Sources */,
 				B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */,
 				B5E26F251ED9EB80006C329B /* hpi.swift in Sources */,
-				B5E26F281ED9EB80006C329B /* UnitData.swift in Sources */,
 				B5E26F271ED9EB80006C329B /* pcx.swift in Sources */,
 				B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */,
 				B5E26F341ED9EECC006C329B /* PcxImage.swift in Sources */,
 				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,
-				B5E26F291ED9EB80006C329B /* UnitInfo.swift in Sources */,
 				F0D9A49A20588A810081DC15 /* MapModel.swift in Sources */,
 				B5E26F231ED9EB80006C329B /* gaf.swift in Sources */,
 				B50F6A501D87A54B0016C15B /* HpiDocument.swift in Sources */,
-				B5E26F2B1ED9EB80006C329B /* UnitObject.swift in Sources */,
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
 				B553EE381DE004AB0033C70D /* FinderView.swift in Sources */,
 				B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */,

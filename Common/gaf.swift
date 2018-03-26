@@ -57,6 +57,29 @@ struct GafListing {
     }
 }
 
+extension GafListing {
+    
+    subscript(name: String) -> GafItem? {
+        get { return items.first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) }
+        set(new) {
+            if let index = items.index(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) {
+                if let new = new {
+                    items[index] = new
+                }
+                else {
+                    items.remove(at: index)
+                }
+            }
+            else {
+                if let new = new {
+                    items.append(new)
+                }
+            }
+        }
+    }
+    
+}
+
 struct GafItem {
     var name: String
     var frameOffsets: [Int]
