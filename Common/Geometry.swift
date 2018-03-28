@@ -8,6 +8,89 @@
 
 import Foundation
 
+// MARK:- Size & Point
+
+struct Size2D {
+    var width: Int
+    var height: Int
+}
+
+extension Size2D {
+    static var zero: Size2D { return Size2D(width: 0, height: 0) }
+    var area: Int { return width * height }
+}
+
+extension Size2D: CustomStringConvertible {
+    var description: String { return "\(width)x\(height)" }
+}
+
+extension Size2D {
+    init(_ tuple: (Int, Int)) {
+        width = tuple.0
+        height = tuple.1
+    }
+}
+
+extension Size2D {
+    
+    static func / (size: Size2D, divisor: Int) -> Size2D {
+        return Size2D(width: size.width / divisor, height: size.height / divisor)
+    }
+    static func /= (size: inout Size2D, divisor: Int) {
+        size.width /= divisor
+        size.height /= divisor
+    }
+    
+    static func * (size: Size2D, multiplier: Int) -> Size2D {
+        return Size2D(width: size.width * multiplier, height: size.height * multiplier)
+    }
+    static func *= (size: inout Size2D, multiplier: Int) {
+        size.width *= multiplier
+        size.height *= multiplier
+    }
+    
+}
+
+extension Size2D: Equatable {
+    static func ==(lhs: Size2D, rhs: Size2D) -> Bool {
+        return lhs.width == rhs.width && lhs.height == rhs.height
+    }
+}
+
+struct Point2D {
+    var x: Int
+    var y: Int
+}
+
+extension Point2D {
+    static var zero: Point2D { return Point2D(x: 0, y: 0) }
+}
+
+extension Point2D: CustomStringConvertible {
+    var description: String { return "(\(x), \(y))" }
+}
+
+extension Point2D {
+    init(_ tuple: (Int, Int)) {
+        x = tuple.0
+        y = tuple.1
+    }
+}
+
+extension Point2D {
+    static func - (lhs: Point2D, rhs: Point2D) -> Point2D {
+        return Point2D(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
+    }
+}
+
+extension Point2D: Equatable {
+    static func ==(lhs: Point2D, rhs: Point2D) -> Bool {
+        return lhs.x == rhs.x && lhs.y == rhs.y
+    }
+}
+
+// MARK:- Vertex & Vector
+
 struct Vertex3 {
     var x: Double
     var y: Double

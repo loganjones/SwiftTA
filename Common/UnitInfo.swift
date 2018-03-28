@@ -23,53 +23,20 @@ struct UnitInfo {
 extension UnitInfo {
     
     init(contentsOf file: FileSystem.FileHandle) {
-        UnitInfo.processFbi(file) { field, value in
-            switch field {
-            case "UnitName":
-                name = value
-            case "Side":
-                side = value
-            case "Objectname":
-                object = value
-            case "Name":
-                title = value
-            case "Description":
-                description = value
-            case "Category":
-                categories = Set(value.components(separatedBy: " "))
-            case "TEDClass":
-                tedClass = value
-            default:
-                () // Unhandled field
-            }
-        }
-    }
-    
-    static func processFbi(_ file: FileSystem.FileHandle, item: (String, String) -> Void) {
         
-        let data = file.readDataToEndOfFile()
+        let info: TdfParser.Object = {
+            let parser = TdfParser(file)
+            parser.skipToObject(named: "UNITINFO")
+            return parser.extractObject()
+        }()
         
-        guard let contents = String(data: data, encoding: .ascii) ?? String(data: data, encoding: .utf8)
-            else { return }
-        
-        let scanner = Scanner(string: contents)
-        //scanner.charactersToBeSkipped = CharacterSet.whitespacesAndNewlines
-        scanner.charactersToBeSkipped = CharacterSet(charactersIn: "\r\n\t=;{}")
-        
-        scanner.scanUpTo("[UNITINFO]", into: nil)
-        scanner.scanUpTo("{", into: nil)
-        
-        while !scanner.isAtEnd {
-            var field: NSString?
-            var value: NSString?
-            scanner.scanUpTo("=", into: &field)
-            scanner.scanUpTo(";", into: &value)
-            
-            if let field = field, let value = value {
-                item(field as String, value as String)
-            }
-        }
-        
+        name = info["UnitName"] ?? ""
+        side = info["Side"] ?? ""
+        object = info["Objectname"] ?? ""
+        title = info["Name"] ?? ""
+        description = info["Description"] ?? ""
+        categories = Set((info["Category"] ?? "").components(separatedBy: " "))
+        tedClass = info["TEDClass"] ?? ""
     }
     
 }

@@ -132,7 +132,7 @@ extension FileBrowserViewController: FinderViewDelegate {
                 subview = view
             }
             else if file.hasExtension("tnt") {
-                let view = MapView(frame: contentView.bounds)
+                let view = TntView(frame: contentView.bounds)
                 try view.load(contentsOf: fileHandle, using: mainPalette)
                 subview = view
             }

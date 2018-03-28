@@ -8,164 +8,156 @@
 
 import AppKit
 
-class GafView: NSImageView {
+class GafView: NSView {
+    
+    var useFrameOffsetsForCentering = false
+    
+    private unowned let imageView: NSImageView
+    private unowned let frameSlider: NSSlider
+    private unowned let animateButton: NSButton
+    
+    private var centerX: NSLayoutConstraint!
+    private var centerY: NSLayoutConstraint!
+    
+    private var timer: Timer?
+    
+    private var frames: [GafItem.Frame] = []
+    private var palette = Palette()
+    
+    override init(frame frameRect: NSRect) {
+        
+        let imageView = NSImageView()
+        let frameSlider = NSSlider()
+        let animateButton = NSButton()
+        
+        self.imageView = imageView
+        self.frameSlider = frameSlider
+        self.animateButton = animateButton
+        super.init(frame: frameRect)
+        
+        addSubview(imageView)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(frameSlider)
+        frameSlider.translatesAutoresizingMaskIntoConstraints = false
+        frameSlider.target = self
+        frameSlider.action = #selector(frameSliderUpdated)
+        frameSlider.allowsTickMarkValuesOnly = true
+        frameSlider.minValue = 1
+        frameSlider.maxValue = 1
+        frameSlider.numberOfTickMarks = 1
+        frameSlider.doubleValue = 1
+        addSubview(animateButton)
+        animateButton.translatesAutoresizingMaskIntoConstraints = false
+        animateButton.bezelStyle = .smallSquare
+        animateButton.title = "▶️" // "◼️"
+        animateButton.target = self
+        animateButton.action = #selector(toggleAnimation)
+        animateButton.isEnabled = false
+        
+        centerX = imageView.centerXAnchor.constraint(equalTo: self.centerXAnchor)
+        centerY = imageView.centerYAnchor.constraint(equalTo: self.centerYAnchor)
+        
+        NSLayoutConstraint.activate([
+//            imageView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+//            imageView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+//            imageView.topAnchor.constraint(equalTo: self.topAnchor),
+            centerX,
+            centerY,
+            frameSlider.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            frameSlider.trailingAnchor.constraint(equalTo: animateButton.leadingAnchor),
+            frameSlider.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            animateButton.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            animateButton.centerYAnchor.constraint(equalTo: frameSlider.centerYAnchor),
+            ])
+    }
+    
+    required init?(coder decoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     func load<File>(_ item: GafItem, from gaf: File, using palette: Palette) throws
         where File: FileReadHandle
     {
+        stopAnimating()
         
-        Swift.print("Loading \(item.name) from \(gaf.fileName)")
-        Swift.print("  \(item.frames.count) frames")
-        Swift.print("  \(item.size.width)x\(item.size.height)")
-        Swift.print("  item.unknown_1: \(item.unknown1) | \(item.unknown1.binaryString)")
-        Swift.print("  item.unknown_2: \(item.unknown2) | \(item.unknown2.binaryString)")
+        imageView.image = nil
+        frameSlider.minValue = 1
+        frameSlider.maxValue = Double(item.numberOfFrames)
+        frameSlider.numberOfTickMarks = item.numberOfFrames
+        frameSlider.doubleValue = 1
+        animateButton.isEnabled = item.frameOffsets.count > 1
         
-        var i = 1
-        for frameEntry in item.frames {
-            
-            gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
-            let frameInfo = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
-            
-            let compression = GafFrameCompressionMethod(rawValue: frameInfo.compressionMethod) ?? .uncompressed
-            
-            Swift.print("  frame \(i):")
-            Swift.print("    \(frameInfo.width)x\(frameInfo.height)")
-            Swift.print("    compression: \(compression)")
-            Swift.print("    sub-frames: \(frameInfo.numberOfSubFrames)")
-            Swift.print("    entry.unknown_1: \(frameEntry.unknown_1) | \(frameEntry.unknown_1.binaryString)")
-            Swift.print("    info.unknown_1: \(frameInfo.unknown_1) | \(frameInfo.unknown_1.binaryString)")
-            Swift.print("    info.unknown_2: \(frameInfo.unknown_2)")
-            Swift.print("    info.unknown_3: \(frameInfo.unknown_3) | \(frameInfo.unknown_3.binaryString)")
-            
-            if frameInfo.numberOfSubFrames > 0 {
-                gaf.seek(toFileOffset: frameInfo.offsetToFrameData)
-                let subframeOffsets = try gaf.readArray(ofType: UInt32.self, count: Int(frameInfo.numberOfSubFrames))
-                
-                var j = 1
-                for offset in subframeOffsets {
-                    gaf.seek(toFileOffset: offset)
-                    let subframeInfo = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
-                    Swift.print("    subframe \(j):")
-                    Swift.print("      \(subframeInfo.width)x\(subframeInfo.height)")
-                    Swift.print("      compression: \(compression)")
-                    Swift.print("      sub-frames: \(subframeInfo.numberOfSubFrames)")
-                    Swift.print("      info.unknown_1: \(subframeInfo.unknown_1) | \(subframeInfo.unknown_1.binaryString)")
-                    Swift.print("      info.unknown_2: \(subframeInfo.unknown_2)")
-                    Swift.print("      info.unknown_3: \(subframeInfo.unknown_3) | \(subframeInfo.unknown_3.binaryString)")
-                    j += 1
-                }
-            }
-            
-            i += 1
-        }
+        self.palette = palette
+        frames = try item.extractFrames(from: gaf)
         
-        self.image = nil
-        if let frameEntry = item.frames.first {
-            
-            gaf.seek(toFileOffset: frameEntry.offsetToFrameData)
-            let frameInfo = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
-            
-            if frameInfo.numberOfSubFrames == 0,
-                let frameData = try? GafItem.read(frame: frameInfo, from: gaf) {
-                self.image = NSImage(imageIndices: frameData,
-                                     imageWidth: Int(frameInfo.width),
-                                     imageHeight: Int(frameInfo.height),
-                                     palette: palette)
-            }
-        }
+        showCurrentFrame()
     }
     
-    enum LoadError: Error {
-        case failedToOpenGAF
-        case noFrames
-        case unsupportedFrameCompression(UInt8)
+    private func showCurrentFrame() {
+        
+        let frameIndex = Int(frameSlider.doubleValue) - 1
+        guard frames.indexRange.contains(frameIndex) else { return }
+        let frame = frames[frameIndex]
+        
+        if useFrameOffsetsForCentering {
+            centerX.constant = CGFloat(frame.size.width)/2 - CGFloat(frame.offset.x)
+            centerY.constant = CGFloat(frame.size.height)/2 - CGFloat(frame.offset.y)
+        }
+        else {
+            centerX.constant = 0
+            centerY.constant = 0
+        }
+        
+        imageView.image = NSImage(imageIndices: frame.data, size: frame.size, palette: palette, useTransparency: true)
+    }
+    
+    @objc func frameSliderUpdated(_ sender: Any) {
+        showCurrentFrame()
+    }
+    
+    @objc func toggleAnimation(_ sender: Any) {
+        if isAnimating { stopAnimating() } else { startAnimating() }
     }
     
 }
 
-extension NSImage {
+private extension GafView {
     
-    convenience init(imageIndices: Data, imageWidth: Int, imageHeight: Int, palette: Palette) {
+    var isAnimating: Bool { return timer != nil }
+    
+    func startAnimating() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0/15, repeats: true) { [weak self] t in
+            self?.stepAnimation(t)
+        }
+        animateButton.title = "◼️"
+    }
+    
+    func stopAnimating(resetSlider: Bool = false) {
         
-        let size = (width: imageWidth, height: imageHeight)
-        let cfdata = imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) -> CFData in
-            
-            var pixelData = Data(count: size.width * size.height * 3)
-            return pixelData.withUnsafeMutableBytes({ (pixels: UnsafeMutablePointer<UInt8>) -> CFData in
-                var pixel = pixels
-                var raw = indices
-                for _ in 0..<(size.width * size.height) {
-                    let colorIndex = raw.pointee
-                    pixel[0] = palette[colorIndex].red
-                    pixel[1] = palette[colorIndex].green
-                    pixel[2] = palette[colorIndex].blue
-                    pixel += 3
-                    raw += 1
-                }
-                return CFDataCreate(kCFAllocatorDefault, pixels, pixelData.count)
-            })
-            
-        }
-        let image = CGImage(width: size.width,
-                            height: size.height,
-                            bitsPerComponent: 8,
-                            bitsPerPixel: 24,
-                            bytesPerRow: size.width * 3,
-                            space: CGColorSpaceCreateDeviceRGB(),
-                            bitmapInfo: [],
-                            provider: CGDataProvider(data: cfdata)!,
-                            decode: nil,
-                            shouldInterpolate: false,
-                            intent: .defaultIntent)
-        self.init(cgImage: image!, size: NSSize(width: size.width, height: size.height))
-    }
-    
-    enum LoadError: Error {
-        case failedToOpenGAF
-        case noFrames
-        case unsupportedFrameCompression(UInt8)
-    }
-}
-
-struct Palette {
-    struct Color {
-        var red: UInt8
-        var green: UInt8
-        var blue: UInt8
-        var alpha: UInt8
-    }
-    private let entries: [Color]
-    
-    init(contentsOf url: URL) throws {
-        let data = try Data(contentsOf: url)
-        self.init(data)
-    }
-    
-    init(contentsOf file: FileSystem.FileHandle) {
-        let data = file.readDataToEndOfFile()
-        self.init(data)
-    }
-    
-    init(_ data: Data) {
-        entries = data.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) -> Array<Color> in
-            let raw = UnsafeRawPointer(bytes)
-            let p = raw.bindMemory(to: Color.self, capacity: 256)
-            let buf = UnsafeBufferPointer<Color>(start: p, count: 256)
-            return Array(buf)
+        guard let timer = timer else { return }
+        
+        timer.invalidate()
+        self.timer = nil
+        
+        animateButton.title = "▶️"
+        
+        if resetSlider {
+            frameSlider.doubleValue = 1
+            showCurrentFrame()
         }
     }
     
-    init() { entries = Array(repeating: Color.white, count: 255) }
+    func stepAnimation(_ timer: Timer) {
+        
+        let frameIndex = Int(frameSlider.doubleValue)
+        
+        guard frameIndex < frames.endIndex else {
+            stopAnimating(resetSlider: true)
+            return
+        }
+        
+        frameSlider.doubleValue += 1
+        showCurrentFrame()
+    }
     
-    subscript(index: Int) -> Color {
-        return entries[index]
-    }
-    subscript(index: UInt8) -> Color {
-        return entries[Int(index)]
-    }
-}
-
-extension Palette.Color {
-    static let white = Palette.Color(red: UInt8.max, green: UInt8.max, blue: UInt8.max, alpha: UInt8.max)
-    static let black = Palette.Color(red: UInt8.min, green: UInt8.min, blue: UInt8.min, alpha: UInt8.max)
 }

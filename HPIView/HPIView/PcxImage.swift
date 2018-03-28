@@ -80,11 +80,3 @@ extension NSImage {
     }
     
 }
-
-private extension NSSize {
-    
-    init(_ size: Size2D) {
-        self.init(width: size.width, height: size.height)
-    }
-    
-}
