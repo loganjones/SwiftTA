@@ -215,7 +215,7 @@ extension TdfParser {
         return parser.extractAll()
     }
     
-    func extractObject() -> Object {
+    func extractObject(normalizeKeys: Bool = false) -> Object {
         
         let count = data.count
         var token: Token?
@@ -237,6 +237,7 @@ extension TdfParser {
                     level -= 1
                     levels[level].subobjects[name] = levels.popLast() ?? Object()
                 case let .property(key, value):
+                    let key = normalizeKeys ? key.lowercased() : key
                     levels[level].properties[key] = value
                 }
             }
@@ -292,6 +293,7 @@ fileprivate extension TdfParser {
         var section: [UInt8]
         var key: [UInt8]
         var value: [UInt8]
+        var whitespace: [UInt8]
         
         init() {
             parents = []
@@ -302,6 +304,7 @@ fileprivate extension TdfParser {
             key.reserveCapacity(16)
             value = []
             value.reserveCapacity(32)
+            whitespace = []
         }
     }
     
@@ -363,15 +366,25 @@ fileprivate extension TdfParser {
             else {
                 context.key.removeAll()
                 context.key.append(character)
+                context.whitespace.removeAll()
                 return (.readingKey, nil)
             }
             
         case .readingKey:
             if character == keyValueSeparator {
                 context.value.removeAll()
+                context.whitespace.removeAll()
                 return (.readingValue, nil)
             }
+            else if whitespaceToIgnore.contains(character) {
+                context.whitespace.append(character)
+                return (.readingKey, nil)
+            }
             else {
+                if !context.whitespace.isEmpty {
+                    context.key.append(contentsOf: context.whitespace)
+                    context.whitespace.removeAll()
+                }
                 context.key.append(character)
                 return (.readingKey, nil)
             }
@@ -382,7 +395,17 @@ fileprivate extension TdfParser {
                 let value = String(bytes: context.value, encoding: .ascii) ?? ""
                 return (.seekingKeyValue, .property(key, value))
             }
+            else if whitespaceToIgnore.contains(character) {
+                if !context.value.isEmpty {
+                    context.whitespace.append(character)
+                }
+                return (.readingValue, nil)
+            }
             else {
+                if !context.whitespace.isEmpty {
+                    context.value.append(contentsOf: context.whitespace)
+                    context.whitespace.removeAll()
+                }
                 context.value.append(character)
                 return (.readingValue, nil)
             }

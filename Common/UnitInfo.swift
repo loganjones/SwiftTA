@@ -22,21 +22,31 @@ struct UnitInfo {
 
 extension UnitInfo {
     
-    init(contentsOf file: FileSystem.FileHandle) {
+    init(contentsOf file: FileSystem.FileHandle) throws {
         
         let info: TdfParser.Object = {
             let parser = TdfParser(file)
             parser.skipToObject(named: "UNITINFO")
-            return parser.extractObject()
+            return parser.extractObject(normalizeKeys: true)
         }()
         
-        name = info["UnitName"] ?? ""
-        side = info["Side"] ?? ""
-        object = info["Objectname"] ?? ""
-        title = info["Name"] ?? ""
-        description = info["Description"] ?? ""
-        categories = Set((info["Category"] ?? "").components(separatedBy: " "))
-        tedClass = info["TEDClass"] ?? ""
+        name = try UnitInfo.requiredStringProperty(info, "unitname")
+        object = try UnitInfo.requiredStringProperty(info, "objectname")
+        side = try UnitInfo.requiredStringProperty(info, "side")
+        title = try UnitInfo.requiredStringProperty(info, "name")
+        description = try UnitInfo.requiredStringProperty(info, "description")
+        categories = Set(try UnitInfo.requiredStringProperty(info, "category").components(separatedBy: " "))
+        tedClass = try UnitInfo.requiredStringProperty(info, "tedclass")
+    }
+    
+    enum LoadError: Error {
+        case requiredPropertyNotFound(String)
+    }
+    
+    private static func requiredStringProperty(_ info: TdfParser.Object, _ name: String) throws -> String {
+        guard let value = info.properties[name]
+            else { throw LoadError.requiredPropertyNotFound(name) }
+        return value
     }
     
 }

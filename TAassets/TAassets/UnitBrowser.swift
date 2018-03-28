@@ -65,7 +65,7 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
             .filter { $0.hasExtension("fbi") }
             .sorted { FileSystem.sortNames($0.name, $1.name) }
             .flatMap { try? filesystem.openFile($0) }
-            .map { UnitInfo(contentsOf: $0) }
+            .flatMap { try? UnitInfo(contentsOf: $0) }
         self.units = units
         let end = Date()
         print("UnitInfo list load time: \(end.timeIntervalSince(begin)) seconds")
@@ -82,9 +82,16 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
     }
     
     final func buildpic(for unitName: String) -> NSImage? {
-        guard let file = try? filesystem.openFile(at: "unitpics/" + unitName + ".PCX")
-            else { return nil }
-        return try? NSImage(pcxContentsOf: file)
+        if let file = try? filesystem.openFile(at: "unitpics/" + unitName + ".PCX") {
+            return try? NSImage(pcxContentsOf: file)
+        }
+        else if let file = try? filesystem.openFile(at: "anims/buildpic/" + unitName + ".jpg") {
+            let data = file.readDataToEndOfFile()
+            return NSImage(data: data)
+        }
+        else {
+            return nil
+        }
     }
     
 }
@@ -155,6 +162,7 @@ class UnitInfoCell: NSTableCellView {
         
         picView = NSImageView()
         picView.translatesAutoresizingMaskIntoConstraints = false
+        picView.imageScaling = .scaleProportionallyUpOrDown
         self.addSubview(picView)
         
         nameField = NSTextField(labelWithString: "")
