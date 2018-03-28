@@ -59,6 +59,7 @@ class MapBrowserViewController: NSViewController, ContentViewController {
         let maps = mapsDirectory.items
             .flatMap { $0.asFile() }
             .filter { $0.hasExtension("ota") }
+            .sorted { FileSystem.sortNames($0.name, $1.name) }
         self.maps = maps
         let end = Date()
         print("Map list load time: \(end.timeIntervalSince(begin)) seconds")

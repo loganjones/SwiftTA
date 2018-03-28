@@ -35,7 +35,8 @@ class FileBrowserViewController: NSViewController, ContentViewController {
     }
     
     override func viewDidLoad() {
-        finderView.setRoot(directory: FileBrowserItem.Directory(asset: filesystem.root, browser: self))
+        let rootItems = filesystem.root.items.sorted { FileSystem.sortNames($0.name, $1.name) }
+        finderView.setRoot(directory: FileBrowserItem.Directory(asset: filesystem.root, items: rootItems, browser: self))
         
         do {
             let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
@@ -209,6 +210,7 @@ enum FileBrowserItem {
     
     struct Directory {
         var asset: FileSystem.Directory
+        var items: [FileSystem.Item]
         unowned var browser: FileBrowserViewController
     }
     
@@ -232,7 +234,8 @@ extension FileBrowserItem {
             let ext = (f.name as NSString).pathExtension.lowercased()
             self = ext == "gaf" ? .gafArchive(GafArchive(asset: f, browser: browser)) : .file(f)
         case .directory(let d):
-            self = .directory(Directory(asset: d, browser: browser))
+            let items = d.items.sorted { FileSystem.sortNames($0.name, $1.name) }
+            self = .directory(Directory(asset: d, items: items, browser: browser))
         }
     }
     
@@ -281,18 +284,18 @@ extension FileBrowserItem.Directory: FinderViewDirectory {
     }
     
     func item(at index: Int) -> FinderViewItem {
-        return FileBrowserItem(asset: asset.items[index], browser: browser)
+        return FileBrowserItem(asset: items[index], browser: browser)
     }
     
     func index(of item: FinderViewItem) -> Int? {
         guard let item = item as? FileBrowserItem else { return nil }
-        let i = asset.items.index(where: { FileSystem.compareNames($0.name, item.name) })
+        let i = items.index(where: { FileSystem.compareNames($0.name, item.name) })
         return i
     }
     
     func index(where predicate: (FinderViewItem) -> Bool) -> Int? {
         let b = browser
-        return asset.items.lazy
+        return items.lazy
             .map { FileBrowserItem(asset: $0, browser: b) }
             .index(where: predicate)
     }

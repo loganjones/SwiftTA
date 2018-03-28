@@ -63,6 +63,7 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
         let units = unitsDirectory.items
             .flatMap { $0.asFile() }
             .filter { $0.hasExtension("fbi") }
+            .sorted { FileSystem.sortNames($0.name, $1.name) }
             .flatMap { try? filesystem.openFile($0) }
             .map { UnitInfo(contentsOf: $0) }
         self.units = units

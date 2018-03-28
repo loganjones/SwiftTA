@@ -33,14 +33,14 @@ class FileSystem {
         let archives = try fm.contentsOfDirectory(at: searchDirectory,
                                                   includingPropertiesForKeys: [.isDirectoryKey],
                                                   options: [.skipsSubdirectoryDescendants, .skipsPackageDescendants])
-            .filter { !isDirectory($0) }
-            .filter { allowedExtensions.contains($0.pathExtension) }
+            .filter { !isDirectory($0) && allowedExtensions.contains($0.pathExtension) }
             .sorted { weighArchives($0, $1) }
+        
+        let merged = try archives
             .map { FileSystem.Directory(from: try HpiItem.loadFromArchive(contentsOf: $0), in: $0) }
             .reduce(FileSystem.Directory()) { $0.adding(directory: $1) }
-            .sorted()
         
-        root = archives
+        root = merged
     }
     
     /// Empty `FileSystem`. No files or directories.
@@ -77,7 +77,8 @@ extension FileSystem {
      */
     struct Directory {
         var name: String
-        var items: [Item]
+        var itemMap: [Int: Item]
+        var items: Dictionary<Int, Item>.Values { return itemMap.values }
     }
     
 }
@@ -90,6 +91,10 @@ extension FileSystem {
     
     static func sortNames(_ a: String, _ b: String) -> Bool {
         return a.caseInsensitiveCompare(b) == .orderedAscending
+    }
+    
+    static func hashName(_ name: String) -> Int {
+        return name.lowercased().hashValue
     }
     
 }
@@ -112,15 +117,6 @@ extension FileSystem.Item {
         }
     }
     
-    func sorted() -> FileSystem.Item {
-        switch self {
-        case .file:
-            return self
-        case .directory(let directory):
-            return .directory(directory.sorted())
-        }
-    }
-    
 }
 
 extension FileSystem.File {
@@ -138,18 +134,23 @@ extension FileSystem.Directory {
     
     init(from hpiDirectory: HpiItem.Directory, in hpiURL: URL) {
         name = hpiDirectory.name
-        items = hpiDirectory.items.map { FileSystem.Item(from: $0, in: hpiURL) }
+        itemMap = hpiDirectory.items.reduce(into: [Int: FileSystem.Item]()) {
+            let item = FileSystem.Item(from: $1, in: hpiURL)
+            let hash = FileSystem.hashName(item.name)
+            $0[hash] = item
+        }
     }
     
     init() {
         name = ""
-        items = []
+        itemMap = [:]
     }
     
     subscript(name: String) -> FileSystem.Item? {
-        guard let index = items.index(where: { FileSystem.compareNames($0.name, name) })
-            else { return nil }
-        return items[index]
+        let hash = FileSystem.hashName(name)
+        guard let item = itemMap[hash] else { return nil }
+        guard FileSystem.compareNames(item.name, name) else { return nil }
+        return item
     }
     
     subscript(directory name: String) -> FileSystem.Directory? {
@@ -167,38 +168,26 @@ extension FileSystem.Directory {
     func adding(directory: FileSystem.Directory, overwrite: Bool = false) -> FileSystem.Directory {
         guard !items.isEmpty else { return directory }
         
-        var new = items
-        for item in directory.items {
-            switch item {
-            case .file(let f):
-                if let i = new.index(where: { FileSystem.compareNames($0.name, f.name) }) {
-                    if overwrite { new[i] = item }
-                }
-                else {
-                    new.append(item)
-                }
-            case .directory(let d):
-                if let i = new.index(where: { FileSystem.compareNames($0.name, d.name) }) {
-                    if case .directory(let dd) = new[i] {
-                        new[i] = .directory(dd.adding(directory: d))
+        var new = itemMap
+        for item in directory.itemMap {
+            if let existing = new[item.key] {
+                switch item.value {
+                case .file:
+                    if overwrite { new[item.key] = item.value }
+                case .directory(let d):
+                    if case .directory(let dd) = existing {
+                        new[item.key] = .directory(dd.adding(directory: d, overwrite: overwrite))
                     }
                     else if overwrite {
-                        new[i] = item
+                        new[item.key] = item.value
                     }
                 }
-                else {
-                    new.append(item)
-                }
+            }
+            else {
+                new[item.key] = item.value
             }
         }
-        return FileSystem.Directory(name: name, items: new)
-    }
-    
-    func sorted() -> FileSystem.Directory {
-        let items = self.items
-            .sorted { FileSystem.sortNames($0.name, $1.name) }
-            .map { $0.sorted() }
-        return FileSystem.Directory(name: self.name, items: items)
+        return FileSystem.Directory(name: name, itemMap: new)
     }
     
 }
