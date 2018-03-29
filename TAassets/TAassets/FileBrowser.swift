@@ -134,7 +134,7 @@ extension FileBrowserViewController: FinderViewDelegate {
             }
             else if file.hasExtension("tnt") {
                 let view = TntView(frame: contentView.bounds)
-                try view.load(contentsOf: fileHandle, using: mainPalette)
+                try view.load(contentsOf: fileHandle, using: mainPalette, filesystem: filesystem)
                 subview = view
             }
             else {
