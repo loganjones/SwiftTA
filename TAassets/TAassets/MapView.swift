@@ -46,25 +46,13 @@ class MapView: NSView {
         let beginTnt = Date()
         let tntFile = try filesystem.openFile(at: "maps/" + mapName + ".tnt")
         let map = try MapModel(contentsOf: tntFile)
-        tntView.load(map, using: palette)
+        tntView.load(map, using: palette, filesystem: filesystem)
         let endTnt = Date()
         
-        let featureNames: Set<String>
-        switch map {
-        case .ta(let model):
-            featureNames = Set(model.features)
-        default:
-            featureNames = []
-        }
-        
         let beginFeatures = Date()
+        let featureNames = Set(map.features)
         features = MapView.loadMapFeatures(featureNames, planet: info.properties["planet"] ?? "", from: filesystem, using: palette)
-        switch map {
-        case .ta(let model):
-            featureInstances = MapView.indexFeatureLocations(model, features)
-        default:
-            featureInstances = []
-        }
+        featureInstances = MapView.indexFeatureLocations(map, features)
         let endFeatures = Date()
         
         let endMap = Date()
@@ -122,7 +110,7 @@ class MapView: NSView {
         return features
     }
     
-    static func indexFeatureLocations(_ map: TaMapModel, _ features: [String: Feature]) -> [FeatureInstance] {
+    static func indexFeatureLocations(_ map: MapModel, _ features: [String: Feature]) -> [FeatureInstance] {
         
         var instances: [FeatureInstance] = []
         

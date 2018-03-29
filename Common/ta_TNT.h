@@ -124,7 +124,7 @@ typedef struct TAK_TNT_EXT_HEADER
 	uint32_t		offsetToHeightMap;
 
     /// Specifies the location of an array that contains feature information of
-    /// each map-unit in the map. This array consists of uint32_t[ Width*Height ].
+    /// each map-unit in the map. This array consists of uint16_t[ Width*Height ].
 	uint32_t		offsetToFeatureSpotArray;
     
     /// Offset to the location in the file at which the array of feature

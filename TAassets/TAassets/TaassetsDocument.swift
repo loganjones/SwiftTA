@@ -28,7 +28,10 @@ class TaassetsDocument: NSDocument {
         guard directoryURL.isFileURL, fm.fileExists(atPath: directoryURL.path, isDirectory: &dirCheck), dirCheck.boolValue
             else { throw NSError(domain: NSOSStatusErrorDomain, code: readErr, userInfo: nil) }
         
+        let begin = Date()
         filesystem = try! FileSystem(from: directoryURL)
+        let end = Date()
+        Swift.print("\(directoryURL.lastPathComponent) filesystem load time: \(end.timeIntervalSince(begin)) seconds")
     }
 
 }

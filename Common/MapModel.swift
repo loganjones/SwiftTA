@@ -36,12 +36,45 @@ extension MapModel {
     
 }
 
-extension MapModel {
+protocol MapModelType {
     
-    var minimap: MinimapImage {
+    var mapSize: Size2D { get }
+    var resolution: Size2D { get }
+    
+    var seaLevel: Int { get }
+    var heightMap: [Int] { get }
+    
+    var features: [String] { get }
+    var featureMap: [Int?] { get }
+    
+    var minimap: MinimapImage { get }
+    
+}
+
+extension MapModelType {
+    
+    var resolution: Size2D {
+        return mapSize * 16
+    }
+    
+    func height(at point: Point2D) -> Int {
+        let index = (point.y * mapSize.width) + point.x
+        return heightMap[index]
+    }
+    
+    func featureIndex(at point: Point2D) -> Int? {
+        let index = (point.y * mapSize.width) + point.x
+        return featureMap[index]
+    }
+    
+}
+
+extension MapModel: MapModelType {
+    
+    var mapSize: Size2D {
         switch self {
-        case .ta(let model): return model.minimap
-        case .tak(let model): return model.smallMinimap
+        case .ta(let model): return model.mapSize
+        case .tak(let model): return model.mapSize
         }
     }
     
@@ -49,6 +82,41 @@ extension MapModel {
         switch self {
         case .ta(let model): return model.resolution
         case .tak(let model): return model.resolution
+        }
+    }
+    
+    var seaLevel: Int {
+        switch self {
+        case .ta(let model): return model.seaLevel
+        case .tak(let model): return model.seaLevel
+        }
+    }
+    
+    var heightMap: [Int] {
+        switch self {
+        case .ta(let model): return model.heightMap
+        case .tak(let model): return model.heightMap
+        }
+    }
+    
+    var features: [String] {
+        switch self {
+        case .ta(let model): return model.features
+        case .tak(let model): return model.features
+        }
+    }
+    
+    var featureMap: [Int?] {
+        switch self {
+        case .ta(let model): return model.featureMap
+        case .tak(let model): return model.featureMap
+        }
+    }
+    
+    var minimap: MinimapImage {
+        switch self {
+        case .ta(let model): return model.minimap
+        case .tak(let model): return model.minimap
         }
     }
     
@@ -62,7 +130,7 @@ private extension TA_TNT_HEADER {
 
 // MARK:- TA
 
-struct TaMapModel {
+struct TaMapModel: MapModelType {
     
     var mapSize: Size2D
     
@@ -75,24 +143,6 @@ struct TaMapModel {
     var features: [String]
     
     var minimap: MinimapImage
-    
-}
-
-extension TaMapModel {
-    
-    var resolution: Size2D {
-        return mapSize * 16
-    }
-    
-    // TEMP
-    func height(at point: Point2D) -> Int {
-        let index = (point.y * mapSize.width) + point.x
-        return heightMap[index]
-    }
-    func featureIndex(at point: Point2D) -> Int? {
-        let index = (point.y * mapSize.width) + point.x
-        return featureMap[index]
-    }
     
 }
 
@@ -218,16 +268,46 @@ extension TaMapModel {
 
 // MARK:- TAK
 
-struct TakMapModel {
+struct TakMapModel: MapModelType {
     var mapSize: Size2D
+    
+    var seaLevel: Int
+    var heightMap: [Int]
+    var featureMap: [Int?]
+    var features: [String]
+    
+    var tileIndexMap: TileIndexMap
+    
     var largeMinimap: MinimapImage
     var smallMinimap: MinimapImage
+    
+    let tileSize: Size2D
 }
 
 extension TakMapModel {
     
-    var resolution: Size2D {
-        return mapSize * 16
+    var minimap: MinimapImage {
+        return smallMinimap
+    }
+    
+}
+
+extension TakMapModel {
+    
+    func tileColumns(in rect: NSRect) -> CountableClosedRange<Int> {
+        let tileWidth = tileSize.width
+        let start = Int(floor(rect.minX)) / tileWidth
+        var end = Int(ceil(rect.maxX)) / tileWidth
+        if CGFloat(end * tileWidth) < rect.maxX { end += 1 }
+        return max(start,0)...min(end, tileIndexMap.size.width-1)
+    }
+    
+    func tileRows(in rect: NSRect) -> CountableClosedRange<Int> {
+        let tileheight = tileSize.height
+        let start = Int(floor(rect.minY)) / tileheight
+        var end = Int(ceil(rect.maxY)) / tileheight
+        if CGFloat(end * tileheight) < rect.maxY { end += 1 }
+        return max(start,0)...min(end, tileIndexMap.size.height-1)
     }
     
 }
@@ -236,14 +316,67 @@ private extension TakMapModel {
     
     init<File>(_ mapSize: Size2D, reading tntFile: File) throws where File: FileReadHandle {
         self.mapSize = mapSize
+        tileSize = Size2D(width: 32, height: 32)
         
         let header = try tntFile.readValue(ofType: TAK_TNT_EXT_HEADER.self)
+        seaLevel = Int(header.seaLevel)
+        
+        tntFile.seek(toFileOffset: header.offsetToHeightMap)
+        heightMap = try tntFile.readArray(ofType: UInt8.self, count: mapSize.area).map { Int($0) }
+        
+        tntFile.seek(toFileOffset: header.offsetToFeatureEntryArray)
+        features = try tntFile.readArray(ofType: TA_TNT_FEATURE_ENTRY.self, count: Int(header.numberOfFeatures)).map { $0.nameString }
+        
+        let featureIndexRange = 0..<features.count
+        tntFile.seek(toFileOffset: header.offsetToFeatureSpotArray)
+        featureMap = try tntFile.readArray(ofType: UInt16.self, count: mapSize.area).map {
+            let i = Int($0)
+            guard featureIndexRange.contains(i) else { return nil }
+            return i
+        }
+        
+        let tileIndexCount = mapSize / 2
+        tntFile.seek(toFileOffset: header.offsetToTileNameArray)
+        let tileNames = try tntFile.readArray(ofType: UInt32.self, count: tileIndexCount.area)
+        tntFile.seek(toFileOffset: header.offsetToColumnIndexArray)
+        let tileColumns = try tntFile.readArray(ofType: UInt8.self, count: tileIndexCount.area)
+        tntFile.seek(toFileOffset: header.offsetToRowIndexArray)
+        let tileRows = try tntFile.readArray(ofType: UInt8.self, count: tileIndexCount.area)
+        tileIndexMap = TileIndexMap(names: tileNames, columns: tileColumns, rows: tileRows, size: tileIndexCount)
 
         tntFile.seek(toFileOffset: header.offsetToLargeMiniMap)
         largeMinimap = try MinimapImage.readFrom(file: tntFile)
         
         tntFile.seek(toFileOffset: header.offsetToSmallMiniMap)
         smallMinimap = try MinimapImage.readFrom(file: tntFile)
+    }
+    
+}
+
+extension TakMapModel {
+    
+    struct TileIndexMap {
+        var names: [UInt32]
+        var columns: [UInt8]
+        var rows: [UInt8]
+        var size: Size2D
+    }
+    
+}
+
+extension TakMapModel.TileIndexMap {
+    
+    var uniqueNames: Set<UInt32> {
+        return names.reduce(into: Set<UInt32>()) { $0.insert($1) }
+    }
+    
+    func eachTile(inColumns mapColumns: CountableClosedRange<Int>, rows mapRows: CountableClosedRange<Int>, visit: (_ imageName: UInt32, _ imageColumn: Int, _ imageRow: Int, _ mapColumn: Int, _ mapRow: Int) -> ()) {
+        for mapRow in mapRows {
+            for mapColumn in mapColumns {
+                let mapIndex = (mapRow * size.width) + mapColumn
+                visit(names[mapIndex], Int(columns[mapIndex]), Int(rows[mapIndex]), mapColumn, mapRow)
+            }
+        }
     }
     
 }
