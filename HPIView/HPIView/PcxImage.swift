@@ -35,7 +35,7 @@ extension NSImage {
         // Make a buffer for the final decoded image.
         let pixelBufferLength = size.width * size.height * 3
         let pixelBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: pixelBufferLength)
-        defer { pixelBuffer.deallocate(capacity: pixelBufferLength) }
+        defer { pixelBuffer.deallocate() }
         
         // Read in the rest of the file and get decodin'
         let rawData = pcxFile.readDataToEndOfFile()

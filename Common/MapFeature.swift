@@ -70,7 +70,7 @@ extension MapFeatureInfo {
             return features
         }
         
-        for directory in featuresDirectory.items.flatMap({ $0.asDirectory() }) {
+        for directory in featuresDirectory.items.compactMap({ $0.asDirectory() }) {
             guard !FileSystem.compareNames(directory.name, planetDirectoryName) else { continue }
             guard !FileSystem.compareNames(directory.name, "All Worlds") else { continue }
             
@@ -88,7 +88,7 @@ extension MapFeatureInfo {
     static func collectFeatures(named featureNames: Set<String>, from filesystem: FileSystem) -> FeatureInfoCollection {
         let featuresDirectory = filesystem.root[directory: "features"] ?? FileSystem.Directory()
         let features = featuresDirectory.items
-            .flatMap { $0.asDirectory() }
+            .compactMap { $0.asDirectory() }
             .map { collectFeatures(named: featureNames, in: $0, of: filesystem) }
             .reduce([:]) { $0.merging($1, uniquingKeysWith: { (a, b) in b }) }
         return features
@@ -96,9 +96,9 @@ extension MapFeatureInfo {
     
     static func collectFeatures(named featureNames: Set<String>, in directory: FileSystem.Directory, of filesystem: FileSystem) -> FeatureInfoCollection {
         let features = directory.items
-            .flatMap { $0.asFile() }
+            .compactMap { $0.asFile() }
             .filter { $0.hasExtension("tdf") }
-            .flatMap { try? collectFeatures(named: featureNames, in: $0, of: filesystem) }
+            .compactMap { try? collectFeatures(named: featureNames, in: $0, of: filesystem) }
             .reduce([:]) { $0.merging($1, uniquingKeysWith: { (a, b) in b }) }
         return features
     }

@@ -57,7 +57,7 @@ class MapBrowserViewController: NSViewController, ContentViewController {
         let begin = Date()
         let mapsDirectory = filesystem.root[directory: "maps"] ?? FileSystem.Directory()
         let maps = mapsDirectory.items
-            .flatMap { $0.asFile() }
+            .compactMap { $0.asFile() }
             .filter { $0.hasExtension("ota") }
             .sorted { FileSystem.sortNames($0.name, $1.name) }
         self.maps = maps

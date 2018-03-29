@@ -97,7 +97,7 @@ class FinderView: NSView {
         set(new) {
             guard let tier = tiers.last else { return }
             guard !new.isEmpty else { tier.tableView.deselectAll(nil); return }
-            let rows = new.flatMap({ tier.directory.index(of: $0) })
+            let rows = new.compactMap({ tier.directory.index(of: $0) })
             tier.tableView.selectRowIndexes(IndexSet(rows), byExtendingSelection: false)
         }
     }

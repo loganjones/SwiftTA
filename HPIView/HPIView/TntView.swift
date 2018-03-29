@@ -57,6 +57,30 @@ class TntView: NSView {
             scrollView.documentView = contentView
         }
     }
+    
+    // The load methods without a filesystem are retained for HPIView support.
+    // Consider this temporary.
+    
+    func load<File>(contentsOf tntFile: File, using palette: Palette) throws
+        where File: FileReadHandle
+    {
+        let map = try MapModel(contentsOf: tntFile)
+        load(map, using: palette)
+    }
+    
+    func load(_ map: MapModel, using palette: Palette) {
+        switch map {
+        case .ta(let model):
+            let contentView = TaMapTileView(frame: NSRect(size: model.resolution))
+            contentView.load(model, using: palette)
+            contentView.drawFeatures = drawFeatures
+            scrollView.documentView = contentView
+        case .tak:
+            print("!!! TAK TNT files are not supported for viewing when the complete filesystem is not available.")
+            scrollView.documentView = nil
+        }
+    }
+    
 }
 
 protocol TntViewFeatureProvider: class {

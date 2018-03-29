@@ -18,9 +18,9 @@ class ModelTexturePack {
         
         let texDirectectory = filesystem.root[directory: "textures"] ?? FileSystem.Directory()
         let list = texDirectectory.items
-            .flatMap { $0.asFile() }
+            .compactMap { $0.asFile() }
             .filter { $0.hasExtension("gaf") }
-            .flatMap { try? filesystem.openFile($0) }
+            .compactMap { try? filesystem.openFile($0) }
             .flatMap { (try? Gaf.load(contentsOf: $0)) ?? [] }
         
         var textures: [String: Gaf] = [:]

@@ -443,7 +443,7 @@ extension HpiItem {
             let raw: UnsafePointer<UInt8>
             
             var toRealease: UnsafeMutablePointer<UInt8>? = nil
-            defer { if let r = toRealease { r.deallocate(capacity: compressedSize) } }
+            defer { if let r = toRealease { r.deallocate() } }
             
             if chunkHeader.pointee.encryptionFlag != 0 {
                 let enecrypted = p + MemoryLayout<TA_HPI_CHUNK>.size
@@ -479,10 +479,10 @@ private func decompressLZ77(bytes _in:UnsafePointer<UInt8>, decompressedSize: In
     
     var outptr = 0
     var out = UnsafeMutablePointer<UInt8>.allocate(capacity:  decompressedSize)
-    defer { out.deallocate(capacity: decompressedSize) }
+    defer { out.deallocate() }
     
     let DBuff = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
-    defer { DBuff.deallocate(capacity: decompressedSize) }
+    defer { DBuff.deallocate() }
         
     var work1 = 1
     var work2 = 1
@@ -534,7 +534,7 @@ private func decompressLZ77(bytes _in:UnsafePointer<UInt8>, decompressedSize: In
 private func decompressZLib(bytes _in:UnsafePointer<UInt8>, compressedSize: Int, decompressedSize: Int) -> Data {
     
     let out = UnsafeMutablePointer<UInt8>.allocate(capacity: decompressedSize)
-    defer { out.deallocate(capacity: decompressedSize) }
+    defer { out.deallocate() }
     
     var zs = z_stream(
         next_in: UnsafeMutablePointer(mutating: _in),

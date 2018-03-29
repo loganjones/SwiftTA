@@ -378,7 +378,7 @@ extension HpiBrowserWindowController {
     
     @IBAction func extract(sender: Any?) {
         
-        let items = finder.selectedItems.flatMap({ $0 as? HpiItem })
+        let items = finder.selectedItems.compactMap({ $0 as? HpiItem })
         guard items.count > 0
             else { Swift.print("No selected items to extract."); return }
         

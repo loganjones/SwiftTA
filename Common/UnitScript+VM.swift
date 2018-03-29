@@ -125,7 +125,7 @@ extension UnitScript.Context {
     }
     
     func applyAnimations(to instance: inout UnitModel.Instance, for delta: Double) {
-        let unfinished = animations.flatMap { instance.apply($0, with: delta) }
+        let unfinished = animations.compactMap { instance.apply($0, with: delta) }
         animations = unfinished
     }
     
