@@ -48,7 +48,7 @@ class UnitTextureAtlas {
         let raw = UnsafeMutableRawPointer(bytes)
         let dealloc: (UnsafeMutableRawPointer, Int) -> () = { p, i in
             let b = p.assumingMemoryBound(to: UInt8.self)
-            b.deallocate(capacity: byteCount)
+            b.deallocate()
         }
         
         return Data(bytesNoCopy: raw, count: byteCount, deallocator: .custom(dealloc))

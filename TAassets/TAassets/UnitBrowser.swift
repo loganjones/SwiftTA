@@ -61,11 +61,11 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
         let begin = Date()
         let unitsDirectory = filesystem.root[directory: "units"] ?? FileSystem.Directory()
         let units = unitsDirectory.items
-            .flatMap { $0.asFile() }
+            .compactMap { $0.asFile() }
             .filter { $0.hasExtension("fbi") }
             .sorted { FileSystem.sortNames($0.name, $1.name) }
-            .flatMap { try? filesystem.openFile($0) }
-            .flatMap { try? UnitInfo(contentsOf: $0) }
+            .compactMap { try? filesystem.openFile($0) }
+            .compactMap { try? UnitInfo(contentsOf: $0) }
         self.units = units
         let end = Date()
         print("UnitInfo list load time: \(end.timeIntervalSince(begin)) seconds")
