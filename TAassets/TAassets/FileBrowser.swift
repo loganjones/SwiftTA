@@ -231,8 +231,7 @@ extension FileBrowserItem {
     init(asset: FileSystem.Item, browser: FileBrowserViewController) {
         switch asset {
         case .file(let f):
-            let ext = (f.name as NSString).pathExtension.lowercased()
-            self = ext == "gaf" ? .gafArchive(GafArchive(asset: f, browser: browser)) : .file(f)
+            self = (f.hasExtension("gaf") || f.hasExtension("taf")) ? .gafArchive(GafArchive(asset: f, browser: browser)) : .file(f)
         case .directory(let d):
             let items = d.items.sorted { FileSystem.sortNames($0.name, $1.name) }
             self = .directory(Directory(asset: d, items: items, browser: browser))

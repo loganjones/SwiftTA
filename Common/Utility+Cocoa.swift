@@ -76,6 +76,44 @@ extension CGImage {
             intent: .defaultIntent)!
     }
     
+    static func createWith(rawFrame: GafItem.Frame) -> CGImage {
+        
+        switch rawFrame.format {
+            
+        case .raw4444:
+            return CGImage(
+                width: rawFrame.size.width,
+                height: rawFrame.size.height,
+                bitsPerComponent: 4,
+                bitsPerPixel: 16,
+                bytesPerRow: rawFrame.size.width * 2,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue | CGImageByteOrderInfo.order16Little.rawValue)],
+                provider: CGDataProvider(data: rawFrame.data as CFData)!,
+                decode: nil,
+                shouldInterpolate: false,
+                intent: .defaultIntent)!
+            
+        case .raw1555://, .raw4444:
+            let data = try! rawFrame.convertToRGBA()
+            return CGImage(
+                width: rawFrame.size.width,
+                height: rawFrame.size.height,
+                bitsPerComponent: 8,
+                bitsPerPixel: 32,
+                bytesPerRow: rawFrame.size.width * 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)],
+                provider: CGDataProvider(data: data as CFData)!,
+                decode: nil,
+                shouldInterpolate: false,
+                intent: .defaultIntent)!
+            
+        default:
+            fatalError("Unsupported GAF frame pixel format: \(rawFrame.format)")
+        }
+    }
+    
 }
 
 extension NSImage {
@@ -83,6 +121,11 @@ extension NSImage {
     convenience init(imageIndices: Data, size: Size2D, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) {
         let image = CGImage.createWith(imageIndices: imageIndices, size: size, palette: palette, useTransparency: useTransparency, isFlipped: isFlipped)
         self.init(cgImage: image, size: NSSize(size))
+    }
+    
+    convenience init(rawFrame: GafItem.Frame) {
+        let image = CGImage.createWith(rawFrame: rawFrame)
+        self.init(cgImage: image, size: NSSize(rawFrame.size))
     }
     
 }

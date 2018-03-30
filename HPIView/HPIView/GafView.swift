@@ -108,7 +108,12 @@ class GafView: NSView {
             centerY.constant = 0
         }
         
-        imageView.image = NSImage(imageIndices: frame.data, size: frame.size, palette: palette, useTransparency: true)
+        switch frame.format {
+        case .paletteIndex:
+            imageView.image = NSImage(imageIndices: frame.data, size: frame.size, palette: palette, useTransparency: true)
+        default:
+            imageView.image = NSImage(rawFrame: frame)
+        }
     }
     
     @objc func frameSliderUpdated(_ sender: Any) {
