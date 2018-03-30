@@ -10,7 +10,7 @@ import Foundation
 
 // MARK:- Size & Point
 
-struct Size2D {
+struct Size2D: Equatable {
     var width: Int
     var height: Int
 }
@@ -51,13 +51,7 @@ extension Size2D {
     
 }
 
-extension Size2D: Equatable {
-    static func ==(lhs: Size2D, rhs: Size2D) -> Bool {
-        return lhs.width == rhs.width && lhs.height == rhs.height
-    }
-}
-
-struct Point2D {
+struct Point2D: Equatable {
     var x: Int
     var y: Int
 }
@@ -80,12 +74,6 @@ extension Point2D {
 extension Point2D {
     static func - (lhs: Point2D, rhs: Point2D) -> Point2D {
         return Point2D(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
-    }
-}
-
-extension Point2D: Equatable {
-    static func ==(lhs: Point2D, rhs: Point2D) -> Bool {
-        return lhs.x == rhs.x && lhs.y == rhs.y
     }
 }
 

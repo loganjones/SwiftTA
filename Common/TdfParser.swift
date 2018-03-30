@@ -21,7 +21,7 @@ class TdfParser {
         self.data = data
     }
     
-    enum Token {
+    enum Token: Equatable {
         case objectBegin(String)
         case objectEnd(String)
         case property(String, String)
@@ -412,21 +412,4 @@ fileprivate extension TdfParser {
         }
     }
     
-}
-
-// MARK:- Misc
-
-extension TdfParser.Token: Equatable {
-    static func ==(lhs: TdfParser.Token, rhs: TdfParser.Token) -> Bool {
-        switch (lhs, rhs) {
-        case let (.objectBegin(lSection), objectBegin(rSection)):
-            return lSection == rSection
-        case let (.objectEnd(lSection), objectEnd(rSection)):
-            return lSection == rSection
-        case let (.property(lKey,lValue), property(rKey,rValue)):
-            return lKey == rKey && lValue == rValue
-        default:
-            return false
-        }
-    }
 }
