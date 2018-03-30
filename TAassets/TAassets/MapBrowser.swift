@@ -10,7 +10,7 @@ import Cocoa
 
 class MapBrowserViewController: NSViewController, ContentViewController {
     
-    var filesystem = FileSystem()
+    var shared = TaassetsSharedState.empty
     fileprivate var maps: [FileSystem.File] = []
     fileprivate var mainPalette = Palette()
     
@@ -55,7 +55,7 @@ class MapBrowserViewController: NSViewController, ContentViewController {
     
     override func viewDidLoad() {
         let begin = Date()
-        let mapsDirectory = filesystem.root[directory: "maps"] ?? FileSystem.Directory()
+        let mapsDirectory = shared.filesystem.root[directory: "maps"] ?? FileSystem.Directory()
         let maps = mapsDirectory.items
             .compactMap { $0.asFile() }
             .filter { $0.hasExtension("ota") }
@@ -65,7 +65,7 @@ class MapBrowserViewController: NSViewController, ContentViewController {
         print("Map list load time: \(end.timeIntervalSince(begin)) seconds")
         
         do {
-            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
+            let file = try shared.filesystem.openFile(at: "Palettes/PALETTE.PAL")
             mainPalette = Palette(contentsOf: file)
         }
         catch {
@@ -113,7 +113,7 @@ extension MapBrowserViewController: NSTableViewDelegate {
             controller.view.autoresizingMask = [.width, .width]
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
-            try? controller.loadMap(in: maps[row], from: filesystem, using: mainPalette)
+            try? controller.loadMap(in: maps[row], from: shared.filesystem, using: mainPalette)
         }
         else {
             detailViewController?.view.removeFromSuperview()

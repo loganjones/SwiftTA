@@ -11,7 +11,7 @@ import Cocoa
 
 class UnitBrowserViewController: NSViewController, ContentViewController {
     
-    var filesystem = FileSystem()
+    var shared = TaassetsSharedState.empty
     fileprivate var units: [UnitInfo] = []
     fileprivate var mainPalette = Palette()
     fileprivate var textures = ModelTexturePack()
@@ -59,33 +59,33 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
     
     override func viewDidLoad() {
         let begin = Date()
-        let unitsDirectory = filesystem.root[directory: "units"] ?? FileSystem.Directory()
+        let unitsDirectory = shared.filesystem.root[directory: "units"] ?? FileSystem.Directory()
         let units = unitsDirectory.items
             .compactMap { $0.asFile() }
             .filter { $0.hasExtension("fbi") }
             .sorted { FileSystem.sortNames($0.name, $1.name) }
-            .compactMap { try? filesystem.openFile($0) }
+            .compactMap { try? shared.filesystem.openFile($0) }
             .compactMap { try? UnitInfo(contentsOf: $0) }
         self.units = units
         let end = Date()
         print("UnitInfo list load time: \(end.timeIntervalSince(begin)) seconds")
         
         do {
-            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
+            let file = try shared.filesystem.openFile(at: "Palettes/PALETTE.PAL")
             mainPalette = Palette(contentsOf: file)
         }
         catch {
             Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
         }
         
-        textures = ModelTexturePack(loadFrom: filesystem)
+        textures = ModelTexturePack(loadFrom: shared.filesystem)
     }
     
     final func buildpic(for unitName: String) -> NSImage? {
-        if let file = try? filesystem.openFile(at: "unitpics/" + unitName + ".PCX") {
+        if let file = try? shared.filesystem.openFile(at: "unitpics/" + unitName + ".PCX") {
             return try? NSImage(pcxContentsOf: file)
         }
-        else if let file = try? filesystem.openFile(at: "anims/buildpic/" + unitName + ".jpg") {
+        else if let file = try? shared.filesystem.openFile(at: "anims/buildpic/" + unitName + ".jpg") {
             let data = file.readDataToEndOfFile()
             return NSImage(data: data)
         }
@@ -137,7 +137,7 @@ extension UnitBrowserViewController: NSTableViewDelegate {
             controller.view.autoresizingMask = [.width, .width]
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
-            controller.filesystem = filesystem
+            controller.filesystem = shared.filesystem
             controller.mainPalette = mainPalette
             controller.textures = textures
             controller.unit = units[row]

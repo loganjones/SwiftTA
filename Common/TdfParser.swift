@@ -275,6 +275,20 @@ extension TdfParser.Object {
     
 }
 
+extension TdfParser.Object {
+    
+    enum LoadError: Error {
+        case requiredPropertyNotFound(String)
+    }
+    
+    func requiredStringProperty(_ name: String) throws -> String {
+        guard let value = properties[name]
+            else { throw LoadError.requiredPropertyNotFound(name) }
+        return value
+    }
+    
+}
+
 // MARK:- Core State Machine
 
 fileprivate extension TdfParser {

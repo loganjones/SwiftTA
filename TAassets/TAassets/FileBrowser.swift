@@ -10,7 +10,7 @@ import Cocoa
 
 class FileBrowserViewController: NSViewController, ContentViewController {
     
-    var filesystem = FileSystem()
+    var shared = TaassetsSharedState.empty
     var finderView: FinderView!
     var mainPalette = Palette()
     
@@ -35,11 +35,11 @@ class FileBrowserViewController: NSViewController, ContentViewController {
     }
     
     override func viewDidLoad() {
-        let rootItems = filesystem.root.items.sorted { FileSystem.sortNames($0.name, $1.name) }
-        finderView.setRoot(directory: FileBrowserItem.Directory(asset: filesystem.root, items: rootItems, browser: self))
+        let rootItems = shared.filesystem.root.items.sorted { FileSystem.sortNames($0.name, $1.name) }
+        finderView.setRoot(directory: FileBrowserItem.Directory(asset: shared.filesystem.root, items: rootItems, browser: self))
         
         do {
-            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
+            let file = try shared.filesystem.openFile(at: "Palettes/PALETTE.PAL")
             mainPalette = Palette(contentsOf: file)
         }
         catch {
@@ -105,7 +105,7 @@ extension FileBrowserViewController: FinderViewDelegate {
         
         let fileHandle: FileSystem.FileHandle
         do {
-            fileHandle = try filesystem.openFile(file)
+            fileHandle = try shared.filesystem.openFile(file)
             
             let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
             preview.title = file.name
@@ -134,7 +134,7 @@ extension FileBrowserViewController: FinderViewDelegate {
             }
             else if file.hasExtension("tnt") {
                 let view = TntView(frame: contentView.bounds)
-                try view.load(contentsOf: fileHandle, using: mainPalette, filesystem: filesystem)
+                try view.load(contentsOf: fileHandle, using: mainPalette, filesystem: shared.filesystem)
                 subview = view
             }
             else {
@@ -180,7 +180,7 @@ extension FileBrowserViewController: FinderViewDelegate {
             let subview: NSView
             
             let view = GafView(frame: contentView.bounds)
-            try view.load(item, from: try filesystem.openFile(gaf.asset), using: mainPalette)
+            try view.load(item, from: try shared.filesystem.openFile(gaf.asset), using: mainPalette)
             subview = view
             
             subview.translatesAutoresizingMaskIntoConstraints = false
@@ -307,7 +307,7 @@ extension FileBrowserItem.GafContents {
     init(of archive: FileBrowserItem.GafArchive, at path: [FinderViewDirectory]) throws {
         asset = archive.asset
         browser = archive.browser
-        let file = try archive.browser.filesystem.openFile(archive.asset)
+        let file = try archive.browser.shared.filesystem.openFile(archive.asset)
         listing = try GafListing(withContentsOf: file)
     }
     
