@@ -789,7 +789,7 @@ extension CobDecompile {
         indirect case function(StackItem,[StackItem])
     }
     
-    struct StackBinaryOperator {
+    struct StackBinaryOperator: Equatable {
         var symbol: String
         var precedence: Int
         
@@ -809,19 +809,13 @@ extension CobDecompile {
         static let or                   = StackBinaryOperator(symbol: "||", precedence: 15)
     }
     
-    struct StackUnaryOperator {
+    struct StackUnaryOperator: Equatable {
         var symbol: String
         var precedence: Int
         
         static let not                  = StackUnaryOperator(symbol: "!",  precedence: 3)
     }
     
-}
-
-extension CobDecompile.StackBinaryOperator: Equatable {
-    static func ==(lhs: CobDecompile.StackBinaryOperator, rhs: CobDecompile.StackBinaryOperator) -> Bool {
-        return lhs.symbol == rhs.symbol && lhs.precedence == rhs.precedence
-    }
 }
 
 private extension Array where Element == CobDecompile.StackItem {

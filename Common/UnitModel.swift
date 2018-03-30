@@ -65,7 +65,7 @@ struct UnitModel {
         var indices: [Vertices.Index]
     }
     
-    enum Texture {
+    enum Texture: Equatable {
         case image(String)
         case color(Int)
     }
@@ -197,18 +197,6 @@ private extension UnitModel.Texture {
         }
         else {
             self = .color(Int(raw.color))
-        }
-    }
-    
-}
-
-extension UnitModel.Texture: Equatable {
-    
-    static func ==(lhs: UnitModel.Texture, rhs: UnitModel.Texture) -> Bool {
-        switch (lhs, rhs) {
-        case let (.image(l), .image(r)): return l.caseInsensitiveCompare(r) == .orderedSame
-        case let (.color(l), .color(r)): return l == r
-        case (.image, _), (.color, _): return false
         }
     }
     
