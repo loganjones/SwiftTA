@@ -106,19 +106,40 @@ extension FileBrowserViewController: FinderViewDelegate {
         let fileHandle: FileSystem.FileHandle
         do {
             fileHandle = try filesystem.openFile(file)
-            
-            let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
-            preview.title = file.name
-            preview.size = file.info.size
-            preview.source = file.archiveURL.lastPathComponent
-            
-            let contentView = preview.contentView
-            let subview: NSView
+        }
+        catch {
+            print("Failed to extract \(file.name) for preview: \(error)")
+            return nil
+        }
+        
+        let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
+        preview.title = file.name
+        preview.size = file.info.size
+        preview.source = file.archiveURL.lastPathComponent
+        
+        let contentView = preview.contentView
+        let subview: NSView
+        
+        do {
             if file.hasExtension("pcx") {
-                let pcxImage = try NSImage(pcxContentsOf: fileHandle)
-                let pcxView = NSImageView(frame: contentView.bounds)
-                pcxView.image = pcxImage
-                subview = pcxView
+                switch try Pcx.analyze(contentsOf: fileHandle) {
+                case .image:
+                    let pcxImage = try NSImage(pcxContentsOf: fileHandle)
+                    let pcxView = NSImageView(frame: contentView.bounds)
+                    pcxView.image = pcxImage
+                    subview = pcxView
+                case .palette:
+                    let palette = try Pcx.extractPalette(contentsOf: fileHandle)
+                    let paletteView = PaletteView(frame: contentView.bounds)
+                    paletteView.load(palette)
+                    subview = paletteView
+                }
+            }
+            else if file.hasExtension("pal") {
+                let palette = Palette(contentsOf: fileHandle)
+                let paletteView = PaletteView(frame: contentView.bounds)
+                paletteView.load(palette)
+                subview = paletteView
             }
             else if file.hasExtension("3do") {
                 let model = try UnitModel(contentsOf: fileHandle)
@@ -142,22 +163,24 @@ extension FileBrowserViewController: FinderViewDelegate {
                 try view.load(contentsOf: fileHandle)
                 subview = view
             }
-            
-            subview.translatesAutoresizingMaskIntoConstraints = false
-            preview.contentView.addSubview(subview)
-            NSLayoutConstraint.activate([
-                subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-                subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-                subview.topAnchor.constraint(equalTo: contentView.topAnchor),
-                subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-                ])
-            
-            return preview
         }
         catch {
-            print("Failed to extract \(file.name) for preview: \(error)")
-            return nil
+            print("Failed to load load \(file.name) for preview: \(error)")
+            let view = QuickLookView(frame: contentView.bounds)
+            try? view.load(contentsOf: fileHandle)
+            subview = view
         }
+            
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        preview.contentView.addSubview(subview)
+        NSLayoutConstraint.activate([
+            subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            subview.topAnchor.constraint(equalTo: contentView.topAnchor),
+            subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            ])
+        
+        return preview
     }
     
     func preview(forGafImage item: GafItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {

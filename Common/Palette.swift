@@ -35,6 +35,10 @@ struct Palette {
 
 extension Palette {
     
+    init(_ colors: [Color]) {
+        entries = colors
+    }
+    
     init(contentsOf url: URL) throws {
         let data = try Data(contentsOf: url)
         self.init(data)

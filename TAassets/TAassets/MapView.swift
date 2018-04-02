@@ -88,14 +88,14 @@ class MapView: NSView {
                 guard let gafFrames = try? item.extractFrames(from: gaf) else { continue }
                 
                 let frames: [Feature.Frame] = gafFrames.map {
-                    let image = CGImage.createWith(imageIndices: $0.data, size: $0.size, palette: palette, useTransparency: true, isFlipped: true)
+                    let image = try! CGImage.createWith(imageIndices: $0.data, size: $0.size, palette: palette, useTransparency: true, isFlipped: true)
                     return Feature.Frame(image: image, offset: $0.offset)
                 }
                 
                 let shadowFrame: Feature.Frame? = info.shadowGafItemName.flatMap {
                     guard let item = listing[$0] else { return nil }
                     guard let frame = try? item.extractFrame(index: 0, from: gaf) else { return nil }
-                    let image = CGImage.createWith(imageIndices: frame.data, size: frame.size, palette: shadow, useTransparency: true, isFlipped: true)
+                    guard let image = try? CGImage.createWith(imageIndices: frame.data, size: frame.size, palette: shadow, useTransparency: true, isFlipped: true) else { return nil }
                     return Feature.Frame(image: image, offset: frame.offset)
                 }
                 

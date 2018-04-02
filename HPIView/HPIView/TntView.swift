@@ -218,7 +218,7 @@ private extension TaMapTileView.TileSet {
         
         for _ in 0..<tileSet.count {
             let tile = tileSet.tiles.subdata(in: offset..<(offset+tileByteLength))
-            let image = CGImage.createWith(imageIndices: tile, size: tileSet.tileSize, palette: palette, isFlipped: true)
+            let image = try! CGImage.createWith(imageIndices: tile, size: tileSet.tileSize, palette: palette, isFlipped: true)
             tiles.append(image)
             offset += tileByteLength
         }
