@@ -10,6 +10,7 @@
 		B51FF3721EECA1F3009B509A /* FileReadHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF3711EECA1EC009B509A /* FileReadHandle.swift */; };
 		B52A67471EC3F35900698DEF /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A67461EC3F35900698DEF /* CobView.swift */; };
 		B57C32B720702B9700B24C99 /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57C32B620702B9700B24C99 /* PaletteView.swift */; };
+		B57C32B3206DEDF500B24C99 /* SideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57C32B2206DEDF500B24C99 /* SideData.swift */; };
 		B5B258622063405800DD6A15 /* TdfParseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B258612063405800DD6A15 /* TdfParseTests.swift */; };
 		B5B258642065CD0100DD6A15 /* MapInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B258632065CD0100DD6A15 /* MapInfo.swift */; };
 		B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556491E2C86A2001BEFAB /* AppDelegate.swift */; };
@@ -68,6 +69,7 @@
 		B51FF3711EECA1EC009B509A /* FileReadHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
 		B52A67461EC3F35900698DEF /* CobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CobView.swift; path = ../../HPIView/HPIView/CobView.swift; sourceTree = "<group>"; };
 		B57C32B620702B9700B24C99 /* PaletteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaletteView.swift; path = ../../HPIView/HPIView/PaletteView.swift; sourceTree = "<group>"; };
+		B57C32B2206DEDF500B24C99 /* SideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideData.swift; sourceTree = "<group>"; };
 		B5B258612063405800DD6A15 /* TdfParseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParseTests.swift; sourceTree = "<group>"; };
 		B5B258632065CD0100DD6A15 /* MapInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapInfo.swift; sourceTree = "<group>"; };
 		B5C556461E2C86A2001BEFAB /* TAassets.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TAassets.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -212,6 +214,7 @@
 				F0D9A49D2059F9180081DC15 /* Palette.swift */,
 				B5E26EF41ED9EB05006C329B /* pcx.h */,
 				B5E26EF51ED9EB05006C329B /* pcx.swift */,
+				B57C32B2206DEDF500B24C99 /* SideData.swift */,
 				B5E26EF61ED9EB05006C329B /* ta_3DO.h */,
 				B5E26EF71ED9EB05006C329B /* ta_COB.h */,
 				B5E26EF81ED9EB05006C329B /* ta_COB_Instructions.h */,
@@ -382,6 +385,7 @@
 				B5C556821E2F1747001BEFAB /* FinderView.swift in Sources */,
 				B5E26F4E1EE3BFB4006C329B /* TntView.swift in Sources */,
 				F0D9A49E2059F9180081DC15 /* Palette.swift in Sources */,
+				B57C32B3206DEDF500B24C99 /* SideData.swift in Sources */,
 				B5C556801E2F1262001BEFAB /* FileBrowser.swift in Sources */,
 				B5E26F521EE48A97006C329B /* Filesystem.swift in Sources */,
 				B51FF3721EECA1F3009B509A /* FileReadHandle.swift in Sources */,

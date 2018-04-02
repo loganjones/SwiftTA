@@ -30,23 +30,13 @@ extension UnitInfo {
             return parser.extractObject(normalizeKeys: true)
         }()
         
-        name = try UnitInfo.requiredStringProperty(info, "unitname")
-        object = try UnitInfo.requiredStringProperty(info, "objectname")
-        side = try UnitInfo.requiredStringProperty(info, "side")
-        title = try UnitInfo.requiredStringProperty(info, "name")
-        description = try UnitInfo.requiredStringProperty(info, "description")
-        categories = Set(try UnitInfo.requiredStringProperty(info, "category").components(separatedBy: " "))
-        tedClass = try UnitInfo.requiredStringProperty(info, "tedclass")
-    }
-    
-    enum LoadError: Error {
-        case requiredPropertyNotFound(String)
-    }
-    
-    private static func requiredStringProperty(_ info: TdfParser.Object, _ name: String) throws -> String {
-        guard let value = info.properties[name]
-            else { throw LoadError.requiredPropertyNotFound(name) }
-        return value
+        name = try info.requiredStringProperty("unitname")
+        object = try info.requiredStringProperty("objectname")
+        side = try info.requiredStringProperty("side")
+        title = try info.requiredStringProperty("name")
+        description = try info.requiredStringProperty("description")
+        categories = Set(try info.requiredStringProperty("category").components(separatedBy: " "))
+        tedClass = try info.requiredStringProperty("tedclass")
     }
     
 }
