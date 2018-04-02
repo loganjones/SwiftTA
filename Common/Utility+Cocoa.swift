@@ -110,9 +110,61 @@ extension CGImage {
         return image
     }
     
+    static func createWith(rawFrame: GafItem.Frame) throws -> CGImage {
+        
+        switch rawFrame.format {
+            
+        case .raw4444:
+            guard let pixelProvider = CGDataProvider(data: rawFrame.data as CFData)
+                else { throw ImageCreateError.failedToCreateProvider }
+            
+            guard let image = CGImage(
+                width: rawFrame.size.width,
+                height: rawFrame.size.height,
+                bitsPerComponent: 4,
+                bitsPerPixel: 16,
+                bytesPerRow: rawFrame.size.width * 2,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue | CGImageByteOrderInfo.order16Little.rawValue)],
+                provider: pixelProvider,
+                decode: nil,
+                shouldInterpolate: false,
+                intent: .defaultIntent)
+                else { throw ImageCreateError.failedToCreateImage }
+            
+            return image
+            
+        case .raw1555://, .raw4444:
+            let data = try rawFrame.convertToRGBA()
+            
+            guard let pixelProvider = CGDataProvider(data: data as CFData)
+                else { throw ImageCreateError.failedToCreateProvider }
+            
+            guard let image = CGImage(
+                width: rawFrame.size.width,
+                height: rawFrame.size.height,
+                bitsPerComponent: 8,
+                bitsPerPixel: 32,
+                bytesPerRow: rawFrame.size.width * 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)],
+                provider: pixelProvider,
+                decode: nil,
+                shouldInterpolate: false,
+                intent: .defaultIntent)
+                else { throw ImageCreateError.failedToCreateImage }
+            
+            return image
+            
+        default:
+            throw ImageCreateError.unsupportedGafPixelFormat(rawFrame.format)
+        }
+    }
+    
     enum ImageCreateError: Error {
         case failedToCreateProvider
         case failedToCreateImage
+        case unsupportedGafPixelFormat(GafItem.Frame.PixelFormat)
     }
     
 }
@@ -135,6 +187,11 @@ extension NSImage {
     {
         let image = try CGImage.createWith(pcxContentsOf: pcxFile)
         self.init(cgImage: image, size: NSSize(width: image.width, height: image.height))
+    }
+    
+    convenience init(rawFrame: GafItem.Frame) throws {
+        let image = try CGImage.createWith(rawFrame: rawFrame)
+        self.init(cgImage: image, size: NSSize(rawFrame.size))
     }
     
 }

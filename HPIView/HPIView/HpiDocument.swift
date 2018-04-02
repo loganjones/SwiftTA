@@ -79,7 +79,7 @@ extension HpiItem: FinderViewItem {
         switch self {
         case .file(let file):
             let ext = file.fileExtension
-            if ext.caseInsensitiveCompare("gaf") == .orderedSame {
+            if ext.caseInsensitiveCompare("gaf") == .orderedSame || ext.caseInsensitiveCompare("taf") == .orderedSame {
                 return true
             }
             else {
@@ -94,7 +94,7 @@ extension HpiItem: FinderViewItem {
         switch self {
         case .file(let file):
             let ext = file.fileExtension
-            if ext.caseInsensitiveCompare("gaf") == .orderedSame {
+            if ext.caseInsensitiveCompare("gaf") == .orderedSame || ext.caseInsensitiveCompare("taf") == .orderedSame {
                 guard let hpic = finder.window?.windowController as? HpiBrowserWindowController
                     else { return nil }
                 guard let cache = hpic.cache
