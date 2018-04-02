@@ -19,6 +19,7 @@
 		B53524E42055BB70007A2A2C /* UnitScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F201ED9EB80006C329B /* UnitScript.swift */; };
 		B553EE361DDFE2270033C70D /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE351DDFE2270033C70D /* ModelView.swift */; };
 		B553EE381DE004AB0033C70D /* FinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE371DE004AB0033C70D /* FinderView.swift */; };
+		B57C32B520702B4700B24C99 /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57C32B420702B4700B24C99 /* PaletteView.swift */; };
 		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
 		B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */; };
 		B5D4B6DB1E04E5F200ADBE65 /* HpiFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */; };
@@ -30,7 +31,6 @@
 		B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F221ED9EB80006C329B /* Utility.swift */; };
 		B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F2F1ED9ECE9006C329B /* CobView.swift */; };
 		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
-		B5E26F341ED9EECC006C329B /* PcxImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F331ED9EECC006C329B /* PcxImage.swift */; };
 		B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */; };
 		F0D9A49A20588A810081DC15 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49920588A800081DC15 /* MapModel.swift */; };
 		F0D9A49C2059F6D90081DC15 /* TntView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49B2059F6D90081DC15 /* TntView.swift */; };
@@ -52,6 +52,7 @@
 		B553EE351DDFE2270033C70D /* ModelView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelView.swift; sourceTree = "<group>"; };
 		B553EE371DE004AB0033C70D /* FinderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FinderView.swift; sourceTree = "<group>"; };
 		B56086742055B519005AAEC6 /* UnitScript+CobDecompile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+CobDecompile.swift"; sourceTree = "<group>"; };
+		B57C32B420702B4700B24C99 /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
 		B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		B58ECAC01DC6BE90005F231F /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HpiFileCache.swift; sourceTree = "<group>"; };
@@ -76,7 +77,6 @@
 		B5E26F221ED9EB80006C329B /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		B5E26F2F1ED9ECE9006C329B /* CobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CobView.swift; sourceTree = "<group>"; };
 		B5E26F311ED9EDD7006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GafView.swift; sourceTree = "<group>"; };
-		B5E26F331ED9EECC006C329B /* PcxImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PcxImage.swift; sourceTree = "<group>"; };
 		B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
 		B5E26F491EE3AF5F006C329B /* ta_TNT.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_TNT.h; sourceTree = "<group>"; };
 		F0D9A49920588A800081DC15 /* MapModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapModel.swift; sourceTree = "<group>"; };
@@ -126,7 +126,7 @@
 				B5E26F2F1ED9ECE9006C329B /* CobView.swift */,
 				B5E26F311ED9EDD7006C329B /* GafView.swift */,
 				B553EE351DDFE2270033C70D /* ModelView.swift */,
-				B5E26F331ED9EECC006C329B /* PcxImage.swift */,
+				B57C32B420702B4700B24C99 /* PaletteView.swift */,
 				F0D9A49B2059F6D90081DC15 /* TntView.swift */,
 				B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */,
 				B50F6A511D87A54B0016C15B /* HpiBrowserWindow.xib */,
@@ -268,8 +268,8 @@
 				B5E26F251ED9EB80006C329B /* hpi.swift in Sources */,
 				B5E26F271ED9EB80006C329B /* pcx.swift in Sources */,
 				B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */,
-				B5E26F341ED9EECC006C329B /* PcxImage.swift in Sources */,
 				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,
+				B57C32B520702B4700B24C99 /* PaletteView.swift in Sources */,
 				F0D9A49A20588A810081DC15 /* MapModel.swift in Sources */,
 				B5E26F231ED9EB80006C329B /* gaf.swift in Sources */,
 				B50F6A501D87A54B0016C15B /* HpiDocument.swift in Sources */,

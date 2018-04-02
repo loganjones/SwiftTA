@@ -266,10 +266,24 @@ extension HpiBrowserWindowController: FinderViewDelegate {
         let subview: NSView
         do {
             if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
-                let pcxFile = try FileHandle(forReadingFrom: fileURL)
-                let image = try NSImage(pcxContentsOf: pcxFile)
-                let view = NSImageView(frame: contentView.bounds)
-                view.image = image
+                let fileHandle = try FileHandle(forReadingFrom: fileURL)
+                switch try Pcx.analyze(contentsOf: fileHandle) {
+                case .image:
+                    let pcxImage = try NSImage(pcxContentsOf: fileHandle)
+                    let pcxView = NSImageView(frame: contentView.bounds)
+                    pcxView.image = pcxImage
+                    subview = pcxView
+                case .palette:
+                    let palette = try Pcx.extractPalette(contentsOf: fileHandle)
+                    let paletteView = PaletteView(frame: contentView.bounds)
+                    paletteView.load(palette)
+                    subview = paletteView
+                }
+            }
+            else if fileExtension.caseInsensitiveCompare("pal") == .orderedSame {
+                let palette = try Palette(contentsOf: fileURL)
+                let view = PaletteView()
+                view.load(palette)
                 subview = view
             }
             else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
@@ -544,7 +558,20 @@ class PreviewContainerView: NSView {
 }
 
 extension FileHandle: FileReadHandle {
+    
     var fileName: String {
         return "???"
     }
+    
+    var fileSize: Int {
+        let current = offsetInFile
+        let size = seekToEndOfFile()
+        seek(toFileOffset: current)
+        return Int(size)
+    }
+    
+    var fileOffset: Int {
+        return Int(offsetInFile)
+    }
+    
 }

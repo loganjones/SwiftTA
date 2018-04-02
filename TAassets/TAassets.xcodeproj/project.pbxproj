@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B51FF3721EECA1F3009B509A /* FileReadHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF3711EECA1EC009B509A /* FileReadHandle.swift */; };
 		B52A67471EC3F35900698DEF /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A67461EC3F35900698DEF /* CobView.swift */; };
+		B57C32B720702B9700B24C99 /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57C32B620702B9700B24C99 /* PaletteView.swift */; };
 		B5B258622063405800DD6A15 /* TdfParseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B258612063405800DD6A15 /* TdfParseTests.swift */; };
 		B5B258642065CD0100DD6A15 /* MapInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B258632065CD0100DD6A15 /* MapInfo.swift */; };
 		B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556491E2C86A2001BEFAB /* AppDelegate.swift */; };
@@ -35,7 +36,6 @@
 		B5E26F0E1ED9EB05006C329B /* UnitScript+VM.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F011ED9EB05006C329B /* UnitScript+VM.swift */; };
 		B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F021ED9EB05006C329B /* Utility.swift */; };
 		B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F371ED9F0ED006C329B /* GafView.swift */; };
-		B5E26F3A1ED9F104006C329B /* PcxImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F391ED9F104006C329B /* PcxImage.swift */; };
 		B5E26F3E1EDB4A02006C329B /* UnitTextureAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F3D1EDB4A02006C329B /* UnitTextureAtlas.swift */; };
 		B5E26F401EE37211006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F3F1EE37211006C329B /* UnitModel+Instance.swift */; };
 		B5E26F441EE3745F006C329B /* UnitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F431EE3745F006C329B /* UnitView.swift */; };
@@ -67,6 +67,7 @@
 /* Begin PBXFileReference section */
 		B51FF3711EECA1EC009B509A /* FileReadHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
 		B52A67461EC3F35900698DEF /* CobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CobView.swift; path = ../../HPIView/HPIView/CobView.swift; sourceTree = "<group>"; };
+		B57C32B620702B9700B24C99 /* PaletteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaletteView.swift; path = ../../HPIView/HPIView/PaletteView.swift; sourceTree = "<group>"; };
 		B5B258612063405800DD6A15 /* TdfParseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParseTests.swift; sourceTree = "<group>"; };
 		B5B258632065CD0100DD6A15 /* MapInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapInfo.swift; sourceTree = "<group>"; };
 		B5C556461E2C86A2001BEFAB /* TAassets.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TAassets.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -102,7 +103,6 @@
 		B5E26F011ED9EB05006C329B /* UnitScript+VM.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+VM.swift"; sourceTree = "<group>"; };
 		B5E26F021ED9EB05006C329B /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		B5E26F371ED9F0ED006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GafView.swift; path = ../../HPIView/HPIView/GafView.swift; sourceTree = "<group>"; };
-		B5E26F391ED9F104006C329B /* PcxImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PcxImage.swift; path = ../../HPIView/HPIView/PcxImage.swift; sourceTree = "<group>"; };
 		B5E26F3D1EDB4A02006C329B /* UnitTextureAtlas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTextureAtlas.swift; sourceTree = "<group>"; };
 		B5E26F3F1EE37211006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
 		B5E26F431EE3745F006C329B /* UnitView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitView.swift; sourceTree = "<group>"; };
@@ -177,9 +177,9 @@
 				B5E26F371ED9F0ED006C329B /* GafView.swift */,
 				F04B28BE2065B70F003A1ACC /* MapView.swift */,
 				B5C5568E1E3437EF001BEFAB /* ModelView.swift */,
+				B57C32B620702B9700B24C99 /* PaletteView.swift */,
 				B5E26F4D1EE3BFB4006C329B /* TntView.swift */,
 				B5E26F431EE3745F006C329B /* UnitView.swift */,
-				B5E26F391ED9F104006C329B /* PcxImage.swift */,
 				B5C5567B1E2D5C75001BEFAB /* BridgingHeader.h */,
 				B5C5564F1E2C86A2001BEFAB /* Assets.xcassets */,
 				B5C556511E2C86A2001BEFAB /* Main.storyboard */,
@@ -359,7 +359,6 @@
 				B5E26F0D1ED9EB05006C329B /* UnitScript.swift in Sources */,
 				B5C556911E353FC1001BEFAB /* UnitBrowser.swift in Sources */,
 				B5E26F051ED9EB05006C329B /* hpi.swift in Sources */,
-				B5E26F3A1ED9F104006C329B /* PcxImage.swift in Sources */,
 				B5E26F0C1ED9EB05006C329B /* UnitObject.swift in Sources */,
 				B5E26F441EE3745F006C329B /* UnitView.swift in Sources */,
 				F0D9A49820586F230081DC15 /* MapModel.swift in Sources */,
@@ -389,6 +388,7 @@
 				B5E26F0B1ED9EB05006C329B /* UnitModel.swift in Sources */,
 				B5E26F3E1EDB4A02006C329B /* UnitTextureAtlas.swift in Sources */,
 				B5E26F031ED9EB05006C329B /* gaf.swift in Sources */,
+				B57C32B720702B9700B24C99 /* PaletteView.swift in Sources */,
 				B5E26F071ED9EB05006C329B /* pcx.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
