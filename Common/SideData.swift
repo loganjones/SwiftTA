@@ -57,3 +57,17 @@ extension SideInfo {
     }
     
 }
+
+// MARK:- Sequence specializations
+
+extension Sequence where Element == SideInfo {
+    
+    func first(withName sideName: String) -> SideInfo? {
+        return self.first(where: { $0.name == sideName })
+    }
+    
+    func first(withPrefix sidePrefix: String) -> SideInfo? {
+        return self.first(where: { $0.namePrefix == sidePrefix })
+    }
+    
+}

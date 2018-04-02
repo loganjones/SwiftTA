@@ -44,7 +44,7 @@ extension Palette {
         self.init(data)
     }
     
-    init(contentsOf file: FileSystem.FileHandle) {
+    init<File>(contentsOf file: File) where File: FileReadHandle {
         let data = file.readDataToEndOfFile()
         self.init(data)
     }

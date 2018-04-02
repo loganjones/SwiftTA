@@ -13,7 +13,6 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
     
     var shared = TaassetsSharedState.empty
     fileprivate var units: [UnitInfo] = []
-    fileprivate var mainPalette = Palette()
     fileprivate var textures = ModelTexturePack()
     
     fileprivate var tableView: NSTableView!
@@ -69,14 +68,6 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
         self.units = units
         let end = Date()
         print("UnitInfo list load time: \(end.timeIntervalSince(begin)) seconds")
-        
-        do {
-            let file = try shared.filesystem.openFile(at: "Palettes/PALETTE.PAL")
-            mainPalette = Palette(contentsOf: file)
-        }
-        catch {
-            Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
-        }
         
         textures = ModelTexturePack(loadFrom: shared.filesystem)
     }
@@ -137,10 +128,8 @@ extension UnitBrowserViewController: NSTableViewDelegate {
             controller.view.autoresizingMask = [.width, .width]
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
-            controller.filesystem = shared.filesystem
-            controller.mainPalette = mainPalette
-            controller.textures = textures
-            controller.unit = units[row]
+            controller.shared = UnitBrowserSharedState(filesystem: shared.filesystem, textures: textures, sides: shared.sides)
+            try? controller.load(units[row])
         }
         else {
             detailViewController?.view.removeFromSuperview()
@@ -221,33 +210,36 @@ class UnitInfoCell: NSTableCellView {
     
 }
 
+struct UnitBrowserSharedState {
+    unowned let filesystem: FileSystem
+    unowned let textures: ModelTexturePack
+    let sides: [SideInfo]
+}
+extension UnitBrowserSharedState {
+    static var empty: UnitBrowserSharedState {
+        return UnitBrowserSharedState(filesystem: FileSystem(), textures: ModelTexturePack(), sides: [])
+    }
+}
+
 class UnitDetailViewController: NSViewController {
     
-    var filesystem: FileSystem!
-    fileprivate var mainPalette: Palette!
-    fileprivate var textures: ModelTexturePack!
+    var shared = UnitBrowserSharedState.empty
     
-    var unit: UnitInfo? {
-        didSet {
-            if let unit = unit {
-                tempView.title = unit.object
-                let modelFile = try! filesystem.openFile(at: "objects3d/" + unit.object + ".3DO")
-                let model = try! UnitModel(contentsOf: modelFile)
-                let scriptFile = try! filesystem.openFile(at: "scripts/" + unit.object + ".COB")
-                let script = try! UnitScript(contentsOf: scriptFile)
-                let atlas = UnitTextureAtlas(for: model.textures, from: textures)
-                try! tempView.modelView.load(model, script, atlas, filesystem, mainPalette)
-                
-                //tempSaveAtlasToFile(atlas)
-            }
-            else {
-                
-            }
-        }
+    func load(_ unit: UnitInfo) throws {
+        tempView.title = unit.object
+        let modelFile = try shared.filesystem.openFile(at: "objects3d/" + unit.object + ".3DO")
+        let model = try UnitModel(contentsOf: modelFile)
+        let scriptFile = try shared.filesystem.openFile(at: "scripts/" + unit.object + ".COB")
+        let script = try UnitScript(contentsOf: scriptFile)
+        let atlas = UnitTextureAtlas(for: model.textures, from: shared.textures)
+        let palette = try Palette.texturePalette(for: unit, in: shared.sides, from: shared.filesystem)
+        try tempView.modelView.load(model, script, atlas, shared.filesystem, palette)
+        
+        //try tempSaveAtlasToFile(atlas, palette)
     }
     
-    private func tempSaveAtlasToFile(_ atlas: UnitTextureAtlas) {
-        let pixelData = atlas.build(from: filesystem, using: mainPalette)
+    private func tempSaveAtlasToFile(_ atlas: UnitTextureAtlas, _ palette: Palette) throws {
+        let pixelData = atlas.build(from: shared.filesystem, using: palette)
         
         let cfdata = pixelData.withUnsafeBytes { (pixels: UnsafePointer<UInt8>) -> CFData in
             return CFDataCreate(kCFAllocatorDefault, pixels, pixelData.count)
@@ -269,7 +261,7 @@ class UnitDetailViewController: NSViewController {
         rep.size = NSSize(width: atlas.size.width, height: atlas.size.height)
         let fileData = rep.representation(using: .png, properties: [:])
         let url2 = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Desktop").appendingPathComponent("test.png")
-        try? fileData?.write(to: url2, options: .atomic)
+        try fileData?.write(to: url2, options: .atomic)
     }
     
     private var tempView: TempView { return view as! TempView }

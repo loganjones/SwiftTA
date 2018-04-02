@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		B51FF3721EECA1F3009B509A /* FileReadHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF3711EECA1EC009B509A /* FileReadHandle.swift */; };
 		B52A67471EC3F35900698DEF /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A67461EC3F35900698DEF /* CobView.swift */; };
-		B57C32B720702B9700B24C99 /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57C32B620702B9700B24C99 /* PaletteView.swift */; };
 		B57C32B3206DEDF500B24C99 /* SideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57C32B2206DEDF500B24C99 /* SideData.swift */; };
+		B57C32B720702B9700B24C99 /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57C32B620702B9700B24C99 /* PaletteView.swift */; };
 		B5B258622063405800DD6A15 /* TdfParseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B258612063405800DD6A15 /* TdfParseTests.swift */; };
 		B5B258642065CD0100DD6A15 /* MapInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B258632065CD0100DD6A15 /* MapInfo.swift */; };
 		B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C556491E2C86A2001BEFAB /* AppDelegate.swift */; };
@@ -49,6 +49,7 @@
 		F09272362051E214007C51EC /* UnitScript+CobDecompile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09272352051E214007C51EC /* UnitScript+CobDecompile.swift */; };
 		F092723E205206E9007C51EC /* CobDecompileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F092723D205206E9007C51EC /* CobDecompileTests.swift */; };
 		F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */; };
+		F0D23B902072C97200C0A245 /* Palette+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B8F2072C97200C0A245 /* Palette+Files.swift */; };
 		F0D9A49820586F230081DC15 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49720586F230081DC15 /* MapModel.swift */; };
 		F0D9A49E2059F9180081DC15 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49D2059F9180081DC15 /* Palette.swift */; };
 		F0D9A4A42059FBD00081DC15 /* Utility+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A4A32059FBD00081DC15 /* Utility+Cocoa.swift */; };
@@ -68,8 +69,8 @@
 /* Begin PBXFileReference section */
 		B51FF3711EECA1EC009B509A /* FileReadHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
 		B52A67461EC3F35900698DEF /* CobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CobView.swift; path = ../../HPIView/HPIView/CobView.swift; sourceTree = "<group>"; };
-		B57C32B620702B9700B24C99 /* PaletteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaletteView.swift; path = ../../HPIView/HPIView/PaletteView.swift; sourceTree = "<group>"; };
 		B57C32B2206DEDF500B24C99 /* SideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideData.swift; sourceTree = "<group>"; };
+		B57C32B620702B9700B24C99 /* PaletteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaletteView.swift; path = ../../HPIView/HPIView/PaletteView.swift; sourceTree = "<group>"; };
 		B5B258612063405800DD6A15 /* TdfParseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParseTests.swift; sourceTree = "<group>"; };
 		B5B258632065CD0100DD6A15 /* MapInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapInfo.swift; sourceTree = "<group>"; };
 		B5C556461E2C86A2001BEFAB /* TAassets.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TAassets.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,6 +121,7 @@
 		F092723D205206E9007C51EC /* CobDecompileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CobDecompileTests.swift; sourceTree = "<group>"; };
 		F092723F205206E9007C51EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitScript+Instructions.swift"; sourceTree = "<group>"; };
+		F0D23B8F2072C97200C0A245 /* Palette+Files.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Palette+Files.swift"; sourceTree = "<group>"; };
 		F0D9A49720586F230081DC15 /* MapModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapModel.swift; sourceTree = "<group>"; };
 		F0D9A49D2059F9180081DC15 /* Palette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Palette.swift; sourceTree = "<group>"; };
 		F0D9A4A32059FBD00081DC15 /* Utility+Cocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Cocoa.swift"; sourceTree = "<group>"; };
@@ -212,6 +214,7 @@
 				F0D9A49720586F230081DC15 /* MapModel.swift */,
 				B5E26EF31ED9EB05006C329B /* ModelTexturePack.swift */,
 				F0D9A49D2059F9180081DC15 /* Palette.swift */,
+				F0D23B8F2072C97200C0A245 /* Palette+Files.swift */,
 				B5E26EF41ED9EB05006C329B /* pcx.h */,
 				B5E26EF51ED9EB05006C329B /* pcx.swift */,
 				B57C32B2206DEDF500B24C99 /* SideData.swift */,
@@ -368,6 +371,7 @@
 				B5B258642065CD0100DD6A15 /* MapInfo.swift in Sources */,
 				F0D9A4A62059FEE60081DC15 /* Utility+OpenGL.swift in Sources */,
 				B5D432FA1F0995CC005B468E /* QuickLookView.swift in Sources */,
+				F0D23B902072C97200C0A245 /* Palette+Files.swift in Sources */,
 				F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */,
 				F04B28BF2065B70F003A1ACC /* MapView.swift in Sources */,
 				B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */,
