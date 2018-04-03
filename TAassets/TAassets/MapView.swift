@@ -33,7 +33,7 @@ class MapView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func load(_ mapName: String, from filesystem: FileSystem, using palette: Palette) throws {
+    func load(_ mapName: String, from filesystem: FileSystem) throws {
         
         let beginMap = Date()
         
@@ -46,12 +46,18 @@ class MapView: NSView {
         let beginTnt = Date()
         let tntFile = try filesystem.openFile(at: "maps/" + mapName + ".tnt")
         let map = try MapModel(contentsOf: tntFile)
-        tntView.load(map, using: palette, filesystem: filesystem)
+        switch map {
+        case .ta(let model):
+            let palette = try Palette.standardTaPalette(from: filesystem)
+            tntView.load(model, using: palette)
+        case .tak(let model):
+            tntView.load(model, from: filesystem)
+        }
         let endTnt = Date()
         
         let beginFeatures = Date()
         let featureNames = Set(map.features)
-        features = MapView.loadMapFeatures(featureNames, planet: info.properties["planet"] ?? "", from: filesystem, using: palette)
+        features = MapView.loadMapFeatures(featureNames, planet: info.properties["planet"] ?? "", from: filesystem)
         featureInstances = MapView.indexFeatureLocations(map, features)
         let endFeatures = Date()
         
@@ -67,14 +73,15 @@ class MapView: NSView {
         
     }
     
-    static func loadMapFeatures(_ featureNames: Set<String>, planet: String, from filesystem: FileSystem, using palette: Palette) -> [String: Feature] {
+    static func loadMapFeatures(_ featureNames: Set<String>, planet: String, from filesystem: FileSystem) -> [String: Feature] {
         
         let featureInfo = MapFeatureInfo.collectFeatures(named: featureNames, strartingWith: planet, from: filesystem)
+        let palettes = loadFeaturePalettes(featureInfo, from: filesystem)
         
         var features: [String: Feature] = [:]
         features.reserveCapacity(featureInfo.count)
         
-        let byGaf = Dictionary(grouping: featureInfo, by: { a in a.value.gafFilename })
+        let byGaf = Dictionary(grouping: featureInfo, by: { a in a.value.gafFilename ?? "" })
         let shadow = Palette.shadow
         
         for (gafName, featuresInGaf) in byGaf {
@@ -84,8 +91,9 @@ class MapView: NSView {
                 else { continue }
             
             for (name, info) in featuresInGaf {
-                guard let item = listing[info.primaryGafItemName] else { continue }
+                guard let itemName = info.primaryGafItemName, let item = listing[itemName] else { continue }
                 guard let gafFrames = try? item.extractFrames(from: gaf) else { continue }
+                guard let palette = palettes[info.world ?? ""] else { continue }
                 
                 let frames: [Feature.Frame] = gafFrames.map {
                     let image = try! CGImage.createWith(imageIndices: $0.data, size: $0.size, palette: palette, useTransparency: true, isFlipped: true)
@@ -108,6 +116,19 @@ class MapView: NSView {
         }
         
         return features
+    }
+    
+    static func loadFeaturePalettes(_ featureInfo: MapFeatureInfo.FeatureInfoCollection, from filesystem: FileSystem) -> [String: Palette] {
+        return featureInfo.reduce(into: [String: Palette]()) { (palettes, info) in
+            let world = info.value.world ?? ""
+            guard palettes[world] == nil else { return }
+            if let palette = try? Palette.featurePalette(forWorld: world, from: filesystem) {
+                palettes[world] = palette
+            }
+            else if let palette = try? Palette.featurePaletteForTa(from: filesystem) {
+                palettes[world] = palette
+            }
+        }
     }
     
     static func indexFeatureLocations(_ map: MapModel, _ features: [String: Feature]) -> [FeatureInstance] {

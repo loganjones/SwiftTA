@@ -32,6 +32,12 @@
 		B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F2F1ED9ECE9006C329B /* CobView.swift */; };
 		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
 		B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */; };
+		F0D23B92207402CD00C0A245 /* Palette+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B91207402CC00C0A245 /* Palette+Files.swift */; };
+		F0D23B932074034400C0A245 /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */; };
+		F0D23B952074036800C0A245 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B942074036700C0A245 /* TdfParser.swift */; };
+		F0D23B972074038600C0A245 /* SideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B962074038600C0A245 /* SideData.swift */; };
+		F0D23B9A207403AD00C0A245 /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B98207403AD00C0A245 /* MapFeature.swift */; };
+		F0D23B9B207403AD00C0A245 /* MapInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B99207403AD00C0A245 /* MapInfo.swift */; };
 		F0D9A49A20588A810081DC15 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49920588A800081DC15 /* MapModel.swift */; };
 		F0D9A49C2059F6D90081DC15 /* TntView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49B2059F6D90081DC15 /* TntView.swift */; };
 		F0D9A4A02059FA3D0081DC15 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49F2059FA3D0081DC15 /* Palette.swift */; };
@@ -79,6 +85,11 @@
 		B5E26F311ED9EDD7006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GafView.swift; sourceTree = "<group>"; };
 		B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
 		B5E26F491EE3AF5F006C329B /* ta_TNT.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_TNT.h; sourceTree = "<group>"; };
+		F0D23B91207402CC00C0A245 /* Palette+Files.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Palette+Files.swift"; sourceTree = "<group>"; };
+		F0D23B942074036700C0A245 /* TdfParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
+		F0D23B962074038600C0A245 /* SideData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideData.swift; sourceTree = "<group>"; };
+		F0D23B98207403AD00C0A245 /* MapFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
+		F0D23B99207403AD00C0A245 /* MapInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapInfo.swift; sourceTree = "<group>"; };
 		F0D9A49920588A800081DC15 /* MapModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapModel.swift; sourceTree = "<group>"; };
 		F0D9A49B2059F6D90081DC15 /* TntView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TntView.swift; sourceTree = "<group>"; };
 		F0D9A49F2059FA3D0081DC15 /* Palette.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Palette.swift; sourceTree = "<group>"; };
@@ -155,17 +166,22 @@
 				B5E26F111ED9EB80006C329B /* gaf.swift */,
 				B5E26F121ED9EB80006C329B /* Geometry.swift */,
 				B5E26F131ED9EB80006C329B /* hpi.swift */,
+				F0D23B98207403AD00C0A245 /* MapFeature.swift */,
+				F0D23B99207403AD00C0A245 /* MapInfo.swift */,
 				F0D9A49920588A800081DC15 /* MapModel.swift */,
 				B5E26F141ED9EB80006C329B /* ModelTexturePack.swift */,
 				F0D9A49F2059FA3D0081DC15 /* Palette.swift */,
+				F0D23B91207402CC00C0A245 /* Palette+Files.swift */,
 				B5E26F151ED9EB80006C329B /* pcx.h */,
 				B5E26F161ED9EB80006C329B /* pcx.swift */,
+				F0D23B962074038600C0A245 /* SideData.swift */,
 				B5E26F171ED9EB80006C329B /* ta_3DO.h */,
 				B5E26F181ED9EB80006C329B /* ta_COB.h */,
 				B5E26F191ED9EB80006C329B /* ta_COB_Instructions.h */,
 				B5E26F1A1ED9EB80006C329B /* ta_GAF.h */,
 				B5E26F1B1ED9EB80006C329B /* ta_HPI.h */,
 				B5E26F491EE3AF5F006C329B /* ta_TNT.h */,
+				F0D23B942074036700C0A245 /* TdfParser.swift */,
 				B5E26F1C1ED9EB80006C329B /* UnitData.swift */,
 				B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */,
 				B5E26F1E1ED9EB80006C329B /* UnitModel.swift */,
@@ -257,6 +273,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F0D23B972074038600C0A245 /* SideData.swift in Sources */,
 				B51FF3701EEC966E009B509A /* FileReadHandle.swift in Sources */,
 				B51FF36E1EEC6711009B509A /* Filesystem.swift in Sources */,
 				F0D9A4A82059FF080081DC15 /* Utility+OpenGL.swift in Sources */,
@@ -266,6 +283,7 @@
 				F0D9A49C2059F6D90081DC15 /* TntView.swift in Sources */,
 				B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */,
 				B5E26F251ED9EB80006C329B /* hpi.swift in Sources */,
+				F0D23B9A207403AD00C0A245 /* MapFeature.swift in Sources */,
 				B5E26F271ED9EB80006C329B /* pcx.swift in Sources */,
 				B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */,
 				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,
@@ -274,9 +292,13 @@
 				B5E26F231ED9EB80006C329B /* gaf.swift in Sources */,
 				B50F6A501D87A54B0016C15B /* HpiDocument.swift in Sources */,
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
+				F0D23B952074036800C0A245 /* TdfParser.swift in Sources */,
 				B553EE381DE004AB0033C70D /* FinderView.swift in Sources */,
 				B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */,
 				B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */,
+				F0D23B92207402CD00C0A245 /* Palette+Files.swift in Sources */,
+				F0D23B9B207403AD00C0A245 /* MapInfo.swift in Sources */,
+				F0D23B932074034400C0A245 /* UnitInfo.swift in Sources */,
 				B553EE361DDFE2270033C70D /* ModelView.swift in Sources */,
 				F0D9A4A22059FBAD0081DC15 /* Utility+Cocoa.swift in Sources */,
 				B53524E42055BB70007A2A2C /* UnitScript.swift in Sources */,

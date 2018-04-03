@@ -55,7 +55,7 @@ class HpiBrowserWindowController: NSWindowController {
     lazy var mainPalette: Palette = {
         guard let url = Bundle.main.url(forResource: "PALETTE", withExtension: "PAL")
             else { fatalError("No Palette!") }
-        guard let palette = try? Palette(contentsOf: url)
+        guard let palette = try? Palette(palContentsOf: url)
             else { fatalError("Faile to init Palette!") }
         return palette
     }()
@@ -281,7 +281,7 @@ extension HpiBrowserWindowController: FinderViewDelegate {
                 }
             }
             else if fileExtension.caseInsensitiveCompare("pal") == .orderedSame {
-                let palette = try Palette(contentsOf: fileURL)
+                let palette = try Palette(palContentsOf: fileURL)
                 let view = PaletteView()
                 view.load(palette)
                 subview = view

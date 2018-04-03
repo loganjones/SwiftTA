@@ -129,7 +129,8 @@ extension UnitBrowserViewController: NSTableViewDelegate {
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
             controller.shared = UnitBrowserSharedState(filesystem: shared.filesystem, textures: textures, sides: shared.sides)
-            try? controller.load(units[row])
+            do { try controller.load(units[row]) }
+            catch { print("!!! Failed to load \(units[row].name): \(error)") }
         }
         else {
             detailViewController?.view.removeFromSuperview()

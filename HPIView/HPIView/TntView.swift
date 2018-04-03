@@ -36,26 +36,31 @@ class TntView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func load<File>(contentsOf tntFile: File, using palette: Palette, filesystem: FileSystem) throws
+    func load<File>(contentsOf tntFile: File, from filesystem: FileSystem) throws
         where File: FileReadHandle
     {
         let map = try MapModel(contentsOf: tntFile)
-        load(map, using: palette, filesystem: filesystem)
-    }
-    
-    func load(_ map: MapModel, using palette: Palette, filesystem: FileSystem) {
         switch map {
         case .ta(let model):
-            let contentView = TaMapTileView(frame: NSRect(size: model.resolution))
-            contentView.load(model, using: palette)
-            contentView.drawFeatures = drawFeatures
-            scrollView.documentView = contentView
+            let palette = try Palette.standardTaPalette(from: filesystem)
+            load(model, using: palette)
         case .tak(let model):
-            let contentView = TakMapTileView(frame: NSRect(size: model.resolution))
-            contentView.load(model, filesystem)
-            contentView.drawFeatures = drawFeatures
-            scrollView.documentView = contentView
+            load(model, from: filesystem)
         }
+    }
+    
+    func load(_ map: TaMapModel, using palette: Palette) {
+        let contentView = TaMapTileView(frame: NSRect(size: map.resolution))
+        contentView.load(map, using: palette)
+        contentView.drawFeatures = drawFeatures
+        scrollView.documentView = contentView
+    }
+    
+    func load(_ map: TakMapModel, from filesystem: FileSystem) {
+        let contentView = TakMapTileView(frame: NSRect(size: map.resolution))
+        contentView.load(map, filesystem)
+        contentView.drawFeatures = drawFeatures
+        scrollView.documentView = contentView
     }
     
     // The load methods without a filesystem are retained for HPIView support.

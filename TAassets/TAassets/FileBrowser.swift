@@ -40,7 +40,7 @@ class FileBrowserViewController: NSViewController, ContentViewController {
         
         do {
             let file = try shared.filesystem.openFile(at: "Palettes/PALETTE.PAL")
-            mainPalette = Palette(contentsOf: file)
+            mainPalette = Palette(palContentsOf: file)
         }
         catch {
             Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
@@ -136,7 +136,7 @@ extension FileBrowserViewController: FinderViewDelegate {
                 }
             }
             else if file.hasExtension("pal") {
-                let palette = Palette(contentsOf: fileHandle)
+                let palette = Palette(palContentsOf: fileHandle)
                 let paletteView = PaletteView(frame: contentView.bounds)
                 paletteView.load(palette)
                 subview = paletteView
@@ -155,7 +155,7 @@ extension FileBrowserViewController: FinderViewDelegate {
             }
             else if file.hasExtension("tnt") {
                 let view = TntView(frame: contentView.bounds)
-                try view.load(contentsOf: fileHandle, using: mainPalette, filesystem: shared.filesystem)
+                try view.load(contentsOf: fileHandle, from: shared.filesystem)
                 subview = view
             }
             else {
