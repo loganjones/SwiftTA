@@ -10,9 +10,8 @@ import Cocoa
 
 class MapBrowserViewController: NSViewController, ContentViewController {
     
-    var filesystem = FileSystem()
+    var shared = TaassetsSharedState.empty
     fileprivate var maps: [FileSystem.File] = []
-    fileprivate var mainPalette = Palette()
     
     fileprivate var tableView: NSTableView!
     fileprivate var detailViewContainer: NSView!
@@ -55,7 +54,7 @@ class MapBrowserViewController: NSViewController, ContentViewController {
     
     override func viewDidLoad() {
         let begin = Date()
-        let mapsDirectory = filesystem.root[directory: "maps"] ?? FileSystem.Directory()
+        let mapsDirectory = shared.filesystem.root[directory: "maps"] ?? FileSystem.Directory()
         let maps = mapsDirectory.items
             .compactMap { $0.asFile() }
             .filter { $0.hasExtension("ota") }
@@ -63,14 +62,6 @@ class MapBrowserViewController: NSViewController, ContentViewController {
         self.maps = maps
         let end = Date()
         print("Map list load time: \(end.timeIntervalSince(begin)) seconds")
-        
-        do {
-            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
-            mainPalette = Palette(contentsOf: file)
-        }
-        catch {
-            Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
-        }
     }
     
 }
@@ -113,7 +104,7 @@ extension MapBrowserViewController: NSTableViewDelegate {
             controller.view.autoresizingMask = [.width, .width]
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
-            try? controller.loadMap(in: maps[row], from: filesystem, using: mainPalette)
+            try? controller.loadMap(in: maps[row], from: shared.filesystem)
         }
         else {
             detailViewController?.view.removeFromSuperview()
@@ -163,10 +154,10 @@ class MapDetailViewController: NSViewController {
         self.view = mainView
     }
     
-    func loadMap(in otaFile: FileSystem.File, from filesystem: FileSystem, using palette: Palette) throws {
+    func loadMap(in otaFile: FileSystem.File, from filesystem: FileSystem) throws {
         let name = otaFile.baseName
         tempView.title = name
-        try tempView.mapView.load(name, from: filesystem, using: palette)
+        try tempView.mapView.load(name, from: filesystem)
     }
     
     private class TempView: NSView {

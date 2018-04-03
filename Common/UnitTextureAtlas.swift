@@ -45,13 +45,7 @@ class UnitTextureAtlas {
             UnitTextureAtlas.copy(texture: $0, to: bytes, of: size, filesystem: filesystem, palette: palette)
         }
         
-        let raw = UnsafeMutableRawPointer(bytes)
-        let dealloc: (UnsafeMutableRawPointer, Int) -> () = { p, i in
-            let b = p.assumingMemoryBound(to: UInt8.self)
-            b.deallocate()
-        }
-        
-        return Data(bytesNoCopy: raw, count: byteCount, deallocator: .custom(dealloc))
+        return Data(bytesNoCopy: bytes, count: byteCount, deallocator: .custom({ (p, i) in p.deallocate() }))
     }
     
     func textureCoordinates(for index: Int) -> (Vertex2, Vertex2, Vertex2, Vertex2) {
@@ -92,7 +86,7 @@ private extension UnitTextureAtlas {
                     bytes[i+0] = color.red
                     bytes[i+1] = color.green
                     bytes[i+2] = color.blue
-                    bytes[i+3] = 255//color.alpha
+                    bytes[i+3] = color.alpha
                 }
             }
         case .gafItem(let gaf):
@@ -109,7 +103,7 @@ private extension UnitTextureAtlas {
                             bytes[i+0] = color.red
                             bytes[i+1] = color.green
                             bytes[i+2] = color.blue
-                            bytes[i+3] = 255//color.alpha
+                            bytes[i+3] = color.alpha
                             raw += 1
                         }
                     }

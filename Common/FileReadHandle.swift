@@ -22,6 +22,10 @@ protocol FileReadHandle {
     
     var fileName: String { get }
     
+    var fileSize: Int { get }
+    
+    var fileOffset: Int { get }
+    
 }
 
 extension FileReadHandle {

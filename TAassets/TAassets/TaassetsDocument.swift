@@ -11,13 +11,14 @@ import Cocoa
 class TaassetsDocument: NSDocument {
 
     var filesystem: FileSystem!
+    var sides: [SideInfo] = []
 
     override func makeWindowControllers() {
         // Returns the Storyboard that contains your Document window.
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
         let windowController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Document Window Controller")) as! NSWindowController
         let viewController = windowController.contentViewController as! TaassetsViewController
-        viewController.filesystem = filesystem
+        viewController.shared = TaassetsSharedState(filesystem: filesystem, sides: sides)
         self.addWindowController(windowController)
     }
     
@@ -32,6 +33,9 @@ class TaassetsDocument: NSDocument {
         filesystem = try! FileSystem(from: directoryURL)
         let end = Date()
         Swift.print("\(directoryURL.lastPathComponent) filesystem load time: \(end.timeIntervalSince(begin)) seconds")
+        
+        let sidedata = try filesystem.openFile(at: "gamedata/sidedata.tdf")
+        sides = try SideInfo.load(contentsOf: sidedata)
     }
 
 }
@@ -62,9 +66,19 @@ class TaassetsDocumentController: NSDocumentController {
 
 // MARK: - View
 
+struct TaassetsSharedState {
+    unowned let filesystem: FileSystem
+    let sides: [SideInfo]
+}
+extension TaassetsSharedState {
+    static var empty: TaassetsSharedState {
+        return TaassetsSharedState(filesystem: FileSystem(), sides: [])
+    }
+}
+
 class TaassetsViewController: NSViewController {
     
-    var filesystem: FileSystem!
+    var shared: TaassetsSharedState!
     
     @IBOutlet var unitsButton: NSButton!
     @IBOutlet var weaponsButton: NSButton!
@@ -118,7 +132,7 @@ class TaassetsViewController: NSViewController {
     func showSelectedContent<T: ContentViewController>(controller: T) {
         selectedViewController?.view.removeFromSuperview()
         
-        controller.filesystem = filesystem
+        controller.shared = shared
         controller.view.frame = contentView.bounds
         controller.view.autoresizingMask = [.width, .height]
         contentView.addSubview(controller.view)
@@ -129,12 +143,12 @@ class TaassetsViewController: NSViewController {
 
 protocol ContentViewController: class {
     var view: NSView { get }
-    var filesystem: FileSystem { get set }
+    var shared: TaassetsSharedState { get set }
 }
 
 class EmptyContentViewController: NSViewController, ContentViewController {
     
-    var filesystem = FileSystem()
+    var shared = TaassetsSharedState.empty
     
     override func loadView() {
         let mainView = NSView()

@@ -15,27 +15,29 @@ struct MapFeatureInfo {
     var footprint: Size2D
     var height: Int
     
-    var gafFilename: String
-    var primaryGafItemName: String
-    var shadowGafItemName: String?
+    var world: String?
     
-    var properties: [String: String]
+    var gafFilename: String?
+    var primaryGafItemName: String?
+    var shadowGafItemName: String?
     
 }
 
 extension MapFeatureInfo {
     
-    init(name: String, properties: [String: String]) {
+    private init(name: String, object: TdfParser.Object) throws {
         self.name = name
-        self.properties = properties
         
-        footprint = Size2D(width: Int(properties["footprintx"] ?? "1") ?? 1,
-                           height: Int(properties["footprintz"] ?? "1") ?? 1)
-        height = Int(properties["height"] ?? "0") ?? 0
+        let footprintX = try object.requiredStringProperty("footprintx")
+        let footprintZ = try object.requiredStringProperty("footprintz")
+        footprint = Size2D(width: Int(footprintX) ?? 1, height: Int(footprintZ) ?? 1)
+        height = Int(try object.requiredStringProperty("height")) ?? 0
         
-        gafFilename = properties["filename"] ?? ""
-        primaryGafItemName = properties["seqname"] ?? ""
-        shadowGafItemName = properties["seqnameshad"]
+        world = object["world"]
+        
+        gafFilename = object["filename"]
+        primaryGafItemName = object["seqname"]
+        shadowGafItemName = object["seqnameshad"]
     }
     
 }
@@ -110,7 +112,7 @@ extension MapFeatureInfo {
         let parser = TdfParser(try filesystem.openFile(tdf))
         while let object = parser.skipToNextObject() {
             if featureNames.contains(object) {
-                let info = MapFeatureInfo(name: object, properties: parser.extractObject().properties)
+                let info = try? MapFeatureInfo(name: object, object: parser.extractObject())
                 found[object] = info
             }
             else {

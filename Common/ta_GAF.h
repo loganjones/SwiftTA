@@ -86,8 +86,8 @@ typedef struct TA_GAF_FRAME_DATA
     /// This is always 0x09
 	uint8_t		unknown_1;
 
-    /// The compression flag for this frame
-	uint8_t		compressionMethod;
+    /// The encoding flag for this frame
+	uint8_t		encoding;
 
     /// Specifies the amount of subframes associated with this frame
 	uint16_t		numberOfSubFrames;
@@ -105,21 +105,21 @@ typedef struct TA_GAF_FRAME_DATA
 
 } *LPTA_GAF_FRAME_DATA;
 
-/// This flag inndicates that the frame is uncompressed. OffsetToFrameData points
-/// to an array of Width x Height bytes.
+/// The data at `offsetToFrameData` is a raw collection of `width` x `height` bytes.
+/// Once read, the result is an 8-bit per pixel paletted image.
 static const uint8_t TA_GAF_FRAME_NOT_COMPRESSED					= 0;
 
-/// This flag inndicates that the frame is compressed using the compression
-/// scheme used for TA and Kingdoms
+/// The data at `offsetToFrameData` is a RLE collection of bytes.
+/// When decoded, the result is an 8-bit per pixel paletted image.
 static const uint8_t TA_GAF_FRAME_COMPRESSED_TA						= 1;
 
-/// This flag inndicates that the frame is compressed using the compression
-/// scheme used for Kingdoms TAF files ending in "*_4444.TAF"
-static const uint8_t TA_GAF_FRAME_COMPRESSED_TAK1					= 4;
+/// The data at `offsetToFrameData` is a raw collection of `width` x `height` x 2 bytes.
+/// Once read, the result is a 16-bit per pixel image with a pixel format of 4444 (4 bits per component).
+static const uint8_t TA_GAF_FRAME_NOT_COMPRESSED_TAK_4444			= 4;
 
-/// This flag inndicates that the frame is compressed using the compression
-/// scheme used for Kingdoms TAF files ending in "*_1555.TAF"
-static const uint8_t TA_GAF_FRAME_COMPRESSED_TAK2					= 5;
+/// The data at `offsetToFrameData` is a raw collection of `width` x `height` x 2 bytes.
+/// Once read, the result is a 16-bit per pixel image with a pixel format of 1555 (5 bits per RGB component, 1 bit alpha).
+static const uint8_t TA_GAF_FRAME_NOT_COMPRESSED_TAK_1555			= 5;
 
 
 /////////////////////////////////////////////////////////////////////

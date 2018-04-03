@@ -11,9 +11,8 @@ import Cocoa
 
 class UnitBrowserViewController: NSViewController, ContentViewController {
     
-    var filesystem = FileSystem()
+    var shared = TaassetsSharedState.empty
     fileprivate var units: [UnitInfo] = []
-    fileprivate var mainPalette = Palette()
     fileprivate var textures = ModelTexturePack()
     
     fileprivate var tableView: NSTableView!
@@ -59,33 +58,25 @@ class UnitBrowserViewController: NSViewController, ContentViewController {
     
     override func viewDidLoad() {
         let begin = Date()
-        let unitsDirectory = filesystem.root[directory: "units"] ?? FileSystem.Directory()
+        let unitsDirectory = shared.filesystem.root[directory: "units"] ?? FileSystem.Directory()
         let units = unitsDirectory.items
             .compactMap { $0.asFile() }
             .filter { $0.hasExtension("fbi") }
             .sorted { FileSystem.sortNames($0.name, $1.name) }
-            .compactMap { try? filesystem.openFile($0) }
+            .compactMap { try? shared.filesystem.openFile($0) }
             .compactMap { try? UnitInfo(contentsOf: $0) }
         self.units = units
         let end = Date()
         print("UnitInfo list load time: \(end.timeIntervalSince(begin)) seconds")
         
-        do {
-            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
-            mainPalette = Palette(contentsOf: file)
-        }
-        catch {
-            Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
-        }
-        
-        textures = ModelTexturePack(loadFrom: filesystem)
+        textures = ModelTexturePack(loadFrom: shared.filesystem)
     }
     
     final func buildpic(for unitName: String) -> NSImage? {
-        if let file = try? filesystem.openFile(at: "unitpics/" + unitName + ".PCX") {
+        if let file = try? shared.filesystem.openFile(at: "unitpics/" + unitName + ".PCX") {
             return try? NSImage(pcxContentsOf: file)
         }
-        else if let file = try? filesystem.openFile(at: "anims/buildpic/" + unitName + ".jpg") {
+        else if let file = try? shared.filesystem.openFile(at: "anims/buildpic/" + unitName + ".jpg") {
             let data = file.readDataToEndOfFile()
             return NSImage(data: data)
         }
@@ -137,10 +128,9 @@ extension UnitBrowserViewController: NSTableViewDelegate {
             controller.view.autoresizingMask = [.width, .width]
             detailViewContainer.addSubview(controller.view)
             detailViewController = controller
-            controller.filesystem = filesystem
-            controller.mainPalette = mainPalette
-            controller.textures = textures
-            controller.unit = units[row]
+            controller.shared = UnitBrowserSharedState(filesystem: shared.filesystem, textures: textures, sides: shared.sides)
+            do { try controller.load(units[row]) }
+            catch { print("!!! Failed to load \(units[row].name): \(error)") }
         }
         else {
             detailViewController?.view.removeFromSuperview()
@@ -221,33 +211,36 @@ class UnitInfoCell: NSTableCellView {
     
 }
 
+struct UnitBrowserSharedState {
+    unowned let filesystem: FileSystem
+    unowned let textures: ModelTexturePack
+    let sides: [SideInfo]
+}
+extension UnitBrowserSharedState {
+    static var empty: UnitBrowserSharedState {
+        return UnitBrowserSharedState(filesystem: FileSystem(), textures: ModelTexturePack(), sides: [])
+    }
+}
+
 class UnitDetailViewController: NSViewController {
     
-    var filesystem: FileSystem!
-    fileprivate var mainPalette: Palette!
-    fileprivate var textures: ModelTexturePack!
+    var shared = UnitBrowserSharedState.empty
     
-    var unit: UnitInfo? {
-        didSet {
-            if let unit = unit {
-                tempView.title = unit.object
-                let modelFile = try! filesystem.openFile(at: "objects3d/" + unit.object + ".3DO")
-                let model = try! UnitModel(contentsOf: modelFile)
-                let scriptFile = try! filesystem.openFile(at: "scripts/" + unit.object + ".COB")
-                let script = try! UnitScript(contentsOf: scriptFile)
-                let atlas = UnitTextureAtlas(for: model.textures, from: textures)
-                try! tempView.modelView.load(model, script, atlas, filesystem, mainPalette)
-                
-                //tempSaveAtlasToFile(atlas)
-            }
-            else {
-                
-            }
-        }
+    func load(_ unit: UnitInfo) throws {
+        tempView.title = unit.object
+        let modelFile = try shared.filesystem.openFile(at: "objects3d/" + unit.object + ".3DO")
+        let model = try UnitModel(contentsOf: modelFile)
+        let scriptFile = try shared.filesystem.openFile(at: "scripts/" + unit.object + ".COB")
+        let script = try UnitScript(contentsOf: scriptFile)
+        let atlas = UnitTextureAtlas(for: model.textures, from: shared.textures)
+        let palette = try Palette.texturePalette(for: unit, in: shared.sides, from: shared.filesystem)
+        try tempView.modelView.load(model, script, atlas, shared.filesystem, palette)
+        
+        //try tempSaveAtlasToFile(atlas, palette)
     }
     
-    private func tempSaveAtlasToFile(_ atlas: UnitTextureAtlas) {
-        let pixelData = atlas.build(from: filesystem, using: mainPalette)
+    private func tempSaveAtlasToFile(_ atlas: UnitTextureAtlas, _ palette: Palette) throws {
+        let pixelData = atlas.build(from: shared.filesystem, using: palette)
         
         let cfdata = pixelData.withUnsafeBytes { (pixels: UnsafePointer<UInt8>) -> CFData in
             return CFDataCreate(kCFAllocatorDefault, pixels, pixelData.count)
@@ -269,7 +262,7 @@ class UnitDetailViewController: NSViewController {
         rep.size = NSSize(width: atlas.size.width, height: atlas.size.height)
         let fileData = rep.representation(using: .png, properties: [:])
         let url2 = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Desktop").appendingPathComponent("test.png")
-        try? fileData?.write(to: url2, options: .atomic)
+        try fileData?.write(to: url2, options: .atomic)
     }
     
     private var tempView: TempView { return view as! TempView }

@@ -345,4 +345,12 @@ extension FileSystem.FileHandle: FileReadHandle {
         return file.name
     }
     
+    var fileSize: Int {
+        return file.info.size
+    }
+    
+    var fileOffset: Int {
+        return offsetInFile
+    }
+    
 }

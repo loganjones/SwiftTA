@@ -10,7 +10,7 @@ import Cocoa
 
 class FileBrowserViewController: NSViewController, ContentViewController {
     
-    var filesystem = FileSystem()
+    var shared = TaassetsSharedState.empty
     var finderView: FinderView!
     var mainPalette = Palette()
     
@@ -35,12 +35,12 @@ class FileBrowserViewController: NSViewController, ContentViewController {
     }
     
     override func viewDidLoad() {
-        let rootItems = filesystem.root.items.sorted { FileSystem.sortNames($0.name, $1.name) }
-        finderView.setRoot(directory: FileBrowserItem.Directory(asset: filesystem.root, items: rootItems, browser: self))
+        let rootItems = shared.filesystem.root.items.sorted { FileSystem.sortNames($0.name, $1.name) }
+        finderView.setRoot(directory: FileBrowserItem.Directory(asset: shared.filesystem.root, items: rootItems, browser: self))
         
         do {
-            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
-            mainPalette = Palette(contentsOf: file)
+            let file = try shared.filesystem.openFile(at: "Palettes/PALETTE.PAL")
+            mainPalette = Palette(palContentsOf: file)
         }
         catch {
             Swift.print("Error loading Palettes/PALETTE.PAL : \(error)")
@@ -105,20 +105,41 @@ extension FileBrowserViewController: FinderViewDelegate {
         
         let fileHandle: FileSystem.FileHandle
         do {
-            fileHandle = try filesystem.openFile(file)
-            
-            let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
-            preview.title = file.name
-            preview.size = file.info.size
-            preview.source = file.archiveURL.lastPathComponent
-            
-            let contentView = preview.contentView
-            let subview: NSView
+            fileHandle = try shared.filesystem.openFile(file)
+        }
+        catch {
+            print("Failed to extract \(file.name) for preview: \(error)")
+            return nil
+        }
+        
+        let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
+        preview.title = file.name
+        preview.size = file.info.size
+        preview.source = file.archiveURL.lastPathComponent
+        
+        let contentView = preview.contentView
+        let subview: NSView
+        
+        do {
             if file.hasExtension("pcx") {
-                let pcxImage = try NSImage(pcxContentsOf: fileHandle)
-                let pcxView = NSImageView(frame: contentView.bounds)
-                pcxView.image = pcxImage
-                subview = pcxView
+                switch try Pcx.analyze(contentsOf: fileHandle) {
+                case .image:
+                    let pcxImage = try NSImage(pcxContentsOf: fileHandle)
+                    let pcxView = NSImageView(frame: contentView.bounds)
+                    pcxView.image = pcxImage
+                    subview = pcxView
+                case .palette:
+                    let palette = try Pcx.extractPalette(contentsOf: fileHandle)
+                    let paletteView = PaletteView(frame: contentView.bounds)
+                    paletteView.load(palette)
+                    subview = paletteView
+                }
+            }
+            else if file.hasExtension("pal") {
+                let palette = Palette(palContentsOf: fileHandle)
+                let paletteView = PaletteView(frame: contentView.bounds)
+                paletteView.load(palette)
+                subview = paletteView
             }
             else if file.hasExtension("3do") {
                 let model = try UnitModel(contentsOf: fileHandle)
@@ -134,7 +155,7 @@ extension FileBrowserViewController: FinderViewDelegate {
             }
             else if file.hasExtension("tnt") {
                 let view = TntView(frame: contentView.bounds)
-                try view.load(contentsOf: fileHandle, using: mainPalette, filesystem: filesystem)
+                try view.load(contentsOf: fileHandle, from: shared.filesystem)
                 subview = view
             }
             else {
@@ -142,22 +163,24 @@ extension FileBrowserViewController: FinderViewDelegate {
                 try view.load(contentsOf: fileHandle)
                 subview = view
             }
-            
-            subview.translatesAutoresizingMaskIntoConstraints = false
-            preview.contentView.addSubview(subview)
-            NSLayoutConstraint.activate([
-                subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-                subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-                subview.topAnchor.constraint(equalTo: contentView.topAnchor),
-                subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-                ])
-            
-            return preview
         }
         catch {
-            print("Failed to extract \(file.name) for preview: \(error)")
-            return nil
+            print("Failed to load load \(file.name) for preview: \(error)")
+            let view = QuickLookView(frame: contentView.bounds)
+            try? view.load(contentsOf: fileHandle)
+            subview = view
         }
+            
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        preview.contentView.addSubview(subview)
+        NSLayoutConstraint.activate([
+            subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            subview.topAnchor.constraint(equalTo: contentView.topAnchor),
+            subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            ])
+        
+        return preview
     }
     
     func preview(forGafImage item: GafItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
@@ -180,7 +203,7 @@ extension FileBrowserViewController: FinderViewDelegate {
             let subview: NSView
             
             let view = GafView(frame: contentView.bounds)
-            try view.load(item, from: try filesystem.openFile(gaf.asset), using: mainPalette)
+            try view.load(item, from: try shared.filesystem.openFile(gaf.asset), using: mainPalette)
             subview = view
             
             subview.translatesAutoresizingMaskIntoConstraints = false
@@ -231,8 +254,7 @@ extension FileBrowserItem {
     init(asset: FileSystem.Item, browser: FileBrowserViewController) {
         switch asset {
         case .file(let f):
-            let ext = (f.name as NSString).pathExtension.lowercased()
-            self = ext == "gaf" ? .gafArchive(GafArchive(asset: f, browser: browser)) : .file(f)
+            self = (f.hasExtension("gaf") || f.hasExtension("taf")) ? .gafArchive(GafArchive(asset: f, browser: browser)) : .file(f)
         case .directory(let d):
             let items = d.items.sorted { FileSystem.sortNames($0.name, $1.name) }
             self = .directory(Directory(asset: d, items: items, browser: browser))
@@ -307,7 +329,7 @@ extension FileBrowserItem.GafContents {
     init(of archive: FileBrowserItem.GafArchive, at path: [FinderViewDirectory]) throws {
         asset = archive.asset
         browser = archive.browser
-        let file = try archive.browser.filesystem.openFile(archive.asset)
+        let file = try archive.browser.shared.filesystem.openFile(archive.asset)
         listing = try GafListing(withContentsOf: file)
     }
     

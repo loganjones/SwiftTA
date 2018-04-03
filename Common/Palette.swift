@@ -10,7 +10,7 @@ import Foundation
 
 struct Palette {
     
-    private let entries: [Color]
+    private var colors: [Color]
     
     struct Color {
         var red: UInt8
@@ -19,55 +19,53 @@ struct Palette {
         var alpha: UInt8
     }
     
+    init(_ colors: [Color]) {
+        self.colors = colors
+    }
+    
+    init() { colors = Array(repeating: Color.white, count: 255) }
+    
     subscript(index: Int) -> Color {
-        return entries[index]
+        return colors[index]
     }
     
     subscript(index: UInt8) -> Color {
-        return entries[Int(index)]
-    }
-    
-    subscript(index: TaPaletteIndex) -> Color {
-        return entries[index.rawValue]
+        return colors[Int(index)]
     }
     
 }
 
+// MARK:- PAL Support
+
 extension Palette {
     
-    init(contentsOf url: URL) throws {
+    init(palContentsOf url: URL, applyStandardTransparencies: Bool = true) throws {
         let data = try Data(contentsOf: url)
-        self.init(data)
+        self.init(palData: data)
     }
     
-    init(contentsOf file: FileSystem.FileHandle) {
+    init<File>(palContentsOf file: File) where File: FileReadHandle {
         let data = file.readDataToEndOfFile()
-        self.init(data)
+        self.init(palData: data)
     }
     
-    init(_ data: Data) {
-        var colors = data.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) -> Array<Color> in
+    init(palData data: Data) {
+        colors = data.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) -> Array<Color> in
             let raw = UnsafeRawPointer(bytes)
             let p = raw.bindMemory(to: Color.self, capacity: 256)
             let buf = UnsafeBufferPointer<Color>(start: p, count: 256)
             return Array(buf)
         }
         
-        // TEMP for TA
-        for i in colors.indexRange {
-            switch TaPaletteIndex(rawValue: i) {
-            case .clear?, .clear2?: colors[i].alpha = 0
-            case .shadow?: colors[i].alpha = 100
-            default: colors[i].alpha = 255
-            }
+        // The TA .pal files have every color with a 0 alpha value ಠ_ಠ
+        for i in colors.indices {
+            colors[i].alpha = 255
         }
-        
-        entries = colors
     }
     
-    init() { entries = Array(repeating: Color.white, count: 255) }
-    
 }
+
+// MARK:- Simple Color Accessors
 
 extension Palette.Color {
     static let white = Palette.Color(red: UInt8.max, green: UInt8.max, blue: UInt8.max, alpha: UInt8.max)
@@ -79,12 +77,34 @@ extension Palette {
     
     static let shadow: Palette = {
         var colors = Array(repeating: Color.shadow, count: 255)
-        colors[TaPaletteIndex.clear.rawValue].alpha = 0
-        colors[TaPaletteIndex.clear2.rawValue].alpha = 0
-        return Palette(entries: colors)
+        colors[0].alpha = 0
+        colors[9].alpha = 0
+        return Palette(colors)
     }()
     
 }
+
+// MARK:- Chorma Keys (Transparency)
+
+extension Palette {
+    
+    mutating func applyChromaKeys(_ indices: Set<Int>, alpha: UInt8 = 0) {
+        for i in indices {
+            colors[i].alpha = alpha
+        }
+    }
+    
+    func applyingChromaKeys(_ indices: Set<Int>, alpha: UInt8 = 0) -> Palette {
+        var copy = colors
+        for i in indices {
+            copy[i].alpha = alpha
+        }
+        return Palette(copy)
+    }
+    
+}
+
+// MARK:- Image Mapping
 
 extension Palette {
     
@@ -178,21 +198,4 @@ extension Palette {
         return pixelData
     }
     
-}
-
-enum TaPaletteIndex: Int {
-    case clear      = 0
-    case clear2     = 9
-    case shadow     = 10
-    case cyan       = 100
-    case black      = 245
-    case lightGrey2 = 246
-    case lightGrey  = 247
-    case darkGrey   = 248
-    case red        = 249
-    case green      = 250
-    case yellow     = 251
-    case blue       = 252
-    case lightBlue  = 254
-    case white      = 255
 }
