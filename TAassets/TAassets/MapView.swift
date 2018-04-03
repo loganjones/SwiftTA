@@ -135,7 +135,7 @@ class MapView: NSView {
         
         var instances: [FeatureInstance] = []
         
-        for i in map.featureMap.indexRange {
+        for i in map.featureMap.indices {
             guard let featureIndex = map.featureMap[i] else { continue }
             guard let feature = features[map.features[featureIndex]] else { continue }
             

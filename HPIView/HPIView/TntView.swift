@@ -204,7 +204,7 @@ private extension TaMapTileView {
         }
         
         subscript(safe index: Int) -> CGImage? {
-            guard tiles.indexRange.contains(index) else { return nil }
+            guard tiles.indices.contains(index) else { return nil }
             return tiles[index]
         }
         

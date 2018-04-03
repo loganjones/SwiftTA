@@ -107,16 +107,8 @@ extension Array {
         }
     }
     
-    var indexRange: CountableRange<Index> {
-        return startIndex..<endIndex
-    }
-    
-    func contains(index i: Index) -> Bool {
-        return indexRange.contains(i)
-    }
-    
     public subscript(safe index: Index) -> Element? {
-        guard contains(index: index) else { return nil }
+        guard indices.contains(index) else { return nil }
         return self[index]
     }
     

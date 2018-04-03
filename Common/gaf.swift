@@ -102,7 +102,7 @@ extension GafItem {
     func extractFrame<File>(index: Int, from gaf: File) throws -> Frame
         where File: FileReadHandle
     {
-        guard frameOffsets.indexRange.contains(index) else { throw GafLoadError.outOfBoundsFrameIndex }
+        guard frameOffsets.indices.contains(index) else { throw GafLoadError.outOfBoundsFrameIndex }
         return try GafItem.extractFrame(from: gaf, at: frameOffsets[index])
     }
     

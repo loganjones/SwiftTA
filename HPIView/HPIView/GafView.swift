@@ -96,7 +96,7 @@ class GafView: NSView {
     private func showCurrentFrame() {
         
         let frameIndex = Int(frameSlider.doubleValue) - 1
-        guard frames.indexRange.contains(frameIndex) else { return }
+        guard frames.indices.contains(frameIndex) else { return }
         let frame = frames[frameIndex]
         
         if useFrameOffsetsForCentering {
