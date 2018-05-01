@@ -9,9 +9,13 @@
 import Cocoa
 
 
-class FinderView: NSView {
+class FinderView<Item: FinderViewItem>: NSView {
     
-    weak var delegate: FinderViewDelegate?
+    typealias Directory = Item.Directory
+    
+    var createRowView: (_ item: Item, _ tableView: NSTableView) -> NSView? = { (_,_) in return nil }
+    var createContentView: (_ item: Item, _ path: [Directory]) -> NSView? = { (_,_) in return nil }
+
     public var paneWidth: CGFloat = 180
     
     fileprivate let horizontalScrollView: NSScrollView
@@ -74,7 +78,7 @@ class FinderView: NSView {
         return tier.frame.maxX
     }
     
-    func setRoot(directory: FinderViewDirectory) {
+    func setRoot(directory: Directory) {
         addTier(for: directory)
     }
     
@@ -88,7 +92,7 @@ class FinderView: NSView {
         tiers.forEach({ $0.tableView.register(nib, forIdentifier: NSUserInterfaceItemIdentifier(rawValue: identifier)) })
     }
     
-    var selectedItems: [FinderViewItem] {
+    var selectedItems: [Item] {
         get {
             guard let tier = tiers.last else { return [] }
             let rows = tier.tableView.selectedRowIndexes
@@ -142,14 +146,14 @@ class FinderView: NSView {
         }
     }
     
-    fileprivate func addTier(for directory: FinderViewDirectory) {
+    fileprivate func addTier(for directory: Directory) {
         let frame = NSRect(x: 0, y: 0, width: paneWidth, height: tierField.bounds.size.height)
         let tier = Tier(directory: directory, frame: frame, in: self)
         tierField.addSubview(tier)
         tiers = [tier]
     }
     
-    fileprivate func addTier(for directory: FinderViewDirectory, after parent: Tier) {
+    fileprivate func addTier(for directory: Directory, after parent: Tier) {
         
         guard let parentIndex = tiers.index(of: parent) else { return }
         
@@ -176,8 +180,8 @@ class FinderView: NSView {
         tierField.frame = NSRect(x: 0, y: 0, width: tier.frame.maxX, height: tierField.frame.size.height)
     }
     
-    fileprivate func showPreview(for item: FinderViewItem, in tier: Tier, path: [FinderViewDirectory]) {
-        if let view = delegate?.preview(for: item, at: path, of: self) {
+    fileprivate func showPreview(for item: Item, in tier: Tier, path: [Directory]) {
+        if let view = createContentView(item, path) {
             let x = endOfTiers
             let widthAvailable = self.frame.width - x
             let width = max(widthAvailable, paneWidth)
@@ -189,15 +193,15 @@ class FinderView: NSView {
         }
     }
     
-    fileprivate func path(upTo tier: Tier) -> [FinderViewDirectory] {
+    fileprivate func path(upTo tier: Tier) -> [Directory] {
         guard let index = tiers.index(of: tier) else { return [] }
         return tiers[0...index].map({ $0.directory })
     }
     
-    fileprivate func handleSelection(of item: FinderViewItem, in tier: Tier) {
+    fileprivate func handleSelection(of item: Item, in tier: Tier) {
         let path = self.path(upTo: tier)
-        if item.isExpandable(in: self, path: path),
-            let subdirectory = item.expand(in: self, path: path) {
+        if item.isExpandable(path: path),
+            let subdirectory = item.expand(path: path) {
             addTier(for: subdirectory, after: tier)
         }
         else {
@@ -250,13 +254,14 @@ class FinderView: NSView {
         
     }
     
-    fileprivate class Tier: NSView {
-        let directory: FinderViewDirectory
-        unowned var finder: FinderView
+    fileprivate class Tier: NSView, NSTableViewDataSource, NSTableViewDelegate {
+        
+        let directory: Directory
+        unowned var finder: FinderView<Item>
         unowned let scrollView: TierScrollView
         unowned let tableView: NSTableView
         
-        init(directory dir: FinderViewDirectory, frame: NSRect, in finder: FinderView) {
+        init(directory dir: Directory, frame: NSRect, in finder: FinderView<Item>) {
             
             let scrollView = TierScrollView(frame: NSMakeRect(0, 0, frame.size.width-1, frame.size.height))
             scrollView.autoresizingMask = [.height]
@@ -300,64 +305,52 @@ class FinderView: NSView {
             path.lineWidth = 1
             path.stroke()
         }
+        
+        func numberOfRows(in tableView: NSTableView) -> Int {
+            return directory.numberOfItems
+        }
+        
+        func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+            let item = directory.item(at: row)
+            let view = finder.createRowView(item, tableView)
+            return view
+        }
+        
+        func tableViewSelectionDidChange(_ notification: Notification) {
+            guard let tableView = notification.object as? NSTableView
+                else { return }
+            let row = tableView.selectedRow
+            if row >= 0 {
+                let item = directory.item(at: row)
+                finder.handleSelection(of: item, in: self)
+            }
+            else {
+                finder.handleDeselection(in: self)
+            }
+        }
+        
     }
     
 }
 
 protocol FinderViewItem {
+    associatedtype Directory: FinderViewDirectory where Directory.Item == Self
     var name: String { get }
-    func isExpandable(in: FinderView, path: [FinderViewDirectory]) -> Bool
-    func expand(in: FinderView, path: [FinderViewDirectory]) -> FinderViewDirectory?
+    func isExpandable(path: [Directory]) -> Bool
+    func expand(path: [Directory]) -> Directory?
 }
 
 protocol FinderViewDirectory {
+    associatedtype Item: FinderViewItem where Item.Directory == Self
     var name: String { get }
     var numberOfItems: Int { get }
-    func item(at index: Int) -> FinderViewItem
-    func index(of item: FinderViewItem) -> Int?
-    func index(where: (FinderViewItem) -> Bool) -> Int?
-}
-
-protocol FinderViewDelegate: class {
-    func rowView(for item: FinderViewItem, in tableView: NSTableView, of finder: FinderView) -> NSView?
-    func preview(for item: FinderViewItem, at path: [FinderViewDirectory], of finder: FinderView) -> NSView?
+    func item(at index: Int) -> Item
+    func index(of item: Item) -> Int?
+    func index(where: (Item) -> Bool) -> Int?
 }
 
 extension FinderViewItem {
-    
-    func isExpandable(in finder: FinderView, path: [FinderViewDirectory]) -> Bool {
-        return expand(in: finder, path: path) != nil
+    func isExpandable(path: [Directory]) -> Bool {
+        return expand(path: path) != nil
     }
-    
-}
-
-extension FinderView.Tier: NSTableViewDataSource {
-    
-    func numberOfRows(in tableView: NSTableView) -> Int {
-        return directory.numberOfItems
-    }
-    
-}
-
-extension FinderView.Tier: NSTableViewDelegate {
-    
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let item = directory.item(at: row)
-        let view = finder.delegate?.rowView(for: item, in: tableView, of: finder)
-        return view
-    }
-    
-    func tableViewSelectionDidChange(_ notification: Notification) {
-        guard let tableView = notification.object as? NSTableView
-            else { return }
-        let row = tableView.selectedRow
-        if row >= 0 {
-            let item = directory.item(at: row)
-            finder.handleSelection(of: item, in: self)
-        }
-        else {
-            finder.handleDeselection(in: self)
-        }
-    }
-    
 }
