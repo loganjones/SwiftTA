@@ -14,8 +14,7 @@ import CoreGraphics
 
 class HpiDocument: NSDocument {
     
-    var root: HpiItem.Directory!
-    var cache: HpiFileCache!
+    var filesystem: FileSystem!
     
     override func makeWindowControllers() {
         let controller = HpiBrowserWindowController(windowNibName: NSNib.Name(rawValue: "HpiBrowserWindow"))
@@ -24,8 +23,7 @@ class HpiDocument: NSDocument {
     
     override func read(from url: URL, ofType typeName: String) throws {
         do {
-            root = try HpiItem.loadFromArchive(contentsOf: url)
-            cache = try HpiFileCache(hpiURL: url)
+            filesystem = try FileSystem(hpi: url)
         }
         catch {
             Swift.print("Failed to read HPI archive (\(url)): \(error)")
@@ -41,7 +39,6 @@ class HpiBrowserWindowController: NSWindowController {
     
     @IBOutlet weak var container: NSView!
     weak var finder: FinderView<Item>!
-    fileprivate var cache: HpiFileCache?
     
     let sizeFormatter: ByteCountFormatter = {
         let formatter = ByteCountFormatter()
@@ -75,7 +72,7 @@ class HpiBrowserWindowController: NSWindowController {
     
     override func windowDidLoad() {
         super.windowDidLoad()
-        finder.setRoot(directory: Directory(hpiDocument.root, context: Directory.Context(cache: hpiDocument.cache)))
+        finder.setRoot(directory: Directory(hpiDocument.filesystem.root, in: hpiDocument.filesystem))
     }
     
 }
@@ -83,18 +80,18 @@ class HpiBrowserWindowController: NSWindowController {
 extension HpiBrowserWindowController {
     
     enum Item {
-        case directory(HpiItem.Directory)
-        case file(HpiItem.File)
-        case gafArchive(HpiItem.File)
+        case directory(FileSystem.Directory)
+        case file(FileSystem.File)
+        case gafArchive(FileSystem.File)
         case gafImage(GafItem)
     }
     
     enum Directory {
-        case directory(HpiItem.Directory, [HpiItem], Context)
-        case gaf(HpiItem.File, [GafItem], Context)
+        case directory(FileSystem.Directory, [FileSystem.Item], Context)
+        case gaf(FileSystem.File, [GafItem], Context)
         
         struct Context {
-            unowned var cache: HpiFileCache
+            unowned var filesystem: FileSystem
         }
         
         var context: Context {
@@ -108,7 +105,7 @@ extension HpiBrowserWindowController {
 
 extension HpiBrowserWindowController.Item {
     
-    init(_ item: HpiItem) {
+    init(_ item: FileSystem.Item) {
         switch item {
         case .file(let f):
             self = (f.hasExtension("gaf") || f.hasExtension("taf")) ? .gafArchive(f) : .file(f)
@@ -143,10 +140,10 @@ extension HpiBrowserWindowController.Item: FinderViewItem {
     }
     
     func expand(path: [Directory]) -> Directory? {
-        guard let context = path.last?.context else { return nil }
+        guard let filesystem = path.last?.context.filesystem else { return nil }
         switch self {
-        case .directory(let d): return Directory(d, context: context)
-        case .gafArchive(let g): return try? Directory(gafContentsOf: g, at: path.map({ $0.name }).joined(separator: "/") + "/" + g.name, context: context)
+        case .directory(let d): return Directory(d, in: filesystem)
+        case .gafArchive(let g): return try? Directory(gafContentsOf: g, in: filesystem)
         case .file, .gafImage: return nil
         }
     }
@@ -155,17 +152,16 @@ extension HpiBrowserWindowController.Item: FinderViewItem {
 
 extension HpiBrowserWindowController.Directory {
     
-    init(_ directory: HpiItem.Directory, context: Context) {
+    init(_ directory: FileSystem.Directory, in filesystem: FileSystem) {
         let items = directory.items.sorted { FileSystem.sortNames($0.name, $1.name) }
-        self = .directory(directory, items, context)
+        self = .directory(directory, items, Context(filesystem: filesystem))
     }
     
-    init(gafContentsOf file: HpiItem.File, at path: String, context: Context) throws {
-        let url = try context.cache.url(for: file, atHpiPath: path)
-        let reader = try FileHandle(forReadingFrom: url)
+    init(gafContentsOf file: FileSystem.File, in filesystem: FileSystem) throws {
+        let reader = try filesystem.openFile(file)
         let listing = try GafListing(withContentsOf: reader)
         let items = listing.items.sorted { FileSystem.sortNames($0.name, $1.name) }
-        self = .gaf(file, items, context)
+        self = .gaf(file, items, Context(filesystem: filesystem))
     }
     
 }
@@ -254,14 +250,14 @@ extension HpiBrowserWindowController {
         }
     }
     
-    func preview(forFile file: HpiItem.File, at path: [Directory]) -> NSView? {
+    func preview(forFile file: FileSystem.File, at path: [Directory]) -> NSView? {
         
         let pathString = path.map({ $0.name }).joined(separator: "/") + "/" + file.name
         print("Selected Path: \(pathString)")
         
-        let fileURL: URL
+        let fileHandle: FileSystem.FileHandle
         do {
-            fileURL = try hpiDocument.cache.url(for: file, atHpiPath: pathString)
+            fileHandle = try hpiDocument.filesystem.openFile(file)
         }
         catch {
             print("Failed to extract \(file.name) for preview: \(error)")
@@ -270,14 +266,12 @@ extension HpiBrowserWindowController {
         
         let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
         preview.title = file.name
-        preview.size = file.size
+        preview.size = file.info.size
         
-        let fileExtension = fileURL.pathExtension
         let contentView = preview.contentView
         let subview: NSView
         do {
-            if fileExtension.caseInsensitiveCompare("pcx") == .orderedSame {
-                let fileHandle = try FileHandle(forReadingFrom: fileURL)
+            if file.hasExtension("pcx") {
                 switch try Pcx.analyze(contentsOf: fileHandle) {
                 case .image:
                     let pcxImage = try NSImage(pcxContentsOf: fileHandle)
@@ -291,44 +285,39 @@ extension HpiBrowserWindowController {
                     subview = paletteView
                 }
             }
-            else if fileExtension.caseInsensitiveCompare("pal") == .orderedSame {
-                let palette = try Palette(palContentsOf: fileURL)
+            else if file.hasExtension("pal") {
+                let palette = Palette(palContentsOf: fileHandle)
                 let view = PaletteView()
                 view.load(palette)
                 subview = view
             }
-            else if fileExtension.caseInsensitiveCompare("3do") == .orderedSame {
-                let modelFile = try FileHandle(forReadingFrom: fileURL)
-                let model = try UnitModel(contentsOf: modelFile)
+            else if file.hasExtension("3do") {
+                let model = try UnitModel(contentsOf: fileHandle)
                 let view = Model3DOView(frame: contentView.bounds)
                 view.load(model)
                 subview = view
             }
-            else if fileExtension.caseInsensitiveCompare("cob") == .orderedSame {
-                let cobFile = try FileHandle(forReadingFrom: fileURL)
-                let script = try UnitScript(contentsOf: cobFile)
+            else if file.hasExtension("cob") {
+                let script = try UnitScript(contentsOf: fileHandle)
                 let view = CobView(frame: contentView.bounds)
                 view.load(script)
                 subview = view
             }
-            else if fileExtension.caseInsensitiveCompare("tnt") == .orderedSame {
-                let mapFile = try FileHandle(forReadingFrom: fileURL)
+            else if file.hasExtension("tnt") {
                 let view = TntView(frame: contentView.bounds)
-                try view.load(contentsOf: mapFile, using: mainPalette)
+                try view.load(contentsOf: fileHandle, using: mainPalette)
                 subview = view
             }
             else {
-                let view = QLPreviewView(frame: contentView.bounds, style: .compact)!
-                view.previewItem = fileURL as NSURL
-                view.refreshPreviewItem()
+                let view = QuickLookView(frame: contentView.bounds)
+                try view.load(contentsOf: fileHandle)
                 subview = view
             }
         }
         catch {
             print("Faile to load image from \(file.name): \(error)")
-            let view = QLPreviewView(frame: contentView.bounds, style: .compact)!
-            view.previewItem = fileURL as NSURL
-            view.refreshPreviewItem()
+            let view = QuickLookView(frame: contentView.bounds)
+            try? view.load(contentsOf: fileHandle)
             subview = view
         }
         
@@ -353,9 +342,6 @@ extension HpiBrowserWindowController {
         let pathString = path.map({ $0.name }).joined(separator: "/")
         print("Selected Path: \(pathString)")
         
-        guard let fileURL = try? hpiDocument.cache.url(for: gaf, atHpiPath: pathString)
-            else { return nil }
-        
         let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
         preview.title = item.name
         preview.size = 13
@@ -366,8 +352,8 @@ extension HpiBrowserWindowController {
             let subview: NSView
 
                 let view = GafView(frame: contentView.bounds)
-                let gafFile = try FileHandle(forReadingFrom: fileURL)
-                try view.load(item, from: gafFile, using: mainPalette)
+                let reader = try hpiDocument.filesystem.openFile(gaf)
+                try view.load(item, from: reader, using: mainPalette)
                 subview = view
 
             subview.translatesAutoresizingMaskIntoConstraints = false
@@ -463,10 +449,17 @@ fileprivate extension HpiItem {
     
     init?(_ item: HpiBrowserWindowController.Item) {
         switch item {
-        case .directory(let d): self = .directory(d)
-        case .file(let f): self = .file(f)
-        case .gafArchive(let f): self = .file(f)
+        case .directory(let d): self = .directory(HpiItem.Directory(name: d.name, items: d.items.map { HpiItem($0) }))
+        case .file(let f): self = .file(f.info)
+        case .gafArchive(let f): self = .file(f.info)
         case .gafImage: return nil
+        }
+    }
+    
+    init(_ item: FileSystem.Item) {
+        switch item {
+        case .directory(let d): self = .directory(HpiItem.Directory(name: d.name, items: d.items.map { HpiItem($0) }))
+        case .file(let f): self = .file(f.info)
         }
     }
     
