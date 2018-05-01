@@ -21,7 +21,6 @@
 		B553EE381DE004AB0033C70D /* FinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE371DE004AB0033C70D /* FinderView.swift */; };
 		B57C32B520702B4700B24C99 /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57C32B420702B4700B24C99 /* PaletteView.swift */; };
 		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
-		B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */; };
 		B5D4B6DB1E04E5F200ADBE65 /* HpiFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */; };
 		B5E26F231ED9EB80006C329B /* gaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F111ED9EB80006C329B /* gaf.swift */; };
 		B5E26F241ED9EB80006C329B /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F121ED9EB80006C329B /* Geometry.swift */; };
@@ -32,6 +31,7 @@
 		B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F2F1ED9ECE9006C329B /* CobView.swift */; };
 		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
 		B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */; };
+		F0AEB0E22098FB590087B36B /* QuickLookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AEB0E12098FB580087B36B /* QuickLookView.swift */; };
 		F0D23B92207402CD00C0A245 /* Palette+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B91207402CC00C0A245 /* Palette+Files.swift */; };
 		F0D23B932074034400C0A245 /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */; };
 		F0D23B952074036800C0A245 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B942074036700C0A245 /* TdfParser.swift */; };
@@ -61,7 +61,6 @@
 		B57C32B420702B4700B24C99 /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
 		B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		B58ECAC01DC6BE90005F231F /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
-		B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HpiFileCache.swift; sourceTree = "<group>"; };
 		B5B472121E13A02600FC79E2 /* PALETTE.PAL */ = {isa = PBXFileReference; lastKnownFileType = file; path = PALETTE.PAL; sourceTree = "<group>"; };
 		B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HpiFinderRow.xib; sourceTree = "<group>"; };
 		B5E26F111ED9EB80006C329B /* gaf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = gaf.swift; sourceTree = "<group>"; };
@@ -85,6 +84,7 @@
 		B5E26F311ED9EDD7006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GafView.swift; sourceTree = "<group>"; };
 		B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
 		B5E26F491EE3AF5F006C329B /* ta_TNT.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_TNT.h; sourceTree = "<group>"; };
+		F0AEB0E12098FB580087B36B /* QuickLookView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QuickLookView.swift; path = ../../TAassets/TAassets/QuickLookView.swift; sourceTree = "<group>"; };
 		F0D23B91207402CC00C0A245 /* Palette+Files.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Palette+Files.swift"; sourceTree = "<group>"; };
 		F0D23B942074036700C0A245 /* TdfParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
 		F0D23B962074038600C0A245 /* SideData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideData.swift; sourceTree = "<group>"; };
@@ -132,12 +132,12 @@
 			children = (
 				B50F6A4D1D87A54B0016C15B /* AppDelegate.swift */,
 				B50F6A4F1D87A54B0016C15B /* HpiDocument.swift */,
-				B5A4EB8D1E1864500038A43F /* HpiFileCache.swift */,
 				B553EE371DE004AB0033C70D /* FinderView.swift */,
 				B5E26F2F1ED9ECE9006C329B /* CobView.swift */,
 				B5E26F311ED9EDD7006C329B /* GafView.swift */,
 				B553EE351DDFE2270033C70D /* ModelView.swift */,
 				B57C32B420702B4700B24C99 /* PaletteView.swift */,
+				F0AEB0E12098FB580087B36B /* QuickLookView.swift */,
 				F0D9A49B2059F6D90081DC15 /* TntView.swift */,
 				B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */,
 				B50F6A511D87A54B0016C15B /* HpiBrowserWindow.xib */,
@@ -285,6 +285,7 @@
 				B5E26F251ED9EB80006C329B /* hpi.swift in Sources */,
 				F0D23B9A207403AD00C0A245 /* MapFeature.swift in Sources */,
 				B5E26F271ED9EB80006C329B /* pcx.swift in Sources */,
+				F0AEB0E22098FB590087B36B /* QuickLookView.swift in Sources */,
 				B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */,
 				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,
 				B57C32B520702B4700B24C99 /* PaletteView.swift in Sources */,
@@ -294,7 +295,6 @@
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
 				F0D23B952074036800C0A245 /* TdfParser.swift in Sources */,
 				B553EE381DE004AB0033C70D /* FinderView.swift in Sources */,
-				B5A4EB8E1E1864500038A43F /* HpiFileCache.swift in Sources */,
 				B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */,
 				F0D23B92207402CD00C0A245 /* Palette+Files.swift in Sources */,
 				F0D23B9B207403AD00C0A245 /* MapInfo.swift in Sources */,

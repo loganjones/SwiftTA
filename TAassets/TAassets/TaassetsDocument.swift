@@ -30,7 +30,7 @@ class TaassetsDocument: NSDocument {
             else { throw NSError(domain: NSOSStatusErrorDomain, code: readErr, userInfo: nil) }
         
         let begin = Date()
-        filesystem = try! FileSystem(from: directoryURL)
+        filesystem = try! FileSystem(mergingHpisIn: directoryURL)
         let end = Date()
         Swift.print("\(directoryURL.lastPathComponent) filesystem load time: \(end.timeIntervalSince(begin)) seconds")
         

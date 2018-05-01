@@ -11,16 +11,17 @@ import Cocoa
 class FileBrowserViewController: NSViewController, ContentViewController {
     
     var shared = TaassetsSharedState.empty
-    var finderView: FinderView!
+    var finderView: FinderView<Item>!
     var mainPalette = Palette()
     
     override func loadView() {
         let mainView = NSView()
         
-        let finder = FinderView(frame: NSRect(x: 0, y: 0, width: 320, height: 480))
+        let finder = FinderView<Item>(frame: NSRect(x: 0, y: 0, width: 320, height: 480))
         finder.translatesAutoresizingMaskIntoConstraints = false
         finder.register(NSNib(nibNamed: NSNib.Name(rawValue: "HpiFinderRow"), bundle: nil), forIdentifier: "HpiItem")
-        finder.delegate = self
+        finder.createRowView = { [weak self] (item, tableView) in return self?.rowView(for: item, in: tableView) }
+        finder.createContentView = { [weak self] (item, path) in return self?.preview(for: item, at: path) }
         mainView.addSubview(finder)
         
         NSLayoutConstraint.activate([
@@ -35,11 +36,11 @@ class FileBrowserViewController: NSViewController, ContentViewController {
     }
     
     override func viewDidLoad() {
-        let rootItems = shared.filesystem.root.items.sorted { FileSystem.sortNames($0.name, $1.name) }
-        finderView.setRoot(directory: FileBrowserItem.Directory(asset: shared.filesystem.root, items: rootItems, browser: self))
+        let filesystem = shared.filesystem
+        finderView.setRoot(directory: Directory(filesystem.root, in: filesystem))
         
         do {
-            let file = try shared.filesystem.openFile(at: "Palettes/PALETTE.PAL")
+            let file = try filesystem.openFile(at: "Palettes/PALETTE.PAL")
             mainPalette = Palette(palContentsOf: file)
         }
         catch {
@@ -48,13 +49,11 @@ class FileBrowserViewController: NSViewController, ContentViewController {
     }
 }
 
-extension FileBrowserViewController: FinderViewDelegate {
+private extension FileBrowserViewController {
     
-    func rowView(for item: FinderViewItem, in tableView: NSTableView, of finder: FinderView) -> NSView? {
+    func rowView(for item: Item, in tableView: NSTableView) -> NSView? {
         
-        guard let item = item as? FileBrowserItem
-            else { return nil }
-        guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "HpiItem"), owner: finder) as? NSTableCellView
+        guard let view = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "HpiItem"), owner: finderView) as? NSTableCellView
             else { return nil }
         
         view.textField?.stringValue = item.name
@@ -78,11 +77,7 @@ extension FileBrowserViewController: FinderViewDelegate {
         return view
     }
     
-    func preview(for item: FinderViewItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
-        
-        guard let item = item as? FileBrowserItem
-            else { return nil }
-        
+    func preview(for item: Item, at pathDirectories: [Directory]) -> NSView? {
         switch item {
             
         case .directory, .gafArchive:
@@ -90,15 +85,15 @@ extension FileBrowserViewController: FinderViewDelegate {
             return nil
             
         case .file(let f):
-            return preview(forFile: f, at: pathDirectories, of: finder)
+            return preview(forFile: f, at: pathDirectories)
             
         case .gafImage(let i):
-            return preview(forGafImage: i, at: pathDirectories, of: finder)
+            return preview(forGafImage: i, at: pathDirectories)
             
         }
     }
     
-    func preview(forFile file: FileSystem.File, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+    func preview(forFile file: FileSystem.File, at pathDirectories: [Directory]) -> NSView? {
         
         let pathString = pathDirectories.map({ $0.name }).joined(separator: "/") + "/" + file.name
         print("Selected Path: \(pathString)")
@@ -183,19 +178,19 @@ extension FileBrowserViewController: FinderViewDelegate {
         return preview
     }
     
-    func preview(forGafImage item: GafItem, at pathDirectories: [FinderViewDirectory], of finder: FinderView) -> NSView? {
+    func preview(forGafImage item: GafItem, at path: [Directory]) -> NSView? {
         
         // MORE TEMP
-        guard let gaf = pathDirectories.last as? FileBrowserItem.GafContents
+        guard case .gaf(let gaf, _, _)? = path.last
             else { return nil }
         
-        let pathString = pathDirectories.map({ $0.name }).joined(separator: "/")
+        let pathString = path.map({ $0.name }).joined(separator: "/")
         print("Selected Path: \(pathString)")
         
         let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
         preview.title = item.name
         preview.size = 13
-        preview.source = gaf.asset.archiveURL.lastPathComponent
+        preview.source = gaf.archiveURL.lastPathComponent
         
         // TEMP
         do {
@@ -203,7 +198,7 @@ extension FileBrowserViewController: FinderViewDelegate {
             let subview: NSView
             
             let view = GafView(frame: contentView.bounds)
-            try view.load(item, from: try shared.filesystem.openFile(gaf.asset), using: mainPalette)
+            try view.load(item, from: try shared.filesystem.openFile(gaf), using: mainPalette)
             subview = view
             
             subview.translatesAutoresizingMaskIntoConstraints = false
@@ -225,39 +220,41 @@ extension FileBrowserViewController: FinderViewDelegate {
     
 }
 
-enum FileBrowserItem {
-    case directory(Directory)
-    case file(FileSystem.File)
-    case gafArchive(GafArchive)
-    case gafImage(GafItem)
-    
-    struct Directory {
-        var asset: FileSystem.Directory
-        var items: [FileSystem.Item]
-        unowned var browser: FileBrowserViewController
+extension FileBrowserViewController {
+
+    enum Item {
+        case directory(FileSystem.Directory)
+        case file(FileSystem.File)
+        case gafArchive(FileSystem.File)
+        case gafImage(GafItem)
     }
     
-    struct GafArchive {
-        var asset: FileSystem.File
-        unowned var browser: FileBrowserViewController
+    enum Directory {
+        case directory(FileSystem.Directory, [FileSystem.Item], Context)
+        case gaf(FileSystem.File, [GafItem], Context)
+        
+        struct Context {
+            unowned var filesystem: FileSystem
+        }
+        
+        var context: Context {
+            switch self {
+            case .directory(_, _, let context): return context
+            case .gaf(_, _, let context): return context
+            }
+        }
     }
     
-    struct GafContents {
-        var asset: FileSystem.File
-        var listing: GafListing
-        unowned var browser: FileBrowserViewController
-    }
 }
 
-extension FileBrowserItem {
+extension FileBrowserViewController.Item {
     
-    init(asset: FileSystem.Item, browser: FileBrowserViewController) {
+    init(asset: FileSystem.Item) {
         switch asset {
         case .file(let f):
-            self = (f.hasExtension("gaf") || f.hasExtension("taf")) ? .gafArchive(GafArchive(asset: f, browser: browser)) : .file(f)
+            self = (f.hasExtension("gaf") || f.hasExtension("taf")) ? .gafArchive(f) : .file(f)
         case .directory(let d):
-            let items = d.items.sorted { FileSystem.sortNames($0.name, $1.name) }
-            self = .directory(Directory(asset: d, items: items, browser: browser))
+            self = .directory(d)
         }
     }
     
@@ -267,103 +264,93 @@ extension FileBrowserItem {
     
 }
 
-extension FileBrowserItem: FinderViewItem {
+extension FileBrowserViewController.Item: FinderViewItem {
+    typealias Directory = FileBrowserViewController.Directory
     
     var name: String {
         switch self {
-        case .directory(let d): return d.asset.name
+        case .directory(let d): return d.name
         case .file(let f): return f.name
-        case .gafArchive(let g): return g.asset.name
+        case .gafArchive(let g): return g.name
         case .gafImage(let i): return i.name
         }
     }
     
-    func isExpandable(in finder: FinderView, path: [FinderViewDirectory]) -> Bool {
+    func isExpandable(path: [Directory]) -> Bool {
         switch self {
         case .directory, .gafArchive: return true
         case .file, .gafImage: return false
         }
     }
     
-    func expand(in finder: FinderView, path: [FinderViewDirectory]) -> FinderViewDirectory? {
+    func expand(path: [Directory]) -> Directory? {
+        guard let filesystem = path.last?.context.filesystem else { return nil }
         switch self {
-        case .directory(let d): return d
-        case .gafArchive(let g): return try? FileBrowserItem.GafContents(of: g, at: path)
+        case .directory(let d): return Directory(d, in: filesystem)
+        case .gafArchive(let g): return try? Directory(gafContentsOf: g, in: filesystem)
         case .file, .gafImage: return nil
         }
     }
     
 }
 
-extension FileBrowserItem.Directory: FinderViewDirectory {
+extension FileBrowserViewController.Directory {
+    
+    init(_ directory: FileSystem.Directory, in filesystem: FileSystem) {
+        let items = directory.items.sorted { FileSystem.sortNames($0.name, $1.name) }
+        self = .directory(directory, items, Context(filesystem: filesystem))
+    }
+    
+    init(gafContentsOf file: FileSystem.File, in filesystem: FileSystem) throws {
+        let reader = try filesystem.openFile(file)
+        let listing = try GafListing(withContentsOf: reader)
+        let items = listing.items.sorted { FileSystem.sortNames($0.name, $1.name) }
+        self = .gaf(file, items, Context(filesystem: filesystem))
+    }
+    
+}
+
+extension FileBrowserViewController.Directory: FinderViewDirectory {
+    typealias Item = FileBrowserViewController.Item
     
     var name: String {
-        return asset.name
+        switch self {
+        case .directory(let d, _, _): return d.name
+        case .gaf(let f, _, _): return f.name
+        }
     }
 
     var numberOfItems: Int {
-        return asset.items.count
+        switch self {
+        case .directory(_, let items, _): return items.count
+        case .gaf(_, let items, _): return items.count
+        }
     }
     
-    func item(at index: Int) -> FinderViewItem {
-        return FileBrowserItem(asset: items[index], browser: browser)
+    func item(at index: Int) -> Item {
+        switch self {
+        case .directory(_, let items, _): return Item(asset: items[index])
+        case .gaf(_, let items, _): return Item(gaf: items[index])
+        }
     }
     
-    func index(of item: FinderViewItem) -> Int? {
-        guard let item = item as? FileBrowserItem else { return nil }
-        let i = items.index(where: { FileSystem.compareNames($0.name, item.name) })
-        return i
+    func index(of item: Item) -> Int? {
+        switch self {
+        case .directory(_, let items, _): return items.index(where: { FileSystem.compareNames($0.name, item.name) })
+        case .gaf(_, let items, _): return items.index(where: { FileSystem.compareNames($0.name, item.name) })
+        }
     }
     
-    func index(where predicate: (FinderViewItem) -> Bool) -> Int? {
-        let b = browser
-        return items.lazy
-            .map { FileBrowserItem(asset: $0, browser: b) }
-            .index(where: predicate)
-    }
-    
-}
-
-extension FileBrowserItem.GafContents {
-    
-    init(of archive: FileBrowserItem.GafArchive, at path: [FinderViewDirectory]) throws {
-        asset = archive.asset
-        browser = archive.browser
-        let file = try archive.browser.shared.filesystem.openFile(archive.asset)
-        listing = try GafListing(withContentsOf: file)
+    func index(where predicate: (Item) -> Bool) -> Int? {
+        switch self {
+        case .directory(_, let items, _): return items.lazy.map({ Item(asset: $0) }).index(where: predicate)
+        case .gaf(_, let items, _): return items.lazy.map({ Item(gaf: $0) }).index(where: predicate)
+        }
     }
     
 }
 
-extension FileBrowserItem.GafContents: FinderViewDirectory {
-    
-    var name: String {
-        return asset.name
-    }
-    
-    var numberOfItems: Int {
-        return listing.items.count
-    }
-    
-    func item(at index: Int) -> FinderViewItem {
-        return FileBrowserItem(gaf: listing.items[index])
-    }
-    
-    func index(of item: FinderViewItem) -> Int? {
-        guard let item = item as? FileBrowserItem else { return nil }
-        let i = listing.items.index(where: { FileSystem.compareNames(item.name, $0.name) })
-        return i
-    }
-    
-    func index(where predicate: (FinderViewItem) -> Bool) -> Int? {
-        return listing.items.lazy
-            .map { FileBrowserItem(gaf: $0) }
-            .index(where: predicate)
-    }
-    
-}
-
-class PreviewContainerView: NSView {
+private class PreviewContainerView: NSView {
     
     private unowned let titleLabel: NSTextField
     private unowned let sizeLabel: NSTextField

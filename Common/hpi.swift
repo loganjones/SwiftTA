@@ -170,6 +170,18 @@ extension HpiItem {
     }
 }
 
+extension HpiItem.File {
+    
+    func hasExtension(_ ext: String) -> Bool {
+        return (name as NSString).pathExtension.caseInsensitiveCompare(ext) == .orderedSame
+    }
+    
+    var baseName: String {
+        return (name as NSString).deletingPathExtension
+    }
+    
+}
+
 // MARK: - Total Annihilation
 
 extension HpiItem {

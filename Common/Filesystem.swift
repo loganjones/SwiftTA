@@ -14,7 +14,7 @@ class FileSystem {
     
     static let weightedArchiveExtensions = ["ufo", "gp3", "ccx", "gpf", "hpi"]
     
-    init(from searchDirectory: URL, extensions: [String] = FileSystem.weightedArchiveExtensions) throws {
+    init(mergingHpisIn searchDirectory: URL, extensions: [String] = FileSystem.weightedArchiveExtensions) throws {
         
         let isDirectory: (URL) -> Bool = { (url) in
             let values = try? url.resourceValues(forKeys: [.isDirectoryKey])
@@ -41,6 +41,12 @@ class FileSystem {
             .reduce(FileSystem.Directory()) { $0.adding(directory: $1) }
         
         root = merged
+    }
+    
+    /// Load a single HPI file's filesystem.
+    init(hpi url: URL) throws {
+        let hpi = try HpiItem.loadFromArchive(contentsOf: url)
+        root = FileSystem.Directory(from: hpi, in: url)
     }
     
     /// Empty `FileSystem`. No files or directories.
