@@ -164,7 +164,7 @@ extension UnitScript.Thread {
     }
     
     func callScript(_ module: UnitScript.Module, parameters: [CodeUnit] = []) {
-        print("[\(id)] call-script \(module.name)(\(parameters))")
+//        print("[\(id)] call-script \(module.name)(\(parameters))")
         
         stack.push(framePointer)
         framePointer = stack.count
@@ -178,11 +178,11 @@ extension UnitScript.Thread {
             framePointer = Int(stack._array[framePointer - 1])
             stack._array.removeLast(n)
             // Do something with value?
-            print("[\(id)] return \(value)")
+//            print("[\(id)] return \(value)")
         }
         else {
             // Do something with value?
-            print("[\(id)] return \(value)")
+//            print("[\(id)] return \(value)")
             status = .finished
         }
         return status

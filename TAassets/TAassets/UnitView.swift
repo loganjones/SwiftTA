@@ -8,18 +8,37 @@
 
 import Cocoa
 import OpenGL
+import OpenGL.GL3
+import GLKit
 
 
 class UnitView: NSOpenGLView {
     
-    private var model: GLInstancePieces?
+    private var toload: ToLoad?
+    
+    private var model: GLBufferedModel?
     private var modelTexture: GLuint = 0
+    private var program_unlit: GLuint = 0
+    private var program_lighted: GLuint = 0
+    private var uniform_model: GLint = 0
+    private var uniform_view: GLint = 0
+    private var uniform_projection: GLint = 0
+    private var uniform_pieces: GLint = 0
+    private var uniform_lightPosition: GLint = 0
+    private var uniform_viewPosition: GLint = 0
+    private var uniform_texture: GLint = 0
+    private var uniform_objectColor: GLint = 0
     private var displayLink: CVDisplayLink?
     private var scriptContext: UnitScript.Context?
     private var loadTime: Double = 0
     private var shouldStartMoving = false
     
     private var viewportSize = CGSize()
+    private var currentProgram: GLuint = 0
+    private var changeProgram: GLuint? = nil
+    
+    private var aspectRatio: Float = 1
+    private var sceneSize: (width: Float, height: Float) = (0,0)
     
     enum DrawMode: Int {
         case solid
@@ -39,9 +58,11 @@ class UnitView: NSOpenGLView {
     
     override init(frame frameRect: NSRect) {
         let attributes : [NSOpenGLPixelFormatAttribute] = [
-            UInt32(NSOpenGLPFAMinimumPolicy),
-            UInt32(NSOpenGLPFADepthSize), UInt32(16),
-            UInt32(NSOpenGLPFAAlphaSize), UInt32(8),
+            UInt32(NSOpenGLPFAAllowOfflineRenderers),
+            UInt32(NSOpenGLPFAAccelerated),
+            UInt32(NSOpenGLPFADoubleBuffer),
+            UInt32(NSOpenGLPFADepthSize), UInt32(24),
+            UInt32(NSOpenGLPFAOpenGLProfile), UInt32(NSOpenGLProfileVersion3_2Core),
             0
         ]
         let format = NSOpenGLPixelFormat(attributes: attributes)
@@ -87,7 +108,7 @@ class UnitView: NSOpenGLView {
                 script.startScript("StartMoving")
                 shouldStartMoving = false
             }
-            script.run(for: model!.instance, on: self)
+            script.run(for: model!.instance.instance, on: self)
             model?.animate(script, for: deltaTime)
         }
         
@@ -95,6 +116,34 @@ class UnitView: NSOpenGLView {
             else { return }
         context.makeCurrentContext()
         CGLLockContext(context.cglContextObj!)
+        
+        makeProgram()
+        
+        if let program = changeProgram {
+            currentProgram = program
+            
+            uniform_model = glGetUniformLocation(program, "model")
+            uniform_view = glGetUniformLocation(program, "view")
+            uniform_projection = glGetUniformLocation(program, "projection")
+            uniform_pieces = glGetUniformLocation(program, "pieces")
+            uniform_lightPosition = glGetUniformLocation(program, "lightPosition")
+            uniform_viewPosition = glGetUniformLocation(program, "viewPosition")
+            uniform_texture = glGetUniformLocation(program, "colorTexture")
+            uniform_objectColor = glGetUniformLocation(program, "objectColor")
+            
+            changeProgram = nil
+        }
+        
+        if let toload = toload {
+            self.model = nil
+            self.model = GLBufferedModel(toload.instance, of: toload.model, with: toload.texture)
+            self.scriptContext = toload.scriptContext
+            self.scriptContext?.startScript("Create")
+            makeTexture(toload.texture, toload.textureData)
+            loadTime = getTime()
+            shouldStartMoving = true
+            self.toload = nil
+        }
         
         drawScene()
         glFlush()
@@ -110,85 +159,68 @@ class UnitView: NSOpenGLView {
         
         glClearColor(1, 1, 1, 1)
         glClear(GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT))
-        glPushMatrix()
         
-        let perspective: [GLfloat] = [
+        let projection = GLKMatrix4MakeOrtho(0, sceneSize.width, sceneSize.height, 0, -1024, 256)
+
+        let centering = GLKMatrix4MakeTranslation(sceneSize.width / 2, sceneSize.height / 2, 0)
+        let flatten = GLKMatrix4Make(
             -1,   0,   0,   0,
              0,   1,   0,   0,
              0,-0.5,   1,   0,
              0,   0,   0,   1
-        ]
-        glMultMatrixf(perspective)
+        )
+        let view = GLKMatrix4Multiply(centering, flatten)
+
+        let model = GLKMatrix4Rotate(GLKMatrix4Identity, -rotateZ * (Float.pi / 180.0), 0, 0, 1)
         
-        glRotatef(-rotateZ, 0.0, 0.0, 1.0)
+        glUseProgram(currentProgram)
+        glUniformGLKMatrix4(uniform_model, model)
+        glUniformGLKMatrix4(uniform_view, view)
+        glUniformGLKMatrix4(uniform_projection, projection)
+        glUniformGLKMatrix4(uniform_pieces, self.model!.instance.transformations)
         
-        glRotatef(rotateX, 1.0, 0.0, 0.0)
-        glRotatef(rotateY, 0.0, 1.0, 0.0)
+        let lightPosition = GLKVector3Make(50, 50, 100)
+        let viewPosition = GLKVector3Make(sceneSize.width / 2, sceneSize.height / 2, 0)
+        glUniformGLKVector3(uniform_lightPosition, lightPosition)
+        glUniformGLKVector3(uniform_viewPosition, viewPosition)
         
-        if let model = model { draw(model) }
+        glActiveTexture(GLenum(GL_TEXTURE0));
+        glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture);
+        glUniform1i(uniform_texture, 0);
         
-        if showAxes {
-            glDisable(GLenum(GL_TEXTURE_2D))
-            glDisable(GLenum(GL_LIGHTING))
-            glBegin(GLenum(GL_LINES))
-            glColor3f(0, 0, 1)
-            glVertex3f(0, 0, 0)
-            glVertex3f(100, 0, 0)
-            glColor3f(0, 1, 0)
-            glVertex3f(0, 0, 0)
-            glVertex3f(0, 100, 0)
-            glColor3f(1, 0, 0)
-            glVertex3f(0, 0, 0)
-            glVertex3f(0, 0, 100)
-            glEnd()
-        }
+        if let unitmodel = self.model { draw(unitmodel) }
         
-        glPopMatrix()
+        glBindVertexArray(0)
+        glUseProgram(0)
     }
     
     private func draw<T: Drawable>(_ model: T) {
-        glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture)
         switch drawMode {
         case .solid:
-            if textured { glEnable(GLenum(GL_TEXTURE_2D)) }
-            else { glDisable(GLenum(GL_TEXTURE_2D)) }
-            if lighted {
-                glEnable(GLenum(GL_LIGHTING))
-                glMaterialfv(GLenum(GL_FRONT), GLenum(GL_AMBIENT), [0.50, 0.40, 0.35, 1])
-                glMaterialfv(GLenum(GL_FRONT), GLenum(GL_DIFFUSE), [0.45, 0.45, 0.45, 1])
-            }
-            else {
-                glDisable(GLenum(GL_LIGHTING))
-                glColor3dv([1, 1, 1, 1])
-            }
+            glUniformGLKVector4(uniform_objectColor, textured ? GLKVector4Make(0, 0, 0, 0) : GLKVector4Make(0.95, 0.85, 0.80, 1))
             model.drawFilled()
         case .wireframe:
-            glDisable(GLenum(GL_TEXTURE_2D))
-            glDisable(GLenum(GL_LIGHTING))
-            glColor3dv([0.3, 0.3, 0.3, 1])
+            glUniformGLKVector4(uniform_objectColor, GLKVector4Make(0.4, 0.35, 0.3, 1))
             model.drawWireframe()
         case .outlined:
-            if textured { glEnable(GLenum(GL_TEXTURE_2D)) }
-            else { glDisable(GLenum(GL_TEXTURE_2D)) }
-            if lighted {
-                glEnable(GLenum(GL_LIGHTING))
-                glMaterialfv(GLenum(GL_FRONT), GLenum(GL_AMBIENT), [0.50, 0.40, 0.35, 1])
-                glMaterialfv(GLenum(GL_FRONT), GLenum(GL_DIFFUSE), [0.45, 0.45, 0.45, 1])
-            }
-            else {
-                glDisable(GLenum(GL_LIGHTING))
-                glColor3dv([1, 1, 1, 1])
-            }
+            glUniformGLKVector4(uniform_objectColor, textured ? GLKVector4Make(0, 0, 0, 0) : GLKVector4Make(0.95, 0.85, 0.80, 1))
+            
             glEnable(GLenum(GL_POLYGON_OFFSET_FILL))
             glPolygonOffset(1.0, 1.0)
             model.drawFilled()
             glDisable(GLenum(GL_POLYGON_OFFSET_FILL))
             
-            glDisable(GLenum(GL_TEXTURE_2D))
-            glDisable(GLenum(GL_LIGHTING))
-            glColor3dv([0.3, 0.3, 0.3, 1])
+            glUniformGLKVector4(uniform_objectColor, textured ? GLKVector4Make(0.95, 0.85, 0.80, 1) : GLKVector4Make(0.4, 0.35, 0.3, 1))
             model.drawWireframe()
         }
+    }
+    
+    private struct ToLoad {
+        var model: UnitModel
+        var instance: UnitModel.Instance
+        var scriptContext: UnitScript.Context
+        var texture: UnitTextureAtlas
+        var textureData: Data
     }
     
     func load(_ model: UnitModel,
@@ -196,24 +228,21 @@ class UnitView: NSOpenGLView {
               _ texture: UnitTextureAtlas,
               _ filesystem: FileSystem,
               _ palette: Palette) throws {
-        openGLContext?.makeCurrentContext()
-        
-        let instance = UnitModel.Instance(for: model)
-        self.model = GLInstancePieces(instance, of: model, with: texture)
-        
-        let context = try UnitScript.Context(script, model)
-        context.startScript("Create")
-        self.scriptContext = context
-        
-        makeTexture(texture, filesystem, palette)
-        
-        loadTime = getTime()
-        shouldStartMoving = true
-        
-        setNeedsDisplay(bounds)
+        let toload = ToLoad(
+            model: model,
+            instance: UnitModel.Instance(for: model),
+            scriptContext: try UnitScript.Context(script, model),
+            texture: texture,
+            textureData: texture.build(from: filesystem, using: palette))
+        self.toload = toload
     }
     
     private func makeTexture(_ texture: UnitTextureAtlas, _ filesystem: FileSystem, _ palette: Palette) {
+        let data = texture.build(from: filesystem, using: palette)
+        makeTexture(texture, data)
+    }
+    
+    private func makeTexture(_ texture: UnitTextureAtlas, _ data: Data) {
         
         var textureId: GLuint = 0
         glGenTextures(1, &textureId)
@@ -223,7 +252,6 @@ class UnitView: NSOpenGLView {
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_WRAP_S), GL_REPEAT )
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_WRAP_T), GL_REPEAT )
         
-        let data = texture.build(from: filesystem, using: palette)
         data.withUnsafeBytes {
             glTexImage2D(
                 GLenum(GL_TEXTURE_2D),
@@ -241,6 +269,36 @@ class UnitView: NSOpenGLView {
         printGlErrors()
     }
     
+    private func makeProgram() {
+        guard program_unlit == 0 else { return }
+        guard let vertexShaderUrl = Bundle.main.url(forResource: "unit-view.glsl", withExtension: "vert") else { return }
+        guard let fragmentShaderUrl = Bundle.main.url(forResource: "unit-view.glsl", withExtension: "frag") else { return }
+        guard let fragmentShaderLightedUrl = Bundle.main.url(forResource: "unit-view-lighted.glsl", withExtension: "frag") else { return }
+        
+        do {
+            let vertexShaderCode = try String(contentsOf: vertexShaderUrl)
+            let fragmentShaderCode = try String(contentsOf: fragmentShaderUrl)
+            let fragmentShaderLightedCode = try String(contentsOf: fragmentShaderLightedUrl)
+            
+            let vertexShader = try compileShader(GLenum(GL_VERTEX_SHADER), source: vertexShaderCode)
+            let fragmentShader = try compileShader(GLenum(GL_FRAGMENT_SHADER), source: fragmentShaderCode)
+            let fragmentShaderLighted = try compileShader(GLenum(GL_FRAGMENT_SHADER), source: fragmentShaderLightedCode)
+            program_unlit = try linkShaders(vertexShader, fragmentShader)
+            program_lighted = try linkShaders(vertexShader, fragmentShaderLighted)
+            
+            glDeleteShader(fragmentShaderLighted)
+            glDeleteShader(fragmentShader)
+            glDeleteShader(vertexShader)
+            
+            changeProgram = lighted ? program_lighted : program_unlit
+        }
+        catch {
+            print("Shader setup failed:\n\(error)")
+        }
+        
+        printGlErrors()
+    }
+    
     private func printGlErrors() {
         var err = GL_NO_ERROR
         repeat {
@@ -252,14 +310,8 @@ class UnitView: NSOpenGLView {
     }
     
     private func initScene() {
-        glLightfv(GLenum(GL_LIGHT0), GLenum(GL_POSITION), [ 5.0, 5.0, 10.0, 0.0 ])
-        glLightfv(GLenum(GL_LIGHT0), GLenum(GL_AMBIENT), [ 0.8, 0.8, 0.8, 1 ])
-        glLightfv(GLenum(GL_LIGHT0), GLenum(GL_DIFFUSE), [ 0.5, 0.5, 0.5, 1 ])
         glEnable(GLenum(GL_CULL_FACE))
-        glEnable(GLenum(GL_LIGHTING))
-        glEnable(GLenum(GL_LIGHT0))
         glEnable(GLenum(GL_DEPTH_TEST))
-        glEnable(GLenum(GL_NORMALIZE))
         glEnable(GLenum(GL_LINE_SMOOTH))
         glEnable(GLenum(GL_POLYGON_SMOOTH))
         glHint(GLenum(GL_LINE_SMOOTH_HINT), GLenum(GL_NICEST))
@@ -272,17 +324,9 @@ class UnitView: NSOpenGLView {
     private func reshape(viewport: CGSize) {
         glViewport(0, 0, GLsizei(viewport.width), GLsizei(viewport.height))
         
-        glMatrixMode(GLenum(GL_PROJECTION))
-        glLoadIdentity()
-        
-        let aspectRatio = GLdouble(viewport.height) / GLdouble(viewport.width)
-        let w: GLdouble = 160
-        let scene = (width: w, height: w * aspectRatio)
-        glOrtho(0, scene.width, scene.height, 0, -1024, 256)
-        
-        glMatrixMode(GLenum(GL_MODELVIEW))
-        glLoadIdentity()
-        glTranslated(scene.width / 2, scene.height / 2, 0.0)
+        aspectRatio = Float(viewport.height) / Float(viewport.width)
+        let w: Float = 160
+        sceneSize = (width: w, height: w * aspectRatio)
     }
     
     override func mouseDown(with event: NSEvent) {
@@ -314,6 +358,7 @@ class UnitView: NSOpenGLView {
             setNeedsDisplay(bounds)
         case .some("l"):
             lighted = !lighted
+            changeProgram = lighted ? program_lighted : program_unlit
             setNeedsDisplay(bounds)
         default:
             ()
@@ -358,237 +403,337 @@ private protocol Drawable {
     func drawWireframe()
 }
 
-// MARK:- Draw Instance (UnitModel.Instance)
+// MARK:- Draw Instance (VBO & VAO)
 
-private struct GLInstanceModel: Drawable {
+private class GLBufferedModel: Drawable {
     
-    private var filledList: GLuint
-    private var wireframeList: GLuint
+    private let vao: GLuint
+    private let vbo: [GLuint]
+    private let elementCount: Int
     
-    init(_ instance: UnitModel.Instance, of model: UnitModel) {
-        let lists = glGenLists(2)
-        filledList = lists + 0
-        wireframeList = lists + 1
-        
-        glNewList(filledList, GLenum(GL_COMPILE))
-        GLInstanceModel.drawFillModel(from: instance, of: model)
-        glEndList()
-        
-        glNewList(wireframeList, GLenum(GL_COMPILE))
-        GLInstanceModel.drawWireModel(from: instance, of: model)
-        glEndList()
-    }
+    private let vaoOutline: GLuint
+    private let vboOutline: [GLuint]
+    private let elementCountOutline: Int
     
-    func drawFilled() {
-        glCallList(filledList)
-    }
-    
-    func drawWireframe() {
-        glCallList(wireframeList)
-    }
-    
-    static func drawWireModel(from instance: UnitModel.Instance, of model: UnitModel) {
-        drawPiece(at: model.root, instance: instance, model: model, level: 0, draw: ModelGL.drawWireShape)
-    }
-    
-    static func drawFillModel(from instance: UnitModel.Instance, of model: UnitModel) {
-        drawPiece(at: model.root, instance: instance, model: model, level: 0, draw: ModelGL.drawFilledPrimitive)
-    }
-    
-    static func drawPiece(at pieceIndex: Int, instance: UnitModel.Instance, model: UnitModel, level: Int, draw: ModelGL.DrawFunc) {
-        
-        let state = instance.pieces[pieceIndex]
-        let piece = model.pieces[pieceIndex]
-        
-        glPushMatrix()
-        glMultMatrixd(makeTransform(from: state, with: piece.offset))
-        
-        if !state.hidden {
-            for primitiveIndex in piece.primitives.reversed() {
-                guard primitiveIndex != model.groundPlate else { continue }
-                let primitive = model.primitives[primitiveIndex]
-                let indices = primitive.indices
-                draw( indices.map({ model.vertices[$0] }), ModelGL.ZeroTexCoords )
-            }
-        }
-        
-        for childIndex in piece.children {
-            drawPiece(at: childIndex, instance: instance, model: model, level: level+1, draw: draw)
-        }
-        
-        glPopMatrix()
-        
-    }
-    
-}
-
-// MARK:- Draw Instance (UnitModel.Instance)
-
-private struct GLInstancePieces: Drawable {
-    
-    private var filled: [GLuint]
-    private var wireframe: [GLuint]
     fileprivate var model: UnitModel
-    fileprivate var instance: UnitModel.Instance
+    fileprivate var instance: RenderInstance
     
     init(_ instance: UnitModel.Instance, of model: UnitModel, with textures: UnitTextureAtlas? = nil) {
-        let pieceCount = model.pieces.count
-        let lists = glGenLists(GLsizei(pieceCount * 2))
-        filled = Array(lists ..< (lists + GLuint(pieceCount)))
-        wireframe = Array((lists + GLuint(pieceCount)) ..< (lists + GLuint(pieceCount * 2)))
         
-        GLInstancePieces.initPieces(filled, model: model, textures: textures, draw: ModelGL.drawFilledPrimitive)
-        GLInstancePieces.initPieces(wireframe, model: model, textures: textures, draw: ModelGL.drawWireShape)
+        var buffers = Buffers()
+        GLBufferedModel.collectVertexAttributes(pieceIndex: model.root, model: model, textures: textures, buffers: &buffers)
+        elementCount = buffers.vertices.count
+        
+        var vao: GLuint = 0
+        glGenVertexArrays(1, &vao)
+        glBindVertexArray(vao)
+        self.vao = vao
+        
+        var vbo = [GLuint](repeating: 0, count: 4)
+        glGenBuffers(GLsizei(vbo.count), &vbo)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[0])
+        glBufferData(GLenum(GL_ARRAY_BUFFER), buffers.vertices, GLenum(GL_STATIC_DRAW))
+        let vertexAttrib: GLuint = 0
+        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glEnableVertexAttribArray(vertexAttrib)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[1])
+        glBufferData(GLenum(GL_ARRAY_BUFFER), buffers.normals, GLenum(GL_STATIC_DRAW))
+        let normalAttrib: GLuint = 1
+        glVertexAttribPointer(normalAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glEnableVertexAttribArray(normalAttrib)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[2])
+        glBufferData(GLenum(GL_ARRAY_BUFFER), buffers.texCoords, GLenum(GL_STATIC_DRAW))
+        let texAttrib: GLuint = 2
+        glVertexAttribPointer(texAttrib, 2, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glEnableVertexAttribArray(texAttrib)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[3])
+        glBufferData(GLenum(GL_ARRAY_BUFFER), buffers.pieceIndices.map { UInt8($0) }, GLenum(GL_STATIC_DRAW))
+        let pieceAttrib: GLuint = 3
+        glVertexAttribIPointer(pieceAttrib, 1, GLenum(GL_UNSIGNED_BYTE), 0, nil)
+        glEnableVertexAttribArray(pieceAttrib)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0)
+        glBindVertexArray(0)
+        
+        self.vbo = vbo
+        
+        buffers.clear()
+        GLBufferedModel.collectOutlines(pieceIndex: model.root, model: model, buffers: &buffers)
+        elementCountOutline = buffers.vertices.count
+        
+        var vao2: GLuint = 0
+        glGenVertexArrays(1, &vao2)
+        glBindVertexArray(vao2)
+        self.vaoOutline = vao2
+        
+        var vbo2 = [GLuint](repeating: 0, count: 2)
+        glGenBuffers(GLsizei(vbo2.count), &vbo2)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo2[0])
+        glBufferData(GLenum(GL_ARRAY_BUFFER), buffers.vertices, GLenum(GL_STATIC_DRAW))
+        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glEnableVertexAttribArray(vertexAttrib)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo2[1])
+        glBufferData(GLenum(GL_ARRAY_BUFFER), buffers.pieceIndices.map { UInt8($0) }, GLenum(GL_STATIC_DRAW))
+        glVertexAttribIPointer(pieceAttrib, 1, GLenum(GL_UNSIGNED_BYTE), 0, nil)
+        glEnableVertexAttribArray(pieceAttrib)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0)
+        glBindVertexArray(0)
+        
+        self.vboOutline = vbo2
         
         self.model = model
-        self.instance = instance
+        self.instance = RenderInstance(instance)
+    }
+    
+    deinit {
+        var vbo = self.vbo
+        glDeleteBuffers(GLsizei(vbo.count), &vbo)
+        
+        var vao = self.vao
+        glDeleteVertexArrays(1, &vao)
+        
+        var vbo2 = self.vboOutline
+        glDeleteBuffers(GLsizei(vbo.count), &vbo2)
+        
+        var vao2 = self.vaoOutline
+        glDeleteVertexArrays(1, &vao2)
     }
     
     func drawFilled() {
-        GLInstancePieces.drawPiece(at: model.root, instance: instance, model: model, displayLists: filled)
+        glBindVertexArray(vao)
+        glDrawArrays(GLenum(GL_TRIANGLES), 0, GLsizei(elementCount))
     }
     
     func drawWireframe() {
-        GLInstancePieces.drawPiece(at: model.root, instance: instance, model: model, displayLists: wireframe)
+        glBindVertexArray(vaoOutline)
+        glDrawArrays(GLenum(GL_LINES), 0, GLsizei(elementCountOutline))
     }
     
-    static func initPieces(_ displayLists: [GLuint], model: UnitModel, textures: UnitTextureAtlas?, draw: ModelGL.DrawFunc) {
-        for i in 0 ..< displayLists.count {
-            let displayList = displayLists[i]
-            let piece = model.pieces[i]
-            glNewList(displayList, GLenum(GL_COMPILE))
-            for primitiveIndex in piece.primitives.reversed() {
-                guard primitiveIndex != model.groundPlate else { continue }
-                let primitive = model.primitives[primitiveIndex]
-                let indices = primitive.indices
-                let texCoords = textures?.textureCoordinates(for: primitive.texture) ?? ModelGL.ZeroTexCoords
-                draw( indices.map({ model.vertices[$0] }), texCoords )
-            }
-            glEndList()
-        }
+    func animate(_ script: UnitScript.Context, for deltaTime: Double) {
+        script.applyAnimations(to: &instance.instance, for: deltaTime)
+        GLBufferedModel.applyPieceTransformations(model: model, instance: instance.instance, transformations: &instance.transformations)
     }
     
-    static func drawPiece(at pieceIndex: Int, instance: UnitModel.Instance, model: UnitModel, displayLists: [GLuint]) {
+    private static func collectVertexAttributes(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, textures: UnitTextureAtlas?, buffers: inout Buffers) {
         
-        let state = instance.pieces[pieceIndex]
         let piece = model.pieces[pieceIndex]
         
-        glPushMatrix()
-        glMultMatrixd(makeTransform(from: state, with: piece.offset))
-        
-        if !state.hidden {
-            glCallList(displayLists[pieceIndex])
+        for primitiveIndex in piece.primitives {
+            guard primitiveIndex != model.groundPlate else { continue }
+            collectVertexAttributes(primitive: model.primitives[primitiveIndex], pieceIndex: pieceIndex, model: model, textures: textures, buffers: &buffers)
         }
         
-        for childIndex in piece.children {
-            drawPiece(at: childIndex, instance: instance, model: model, displayLists: displayLists)
+        for child in piece.children {
+            //let lineage = parents + [pieceIndex]
+            collectVertexAttributes(pieceIndex: child, model: model, textures: textures, buffers: &buffers)
+        }
+    }
+    
+    private static func collectVertexAttributes(primitive: UnitModel.Primitive, pieceIndex: UnitModel.Pieces.Index, model: UnitModel, textures: UnitTextureAtlas?, buffers: inout Buffers) {
+        
+        let vertices = primitive.indices.map({ model.vertices[$0] })
+        let texCoords = textures?.textureCoordinates(for: primitive.texture) ?? (Vertex2.zero, Vertex2.zero, Vertex2.zero, Vertex2.zero)
+        
+        switch vertices.count {
+            
+        case Int.min..<0: () // What?
+        case 0: () // No Vertices
+        case 1: () // A point?
+        case 2: () // A line. Often used as a vector for sfx emitters
+            
+        case 3: // Single Triangle
+            // Triangle 0,2,1
+            let normal = makeNormal(0,2,1, in: vertices)
+            buffers.append(
+                texCoords.0, vertices[0],
+                texCoords.2, vertices[2],
+                texCoords.1, vertices[1],
+                normal, pieceIndex
+            )
+            
+        case 4: // Single Quad, split into two triangles
+            // Triangle 0,2,1
+            let normal = makeNormal(0,2,1, in: vertices)
+            buffers.append(
+                texCoords.0, vertices[0],
+                texCoords.2, vertices[2],
+                texCoords.1, vertices[1],
+                normal, pieceIndex
+            )
+            // Triangle 0,3,2
+            buffers.append(
+                texCoords.0, vertices[0],
+                texCoords.3, vertices[3],
+                texCoords.2, vertices[2],
+                normal, pieceIndex
+            )
+            
+        default: // Polygon with more than 4 sides
+            let normal = makeNormal(0,2,1, in: vertices)
+            for n in 2 ..< vertices.count {
+                buffers.append(
+                    texCoords.0, vertices[0],
+                    texCoords.2, vertices[n],
+                    texCoords.1, vertices[n-1],
+                    normal, pieceIndex
+                )
+            }
+        }
+    }
+    
+    private static func collectOutlines(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, buffers: inout Buffers) {
+        
+        let piece = model.pieces[pieceIndex]
+        
+        for primitiveIndex in piece.primitives {
+            guard primitiveIndex != model.groundPlate else { continue }
+            let primitive = model.primitives[primitiveIndex]
+            let vertices = primitive.indices.map({ model.vertices[$0] })
+            for n in 1 ..< vertices.count {
+                buffers.vertices.append(vertices[n-1])
+                buffers.vertices.append(vertices[n])
+                buffers.pieceIndices.append(pieceIndex)
+                buffers.pieceIndices.append(pieceIndex)
+            }
+            let n = vertices.count - 1
+            buffers.vertices.append(vertices[n])
+            buffers.vertices.append(vertices[0])
+            buffers.pieceIndices.append(pieceIndex)
+            buffers.pieceIndices.append(pieceIndex)
         }
         
-        glPopMatrix()
-        
+        for child in piece.children {
+            collectOutlines(pieceIndex: child, model: model, buffers: &buffers)
+        }
     }
     
-    mutating func animate(_ script: UnitScript.Context, for deltaTime: Double) {
-        script.applyAnimations(to: &instance, for: deltaTime)
-    }
-    
-}
-
-
-// MARK:- Draw Piece Vertices
-
-private typealias QuadTexCoords = (Vertex2, Vertex2, Vertex2, Vertex2)
-
-private enum ModelGL { }
-
-private extension ModelGL {
-    
-    typealias DrawFunc = ([Vertex3], QuadTexCoords) -> ()
-    
-    static var ZeroTexCoords: QuadTexCoords {
-        return (Vertex2.zero, Vertex2.zero, Vertex2.zero, Vertex2.zero)
-    }
-    
-    static func drawWireShape(vertices: [Vertex3], tex: QuadTexCoords) {
-        glBegin(GLenum(GL_LINE_LOOP))
-        vertices.forEach { glVertex($0) }
-        glEnd()
-    }
-    
-    private static func glTexCoordOpt(_ v: Vertex2?) {
-        if let v = v { glTexCoord2d(v.x, v.y) }
-    }
-    private static func glPrimitiveNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [Vertex3]) {
+    private static func makeNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [Vertex3]) -> Vector3 {
         let v1 = vertices[a]
         let v2 = vertices[b]
         let v3 = vertices[c]
         let u = v2 - v1
         let v = v3 - v1
-        glNormal(u × v)
+        return u × v
     }
     
-    static func drawFilledPrimitive(vertices: [Vertex3], tex: QuadTexCoords) {
-        switch vertices.count {
-        case Int.min..<0: () // What?
-        case 0: () // No Vertices
-        case 1: () // A point?
-        case 2: () // A line. Often used as a vector for sfx emitters
-        case 3: // Single Triangle
-            glBegin(GLenum(GL_TRIANGLES))
-            glPrimitiveNormal(0,2,1, in: vertices)
-            // Triangle 0,2,1
-            glTexCoordOpt(tex.0); glVertex(vertices[0])
-            glTexCoordOpt(tex.2); glVertex(vertices[2])
-            glTexCoordOpt(tex.1); glVertex(vertices[1])
-            glEnd()
-        case 4: // Single Quad, split into two triangles
-            glBegin(GLenum(GL_TRIANGLES))
-            glPrimitiveNormal(0,2,1, in: vertices)
-            // Triangle 0,2,1
-            glTexCoordOpt(tex.0); glVertex(vertices[0])
-            glTexCoordOpt(tex.2); glVertex(vertices[2])
-            glTexCoordOpt(tex.1); glVertex(vertices[1])
-            // Triangle 0,3,2
-            glTexCoordOpt(tex.0); glVertex(vertices[0])
-            glTexCoordOpt(tex.3); glVertex(vertices[3])
-            glTexCoordOpt(tex.2); glVertex(vertices[2])
-            glEnd()
-        default: // Polygon with more than 4 sides
-            glBegin(GLenum(GL_TRIANGLES))
-            for n in 2 ..< vertices.count {
-                glTexCoordOpt(tex.0); glVertex(vertices[0])
-                glTexCoordOpt(tex.2); glVertex(vertices[n])
-                glTexCoordOpt(tex.1); glVertex(vertices[n-1])
-            }
-            glEnd()
+    private struct Buffers {
+        var vertices: [Vertex3]
+        var normals: [Vector3]
+        var texCoords: [Vertex2]
+        var pieceIndices: [Int]
+        
+        init() {
+            vertices = []
+            normals = []
+            texCoords = []
+            pieceIndices = []
+        }
+        
+        mutating func append(_ texCoord1: Vertex2, _ vertex1: Vertex3,
+                             _ texCoord2: Vertex2, _ vertex2: Vertex3,
+                             _ texCoord3: Vertex2, _ vertex3: Vertex3,
+                             _ normal: Vector3,
+                             _ pieceIndex: Int) {
+            
+            vertices.append(vertex1)
+            texCoords.append(texCoord1)
+            normals.append(normal)
+            pieceIndices.append(pieceIndex)
+            
+            vertices.append(vertex2)
+            texCoords.append(texCoord2)
+            normals.append(normal)
+            pieceIndices.append(pieceIndex)
+            
+            vertices.append(vertex3)
+            texCoords.append(texCoord3)
+            normals.append(normal)
+            pieceIndices.append(pieceIndex)
+        }
+        
+        mutating func clear() {
+            vertices = []
+            normals = []
+            texCoords = []
+            pieceIndices = []
         }
     }
     
-}
-
-private func makeTransform(from piece: UnitModel.PieceState, with offset: Vector3) -> [Double] {
+    struct RenderInstance {
+        var instance: UnitModel.Instance
+        var transformations: [GLKMatrix4]
+        
+        init(_ instance: UnitModel.Instance) {
+            self.instance = instance
+            self.transformations = [GLKMatrix4](repeating: GLKMatrix4Identity, count: instance.pieces.count)
+        }
+    }
     
-    var M: [Double] = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1]
+    static func applyPieceTransformations(model: UnitModel, instance: UnitModel.Instance, transformations: inout [GLKMatrix4]) {
+        applyPieceTransformations(pieceIndex: model.root, p: GLKMatrix4Identity, model: model, instance: instance, transformations: &transformations)
+    }
     
-    let rad2deg = Double.pi / 180
-    let sin = piece.turn.map { Darwin.sin($0 * rad2deg) }
-    let cos = piece.turn.map { Darwin.cos($0 * rad2deg) }
+    static func applyPieceTransformations(pieceIndex: UnitModel.Pieces.Index, p: GLKMatrix4, model: UnitModel, instance: UnitModel.Instance, transformations: inout [GLKMatrix4]) {
+        let piece = model.pieces[pieceIndex]
+        let anims = instance.pieces[pieceIndex]
+        
+        guard !anims.hidden else {
+            applyPieceDiscard(pieceIndex: pieceIndex, model: model, transformations: &transformations)
+            return
+        }
+        
+        let offset = GLKVector3(piece.offset)
+        let move = GLKVector3(anims.move)
+        
+        let rad2deg = Double.pi / 180
+        let sin = GLKVector3( anims.turn.map { Darwin.sin($0 * rad2deg) } )
+        let cos = GLKVector3( anims.turn.map { Darwin.cos($0 * rad2deg) } )
+        
+        let t = GLKMatrix4Make(
+            cos.y * cos.z,
+            (sin.y * cos.x) + (sin.x * cos.y * sin.z),
+            (sin.x * sin.y) - (cos.x * cos.y * sin.z),
+            0,
+            
+            -sin.y * cos.z,
+            (cos.x * cos.y) - (sin.x * sin.y * sin.z),
+            (sin.x * cos.y) + (cos.x * sin.y * sin.z),
+            0,
+            
+            sin.z,
+            -sin.x * cos.z,
+            cos.x * cos.z,
+            0,
+            
+            offset.x - move.x,
+            offset.y - move.z,
+            offset.z + move.y,
+            1
+        )
+        
+        let pt = GLKMatrix4Multiply(p, t)
+        transformations[pieceIndex] = pt
+        
+        for child in piece.children {
+            applyPieceTransformations(pieceIndex: child, p: pt, model: model, instance: instance, transformations: &transformations)
+        }
+    }
     
-    M[12] = offset.x - piece.move.x
-    M[13] = offset.y - piece.move.z
-    M[14] = offset.z + piece.move.y
+    static func applyPieceDiscard(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, transformations: inout [GLKMatrix4]) {
+        
+        transformations[pieceIndex] = GLKMatrix4MakeTranslation(0, 0, -1000)
+        
+        let piece = model.pieces[pieceIndex]
+        for child in piece.children {
+            applyPieceDiscard(pieceIndex: child, model: model, transformations: &transformations)
+        }
+    }
     
-    M[0] = cos.y * cos.z
-    M[1] = (sin.y * cos.x) + (sin.x * cos.y * sin.z)
-    M[2] = (sin.x * sin.y) - (cos.x * cos.y * sin.z)
-    
-    M[4] = -sin.y * cos.z
-    M[5] = (cos.x * cos.y) - (sin.x * sin.y * sin.z)
-    M[6] = (sin.x * cos.y) + (cos.x * sin.y * sin.z)
-    
-    M[8] = sin.z
-    M[9] = -sin.x * cos.z
-    M[10] = cos.x * cos.z
-    
-    return M
 }

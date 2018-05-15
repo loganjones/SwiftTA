@@ -294,7 +294,7 @@ extension HpiBrowserWindowController {
             else if file.hasExtension("3do") {
                 let model = try UnitModel(contentsOf: fileHandle)
                 let view = Model3DOView(frame: contentView.bounds)
-                view.load(model)
+                try view.load(model)
                 subview = view
             }
             else if file.hasExtension("cob") {

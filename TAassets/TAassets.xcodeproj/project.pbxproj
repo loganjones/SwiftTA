@@ -43,11 +43,15 @@
 		B5E26F4E1EE3BFB4006C329B /* TntView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4D1EE3BFB4006C329B /* TntView.swift */; };
 		B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F4F1EE4813A006C329B /* MapBrowser.swift */; };
 		B5E26F521EE48A97006C329B /* Filesystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F511EE48A97006C329B /* Filesystem.swift */; };
+		B5F89FEF20A66E110082943E /* unit-view.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = B5F89FEE20A66E110082943E /* unit-view.glsl.vert */; };
+		B5F89FF120A66E290082943E /* unit-view.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = B5F89FF020A66E290082943E /* unit-view.glsl.frag */; };
+		B5F89FF320AA6DED0082943E /* Utility+GLKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */; };
 		F021E3A02062F93A00D3BD39 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F021E39F2062F93A00D3BD39 /* TdfParser.swift */; };
 		F04B28BD2065B503003A1ACC /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BC2065B503003A1ACC /* MapFeature.swift */; };
 		F04B28BF2065B70F003A1ACC /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BE2065B70F003A1ACC /* MapView.swift */; };
 		F09272362051E214007C51EC /* UnitScript+CobDecompile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09272352051E214007C51EC /* UnitScript+CobDecompile.swift */; };
 		F092723E205206E9007C51EC /* CobDecompileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F092723D205206E9007C51EC /* CobDecompileTests.swift */; };
+		F0AAC55420AB56CB00D62553 /* unit-view-lighted.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F0AAC55320AB56CA00D62553 /* unit-view-lighted.glsl.frag */; };
 		F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */; };
 		F0D23B902072C97200C0A245 /* Palette+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B8F2072C97200C0A245 /* Palette+Files.swift */; };
 		F0D9A49820586F230081DC15 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49720586F230081DC15 /* MapModel.swift */; };
@@ -113,6 +117,9 @@
 		B5E26F4D1EE3BFB4006C329B /* TntView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TntView.swift; path = ../../HPIView/HPIView/TntView.swift; sourceTree = "<group>"; };
 		B5E26F4F1EE4813A006C329B /* MapBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapBrowser.swift; sourceTree = "<group>"; };
 		B5E26F511EE48A97006C329B /* Filesystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Filesystem.swift; sourceTree = "<group>"; };
+		B5F89FEE20A66E110082943E /* unit-view.glsl.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = "unit-view.glsl.vert"; sourceTree = "<group>"; };
+		B5F89FF020A66E290082943E /* unit-view.glsl.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = "unit-view.glsl.frag"; sourceTree = "<group>"; };
+		B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utility+GLKit.swift"; sourceTree = "<group>"; };
 		F021E39F2062F93A00D3BD39 /* TdfParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
 		F04B28BC2065B503003A1ACC /* MapFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
 		F04B28BE2065B70F003A1ACC /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
@@ -120,6 +127,7 @@
 		F092723B205206E8007C51EC /* TAassetsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TAassetsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F092723D205206E9007C51EC /* CobDecompileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CobDecompileTests.swift; sourceTree = "<group>"; };
 		F092723F205206E9007C51EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F0AAC55320AB56CA00D62553 /* unit-view-lighted.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = "unit-view-lighted.glsl.frag"; sourceTree = "<group>"; };
 		F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitScript+Instructions.swift"; sourceTree = "<group>"; };
 		F0D23B8F2072C97200C0A245 /* Palette+Files.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Palette+Files.swift"; sourceTree = "<group>"; };
 		F0D9A49720586F230081DC15 /* MapModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapModel.swift; sourceTree = "<group>"; };
@@ -184,6 +192,9 @@
 				B57C32B620702B9700B24C99 /* PaletteView.swift */,
 				B5E26F4D1EE3BFB4006C329B /* TntView.swift */,
 				B5E26F431EE3745F006C329B /* UnitView.swift */,
+				F0AAC55320AB56CA00D62553 /* unit-view-lighted.glsl.frag */,
+				B5F89FF020A66E290082943E /* unit-view.glsl.frag */,
+				B5F89FEE20A66E110082943E /* unit-view.glsl.vert */,
 				B5C5567B1E2D5C75001BEFAB /* BridgingHeader.h */,
 				B5C5564F1E2C86A2001BEFAB /* Assets.xcassets */,
 				B5C556511E2C86A2001BEFAB /* Main.storyboard */,
@@ -237,6 +248,7 @@
 				B5E26F3D1EDB4A02006C329B /* UnitTextureAtlas.swift */,
 				B5E26F021ED9EB05006C329B /* Utility.swift */,
 				F0D9A4A32059FBD00081DC15 /* Utility+Cocoa.swift */,
+				B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */,
 				F0D9A4A52059FEE60081DC15 /* Utility+OpenGL.swift */,
 			);
 			name = Common;
@@ -339,6 +351,9 @@
 			files = (
 				B5C556841E3058A9001BEFAB /* HpiFinderRow.xib in Resources */,
 				B5C556501E2C86A2001BEFAB /* Assets.xcassets in Resources */,
+				B5F89FF120A66E290082943E /* unit-view.glsl.frag in Resources */,
+				F0AAC55420AB56CB00D62553 /* unit-view-lighted.glsl.frag in Resources */,
+				B5F89FEF20A66E110082943E /* unit-view.glsl.vert in Resources */,
 				B5C556531E2C86A2001BEFAB /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -377,6 +392,7 @@
 				B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */,
 				B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */,
 				F021E3A02062F93A00D3BD39 /* TdfParser.swift in Sources */,
+				B5F89FF320AA6DED0082943E /* Utility+GLKit.swift in Sources */,
 				B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */,
 				B5E26F091ED9EB05006C329B /* UnitData.swift in Sources */,
 				B5E26F401EE37211006C329B /* UnitModel+Instance.swift in Sources */,
