@@ -14,28 +14,30 @@ import GLKit
 
 class UnitView: NSOpenGLView {
     
-    private var toload: ToLoad?
+    private var unitInfo: UnitInfo?
     
+    private var firstFrameInit = true
+    private var toload: ToLoad?
     private var model: GLBufferedModel?
     private var modelTexture: GLuint = 0
     private var program_unlit: GLuint = 0
     private var program_lighted: GLuint = 0
-    private var uniform_model: GLint = 0
-    private var uniform_view: GLint = 0
-    private var uniform_projection: GLint = 0
-    private var uniform_pieces: GLint = 0
-    private var uniform_lightPosition: GLint = 0
-    private var uniform_viewPosition: GLint = 0
-    private var uniform_texture: GLint = 0
-    private var uniform_objectColor: GLint = 0
     private var displayLink: CVDisplayLink?
     private var scriptContext: UnitScript.Context?
     private var loadTime: Double = 0
+    
     private var shouldStartMoving = false
+    private var isMoving = false
+    private var speed: Double = 0
+    private var movement: Double = 0
+    
+    private var grid: GLWorldSpaceGrid!
     
     private var viewportSize = CGSize()
-    private var currentProgram: GLuint = 0
-    private var changeProgram: GLuint? = nil
+    
+    private var unitViewProgram = UnitViewPrograms()
+    private var gridProgram = GridProgram()
+    private var changeProgram = false
     
     private var aspectRatio: Float = 1
     private var sceneSize: (width: Float, height: Float) = (0,0)
@@ -54,7 +56,12 @@ class UnitView: NSOpenGLView {
     private var rotateX: GLfloat = 0
     private var rotateY: GLfloat = 0
     
-    private let showAxes = false
+    private let taPerspective = GLKMatrix4Make(
+        -1,   0,   0,   0,
+         0,   1,   0,   0,
+         0,-0.5,   1,   0,
+         0,   0,   0,   1
+    )
     
     override init(frame frameRect: NSRect) {
         let attributes : [NSOpenGLPixelFormatAttribute] = [
@@ -91,6 +98,22 @@ class UnitView: NSOpenGLView {
         var swapInt: GLint = 1
         context.setValues(&swapInt, for: .swapInterval)
         
+        func UnitViewDisplayLinkCallback(displayLink: CVDisplayLink,
+                                         now: UnsafePointer<CVTimeStamp>,
+                                         outputTime: UnsafePointer<CVTimeStamp>,
+                                         flagsIn: CVOptionFlags,
+                                         flagsOut: UnsafeMutablePointer<CVOptionFlags>,
+                                         displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
+            
+            let currentTime = Double(now.pointee.videoTime) / Double(now.pointee.videoTimeScale)
+            let deltaTime = 1.0 / (outputTime.pointee.rateScalar * Double(outputTime.pointee.videoTimeScale) / Double(outputTime.pointee.videoRefreshPeriod))
+            
+            let view = unsafeBitCast(displayLinkContext, to: UnitView.self)
+            view.drawFrame(currentTime, deltaTime)
+            
+            return kCVReturnSuccess
+        }
+        
         CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
         CVDisplayLinkSetOutputCallback(displayLink!, UnitViewDisplayLinkCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
         CVDisplayLinkStart(displayLink!)
@@ -107,6 +130,8 @@ class UnitView: NSOpenGLView {
             if shouldStartMoving && getTime() > loadTime + 1 {
                 script.startScript("StartMoving")
                 shouldStartMoving = false
+                isMoving = true
+                speed = 0
             }
             script.run(for: model!.instance.instance, on: self)
             model?.animate(script, for: deltaTime)
@@ -117,32 +142,45 @@ class UnitView: NSOpenGLView {
         context.makeCurrentContext()
         CGLLockContext(context.cglContextObj!)
         
-        makeProgram()
+        if firstFrameInit {
+            (unitViewProgram, gridProgram) = try! makePrograms()
+            changeProgram = true
+            grid = GLWorldSpaceGrid(size: Size2D(width: 16, height: 16))
+            firstFrameInit = false
+        }
         
-        if let program = changeProgram {
-            currentProgram = program
-            
-            uniform_model = glGetUniformLocation(program, "model")
-            uniform_view = glGetUniformLocation(program, "view")
-            uniform_projection = glGetUniformLocation(program, "projection")
-            uniform_pieces = glGetUniformLocation(program, "pieces")
-            uniform_lightPosition = glGetUniformLocation(program, "lightPosition")
-            uniform_viewPosition = glGetUniformLocation(program, "viewPosition")
-            uniform_texture = glGetUniformLocation(program, "colorTexture")
-            uniform_objectColor = glGetUniformLocation(program, "objectColor")
-            
-            changeProgram = nil
+        if changeProgram {
+            unitViewProgram.setCurrent(lighted: lighted)
+            changeProgram = false
         }
         
         if let toload = toload {
             self.model = nil
+            self.unitInfo = toload.unit
             self.model = GLBufferedModel(toload.instance, of: toload.model, with: toload.texture)
             self.scriptContext = toload.scriptContext
             self.scriptContext?.startScript("Create")
             makeTexture(toload.texture, toload.textureData)
             loadTime = getTime()
-            shouldStartMoving = true
+            shouldStartMoving = toload.unit.maxVelocity > 0
+            isMoving = false
+            movement = 0
             self.toload = nil
+        }
+        
+        if isMoving {
+            let dt = deltaTime * 10
+            let acceleration = unitInfo?.acceleration ?? 1
+            let maxSpeed = unitInfo?.maxVelocity ?? 1
+            
+            if speed < maxSpeed {
+                speed = min(speed + dt * acceleration, maxSpeed)
+            }
+            movement += dt * speed
+            
+            if movement > grid.spacing {
+                movement -= grid.spacing
+            }
         }
         
         drawScene()
@@ -157,65 +195,76 @@ class UnitView: NSOpenGLView {
         reshape(viewport: viewportSize)
         initScene()
         
+        let w = Float( ((unitInfo?.footprint.width ?? 1) + 8) * 16 )
+        sceneSize = (width: w, height: w * aspectRatio)
+        
         glClearColor(1, 1, 1, 1)
         glClear(GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT))
         
         let projection = GLKMatrix4MakeOrtho(0, sceneSize.width, sceneSize.height, 0, -1024, 256)
 
-        let centering = GLKMatrix4MakeTranslation(sceneSize.width / 2, sceneSize.height / 2, 0)
-        let flatten = GLKMatrix4Make(
-            -1,   0,   0,   0,
-             0,   1,   0,   0,
-             0,-0.5,   1,   0,
-             0,   0,   0,   1
-        )
-        let view = GLKMatrix4Multiply(centering, flatten)
-
-        let model = GLKMatrix4Rotate(GLKMatrix4Identity, -rotateZ * (Float.pi / 180.0), 0, 0, 1)
+        let sceneCentering = GLKMatrix4MakeTranslation(sceneSize.width / 2, sceneSize.height / 2, 0)
+        let sceneView = GLKMatrix4Rotate(GLKMatrix4Multiply(sceneCentering, taPerspective), -rotateZ * (Float.pi / 180.0), 0, 0, 1)
         
-        glUseProgram(currentProgram)
-        glUniformGLKMatrix4(uniform_model, model)
-        glUniformGLKMatrix4(uniform_view, view)
-        glUniformGLKMatrix4(uniform_projection, projection)
-        glUniformGLKMatrix4(uniform_pieces, self.model!.instance.transformations)
-        
-        let lightPosition = GLKVector3Make(50, 50, 100)
-        let viewPosition = GLKVector3Make(sceneSize.width / 2, sceneSize.height / 2, 0)
-        glUniformGLKVector3(uniform_lightPosition, lightPosition)
-        glUniformGLKVector3(uniform_viewPosition, viewPosition)
-        
-        glActiveTexture(GLenum(GL_TEXTURE0));
-        glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture);
-        glUniform1i(uniform_texture, 0);
-        
-        if let unitmodel = self.model { draw(unitmodel) }
+        drawGrid(projection, sceneView)
+        drawUnit(projection, sceneView)
         
         glBindVertexArray(0)
         glUseProgram(0)
     }
     
-    private func draw<T: Drawable>(_ model: T) {
+    private func drawGrid(_ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
+        let view = GLKMatrix4Translate(sceneView, Float(-grid.size.width / 2), Float(-grid.size.height / 2), 0)
+        
+        let model = GLKMatrix4MakeTranslation(0, Float(movement), -0.5)
+        
+        glUseProgram(gridProgram.id)
+        glUniformGLKMatrix4(gridProgram.uniform_model, model)
+        glUniformGLKMatrix4(gridProgram.uniform_view, view)
+        glUniformGLKMatrix4(gridProgram.uniform_projection, projection)
+        glUniformGLKVector4(gridProgram.uniform_objectColor, GLKVector4Make(0.9, 0.9, 0.9, 1))
+        
+        grid.draw()
+    }
+    
+    private func drawUnit(_ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
+        glUseProgram(unitViewProgram.current.id)
+        glUniformGLKMatrix4(unitViewProgram.current.uniform_model, GLKMatrix4Identity)
+        glUniformGLKMatrix4(unitViewProgram.current.uniform_view, sceneView)
+        glUniformGLKMatrix4(unitViewProgram.current.uniform_projection, projection)
+        glUniformGLKMatrix4(unitViewProgram.current.uniform_pieces, self.model!.instance.transformations)
+        
+        let lightPosition = GLKVector3Make(50, 50, 100)
+        let viewPosition = GLKVector3Make(sceneSize.width / 2, sceneSize.height / 2, 0)
+        glUniformGLKVector3(unitViewProgram.current.uniform_lightPosition, lightPosition)
+        glUniformGLKVector3(unitViewProgram.current.uniform_viewPosition, viewPosition)
+        
+        glActiveTexture(GLenum(GL_TEXTURE0));
+        glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture);
+        glUniform1i(unitViewProgram.current.uniform_texture, 0);
+        
         switch drawMode {
         case .solid:
-            glUniformGLKVector4(uniform_objectColor, textured ? GLKVector4Make(0, 0, 0, 0) : GLKVector4Make(0.95, 0.85, 0.80, 1))
-            model.drawFilled()
+            glUniformGLKVector4(unitViewProgram.current.uniform_objectColor, textured ? GLKVector4Make(0, 0, 0, 0) : GLKVector4Make(0.95, 0.85, 0.80, 1))
+            model?.drawFilled()
         case .wireframe:
-            glUniformGLKVector4(uniform_objectColor, GLKVector4Make(0.4, 0.35, 0.3, 1))
-            model.drawWireframe()
+            glUniformGLKVector4(unitViewProgram.current.uniform_objectColor, GLKVector4Make(0.4, 0.35, 0.3, 1))
+            model?.drawWireframe()
         case .outlined:
-            glUniformGLKVector4(uniform_objectColor, textured ? GLKVector4Make(0, 0, 0, 0) : GLKVector4Make(0.95, 0.85, 0.80, 1))
+            glUniformGLKVector4(unitViewProgram.current.uniform_objectColor, textured ? GLKVector4Make(0, 0, 0, 0) : GLKVector4Make(0.95, 0.85, 0.80, 1))
             
             glEnable(GLenum(GL_POLYGON_OFFSET_FILL))
             glPolygonOffset(1.0, 1.0)
-            model.drawFilled()
+            model?.drawFilled()
             glDisable(GLenum(GL_POLYGON_OFFSET_FILL))
             
-            glUniformGLKVector4(uniform_objectColor, textured ? GLKVector4Make(0.95, 0.85, 0.80, 1) : GLKVector4Make(0.4, 0.35, 0.3, 1))
-            model.drawWireframe()
+            glUniformGLKVector4(unitViewProgram.current.uniform_objectColor, textured ? GLKVector4Make(0.95, 0.85, 0.80, 1) : GLKVector4Make(0.4, 0.35, 0.3, 1))
+            model?.drawWireframe()
         }
     }
     
     private struct ToLoad {
+        var unit: UnitInfo
         var model: UnitModel
         var instance: UnitModel.Instance
         var scriptContext: UnitScript.Context
@@ -223,12 +272,14 @@ class UnitView: NSOpenGLView {
         var textureData: Data
     }
     
-    func load(_ model: UnitModel,
+    func load(_ unit: UnitInfo,
+              _ model: UnitModel,
               _ script: UnitScript,
               _ texture: UnitTextureAtlas,
               _ filesystem: FileSystem,
               _ palette: Palette) throws {
         let toload = ToLoad(
+            unit: unit,
             model: model,
             instance: UnitModel.Instance(for: model),
             scriptContext: try UnitScript.Context(script, model),
@@ -269,34 +320,31 @@ class UnitView: NSOpenGLView {
         printGlErrors()
     }
     
-    private func makeProgram() {
-        guard program_unlit == 0 else { return }
-        guard let vertexShaderUrl = Bundle.main.url(forResource: "unit-view.glsl", withExtension: "vert") else { return }
-        guard let fragmentShaderUrl = Bundle.main.url(forResource: "unit-view.glsl", withExtension: "frag") else { return }
-        guard let fragmentShaderLightedUrl = Bundle.main.url(forResource: "unit-view-lighted.glsl", withExtension: "frag") else { return }
+    private func loadShaderCode(forResource name: String, withExtension ext: String) throws -> String {
+        guard let url = Bundle.main.url(forResource: name, withExtension: ext) else { throw RuntimeError("Neccessary shader file not found.") }
+        return try String(contentsOf: url)
+    }
+    
+    private func makePrograms() throws -> (UnitViewPrograms, GridProgram) {
         
-        do {
-            let vertexShaderCode = try String(contentsOf: vertexShaderUrl)
-            let fragmentShaderCode = try String(contentsOf: fragmentShaderUrl)
-            let fragmentShaderLightedCode = try String(contentsOf: fragmentShaderLightedUrl)
-            
-            let vertexShader = try compileShader(GLenum(GL_VERTEX_SHADER), source: vertexShaderCode)
-            let fragmentShader = try compileShader(GLenum(GL_FRAGMENT_SHADER), source: fragmentShaderCode)
-            let fragmentShaderLighted = try compileShader(GLenum(GL_FRAGMENT_SHADER), source: fragmentShaderLightedCode)
-            program_unlit = try linkShaders(vertexShader, fragmentShader)
-            program_lighted = try linkShaders(vertexShader, fragmentShaderLighted)
-            
-            glDeleteShader(fragmentShaderLighted)
-            glDeleteShader(fragmentShader)
-            glDeleteShader(vertexShader)
-            
-            changeProgram = lighted ? program_lighted : program_unlit
-        }
-        catch {
-            print("Shader setup failed:\n\(error)")
-        }
+        let vertexShader = try compileShader(GLenum(GL_VERTEX_SHADER), source: loadShaderCode(forResource: "unit-view.glsl", withExtension: "vert"))
+        let fragmentShader = try compileShader(GLenum(GL_FRAGMENT_SHADER), source: loadShaderCode(forResource: "unit-view.glsl", withExtension: "frag"))
+        let fragmentShaderLighted = try compileShader(GLenum(GL_FRAGMENT_SHADER), source: loadShaderCode(forResource: "unit-view-lighted.glsl", withExtension: "frag"))
+        let unlit = try linkShaders(vertexShader, fragmentShader)
+        let lighted = try linkShaders(vertexShader, fragmentShaderLighted)
         
-        printGlErrors()
+        glDeleteShader(fragmentShaderLighted)
+        glDeleteShader(fragmentShader)
+        glDeleteShader(vertexShader)
+        
+        let gridVertexShader = try compileShader(GLenum(GL_VERTEX_SHADER), source: loadShaderCode(forResource: "unit-view-grid.glsl", withExtension: "vert"))
+        let gridFragmentShader = try compileShader(GLenum(GL_FRAGMENT_SHADER), source: loadShaderCode(forResource: "unit-view-grid.glsl", withExtension: "frag"))
+        let grid = try linkShaders(gridVertexShader, gridFragmentShader)
+        
+        glDeleteShader(gridFragmentShader)
+        glDeleteShader(gridVertexShader)
+        
+        return (UnitViewPrograms(unlit: UnitViewProgram(unlit), lighted: UnitViewProgram(lighted)), GridProgram(grid))
     }
     
     private func printGlErrors() {
@@ -323,10 +371,7 @@ class UnitView: NSOpenGLView {
     
     private func reshape(viewport: CGSize) {
         glViewport(0, 0, GLsizei(viewport.width), GLsizei(viewport.height))
-        
         aspectRatio = Float(viewport.height) / Float(viewport.width)
-        let w: Float = 160
-        sceneSize = (width: w, height: w * aspectRatio)
     }
     
     override func mouseDown(with event: NSEvent) {
@@ -358,7 +403,7 @@ class UnitView: NSOpenGLView {
             setNeedsDisplay(bounds)
         case .some("l"):
             lighted = !lighted
-            changeProgram = lighted ? program_lighted : program_unlit
+            changeProgram = true
             setNeedsDisplay(bounds)
         default:
             ()
@@ -378,22 +423,97 @@ extension UnitView: ScriptMachine {
     
 }
 
-// MARK:- Display Link Callback
+// MARK:- Program Helpers
 
-private func UnitViewDisplayLinkCallback(displayLink: CVDisplayLink,
-                                             now: UnsafePointer<CVTimeStamp>,
-                                             outputTime: UnsafePointer<CVTimeStamp>,
-                                             flagsIn: CVOptionFlags,
-                                             flagsOut: UnsafeMutablePointer<CVOptionFlags>,
-                                             displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
+struct UnitViewPrograms {
+    let unlit: UnitViewProgram
+    let lighted: UnitViewProgram
     
-    let currentTime = Double(now.pointee.videoTime) / Double(now.pointee.videoTimeScale)
-    let deltaTime = 1.0 / (outputTime.pointee.rateScalar * Double(outputTime.pointee.videoTimeScale) / Double(outputTime.pointee.videoRefreshPeriod))
+    var current: UnitViewProgram
     
-    let view = unsafeBitCast(displayLinkContext, to: UnitView.self)
-    view.drawFrame(currentTime, deltaTime)
+    init(unlit: UnitViewProgram, lighted: UnitViewProgram) {
+        self.unlit = unlit
+        self.lighted = lighted
+        current = unlit
+    }
     
-    return kCVReturnSuccess
+    init() {
+        self.unlit = UnitViewProgram()
+        self.lighted = UnitViewProgram()
+        current = UnitViewProgram()
+    }
+    
+    mutating func setCurrent(lighted: Bool) {
+        current = lighted ? self.lighted : unlit
+    }
+}
+
+struct UnitViewProgram {
+    
+    let id: GLuint
+    
+    let uniform_model: GLint
+    let uniform_view: GLint
+    let uniform_projection: GLint
+    let uniform_pieces: GLint
+    let uniform_lightPosition: GLint
+    let uniform_viewPosition: GLint
+    let uniform_texture: GLint
+    let uniform_objectColor: GLint
+    
+    init(_ program: GLuint) {
+        id = program
+        uniform_model = glGetUniformLocation(program, "model")
+        uniform_view = glGetUniformLocation(program, "view")
+        uniform_projection = glGetUniformLocation(program, "projection")
+        uniform_pieces = glGetUniformLocation(program, "pieces")
+        uniform_lightPosition = glGetUniformLocation(program, "lightPosition")
+        uniform_viewPosition = glGetUniformLocation(program, "viewPosition")
+        uniform_texture = glGetUniformLocation(program, "colorTexture")
+        uniform_objectColor = glGetUniformLocation(program, "objectColor")
+    }
+    
+    init() {
+        id = 0
+        uniform_model = -1
+        uniform_view = -1
+        uniform_projection = -1
+        uniform_pieces = -1
+        uniform_lightPosition = -1
+        uniform_viewPosition = -1
+        uniform_texture = -1
+        uniform_objectColor = -1
+    }
+    
+    static var unset: UnitViewProgram { return UnitViewProgram() }
+    
+}
+
+struct GridProgram {
+    
+    let id: GLuint
+    
+    let uniform_model: GLint
+    let uniform_view: GLint
+    let uniform_projection: GLint
+    let uniform_objectColor: GLint
+    
+    init(_ program: GLuint) {
+        id = program
+        uniform_model = glGetUniformLocation(program, "model")
+        uniform_view = glGetUniformLocation(program, "view")
+        uniform_projection = glGetUniformLocation(program, "projection")
+        uniform_objectColor = glGetUniformLocation(program, "objectColor")
+    }
+    
+    init() {
+        id = 0
+        uniform_model = -1
+        uniform_view = -1
+        uniform_projection = -1
+        uniform_objectColor = -1
+    }
+    
 }
 
 // MARK:- Drawables
@@ -736,4 +856,74 @@ private class GLBufferedModel: Drawable {
         }
     }
     
+}
+
+// MARK:- Floor
+
+private class GLWorldSpaceGrid {
+    
+    let size: CGSize
+    let spacing: Double
+    
+    private let vao: GLuint
+    private let vbo: [GLuint]
+    private let elementCount: Int
+    
+    init(size: Size2D, gridSpacing: Int = 16) {
+        
+        var vertices = [Vertex3](repeating: .zero, count: (size.width * 2) + (size.height * 2) + (size.area * 4) )
+        do {
+            var n = 0
+            let addLine: (Vertex3, Vertex3) -> () = { (a, b) in vertices[n] = a; vertices[n+1] = b; n += 2 }
+            let makeVert: (Int, Int) -> Vertex3 = { (w, h) in Vertex3(x: Double(w * gridSpacing), y: Double(h * gridSpacing), z: 0) }
+            
+            for h in 0..<size.height {
+                for w in 0..<size.width {
+                    if h == 0 { addLine(makeVert(w,h), makeVert(w+1,h)) }
+                    addLine(makeVert(w+1,h), makeVert(w+1,h+1))
+                    addLine(makeVert(w+1,h+1), makeVert(w,h+1))
+                    if w == 0 { addLine(makeVert(w,h+1), makeVert(w,h)) }
+                }
+            }
+            
+            elementCount = n
+        }
+        
+        /* 3x3
+         +--+--+--+       2 + 2 + 2
+         |  |  |  |   2 + 4 + 4 + 4
+         +--+--+--+
+         |  |  |  |   2 + 4 + 4 + 4
+         +--+--+--+
+         |  |  |  |   2 + 4 + 4 + 4
+         +--+--+--+
+         */
+        
+        var vao: GLuint = 0
+        glGenVertexArrays(1, &vao)
+        glBindVertexArray(vao)
+        self.vao = vao
+        
+        var vbo = [GLuint](repeating: 0, count: 1)
+        glGenBuffers(GLsizei(vbo.count), &vbo)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[0])
+        glBufferData(GLenum(GL_ARRAY_BUFFER), vertices, GLenum(GL_STATIC_DRAW))
+        let vertexAttrib: GLuint = 0
+        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glEnableVertexAttribArray(vertexAttrib)
+        
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0)
+        glBindVertexArray(0)
+        
+        self.vbo = vbo
+        self.size = CGSize(size * gridSpacing)
+        self.spacing = Double(gridSpacing)
+    }
+    
+    func draw() {
+        glBindVertexArray(vao)
+        glDrawArrays(GLenum(GL_LINES), 0, GLsizei(elementCount))
+    }
+
 }

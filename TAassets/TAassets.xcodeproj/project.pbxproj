@@ -46,6 +46,8 @@
 		B5F89FEF20A66E110082943E /* unit-view.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = B5F89FEE20A66E110082943E /* unit-view.glsl.vert */; };
 		B5F89FF120A66E290082943E /* unit-view.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = B5F89FF020A66E290082943E /* unit-view.glsl.frag */; };
 		B5F89FF320AA6DED0082943E /* Utility+GLKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */; };
+		F015C79220AC9DD700873642 /* unit-view-grid.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = F015C79120AC9DD600873642 /* unit-view-grid.glsl.vert */; };
+		F015C79420AC9E3C00873642 /* unit-view-grid.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F015C79320AC9E3C00873642 /* unit-view-grid.glsl.frag */; };
 		F021E3A02062F93A00D3BD39 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F021E39F2062F93A00D3BD39 /* TdfParser.swift */; };
 		F04B28BD2065B503003A1ACC /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BC2065B503003A1ACC /* MapFeature.swift */; };
 		F04B28BF2065B70F003A1ACC /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BE2065B70F003A1ACC /* MapView.swift */; };
@@ -120,6 +122,8 @@
 		B5F89FEE20A66E110082943E /* unit-view.glsl.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = "unit-view.glsl.vert"; sourceTree = "<group>"; };
 		B5F89FF020A66E290082943E /* unit-view.glsl.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = "unit-view.glsl.frag"; sourceTree = "<group>"; };
 		B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utility+GLKit.swift"; sourceTree = "<group>"; };
+		F015C79120AC9DD600873642 /* unit-view-grid.glsl.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = "unit-view-grid.glsl.vert"; sourceTree = "<group>"; };
+		F015C79320AC9E3C00873642 /* unit-view-grid.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = "unit-view-grid.glsl.frag"; sourceTree = "<group>"; };
 		F021E39F2062F93A00D3BD39 /* TdfParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
 		F04B28BC2065B503003A1ACC /* MapFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
 		F04B28BE2065B70F003A1ACC /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
@@ -192,6 +196,8 @@
 				B57C32B620702B9700B24C99 /* PaletteView.swift */,
 				B5E26F4D1EE3BFB4006C329B /* TntView.swift */,
 				B5E26F431EE3745F006C329B /* UnitView.swift */,
+				F015C79320AC9E3C00873642 /* unit-view-grid.glsl.frag */,
+				F015C79120AC9DD600873642 /* unit-view-grid.glsl.vert */,
 				F0AAC55320AB56CA00D62553 /* unit-view-lighted.glsl.frag */,
 				B5F89FF020A66E290082943E /* unit-view.glsl.frag */,
 				B5F89FEE20A66E110082943E /* unit-view.glsl.vert */,
@@ -350,10 +356,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5C556841E3058A9001BEFAB /* HpiFinderRow.xib in Resources */,
+				F015C79420AC9E3C00873642 /* unit-view-grid.glsl.frag in Resources */,
 				B5C556501E2C86A2001BEFAB /* Assets.xcassets in Resources */,
 				B5F89FF120A66E290082943E /* unit-view.glsl.frag in Resources */,
 				F0AAC55420AB56CB00D62553 /* unit-view-lighted.glsl.frag in Resources */,
 				B5F89FEF20A66E110082943E /* unit-view.glsl.vert in Resources */,
+				F015C79220AC9DD700873642 /* unit-view-grid.glsl.vert in Resources */,
 				B5C556531E2C86A2001BEFAB /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
