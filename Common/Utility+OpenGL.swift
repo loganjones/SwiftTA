@@ -104,3 +104,15 @@ func glGetProgramInfoLog(_ program: GLuint) -> String? {
     
     return String(data: data, encoding: .utf8) ?? String(data: data, encoding: .ascii)
 }
+
+// MARK:- I am Error
+
+func printGlErrors(prefix: String = "") {
+    var err = GL_NO_ERROR
+    repeat {
+        err = Int32(glGetError())
+        if (err != GL_NO_ERROR) {
+            Swift.print(prefix + "OpenGL Error: \(err)")
+        }
+    } while (err != GL_NO_ERROR)
+}

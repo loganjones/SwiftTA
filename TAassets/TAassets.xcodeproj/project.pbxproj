@@ -48,6 +48,10 @@
 		B5F89FF320AA6DED0082943E /* Utility+GLKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */; };
 		F015C79220AC9DD700873642 /* unit-view-grid.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = F015C79120AC9DD600873642 /* unit-view-grid.glsl.vert */; };
 		F015C79420AC9E3C00873642 /* unit-view-grid.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F015C79320AC9E3C00873642 /* unit-view-grid.glsl.frag */; };
+		F015C79620ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79520ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift */; };
+		F015C79820AE261400873642 /* UnitView+OpenglLegacyRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79720AE261400873642 /* UnitView+OpenglLegacyRenderer.swift */; };
+		F015C7A320AE43F100873642 /* ModelView+OpenglCore33Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C7A120AE43EF00873642 /* ModelView+OpenglCore33Renderer.swift */; };
+		F015C7A420AE43F100873642 /* ModelView+OpenglLegacyRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C7A220AE43F000873642 /* ModelView+OpenglLegacyRenderer.swift */; };
 		F021E3A02062F93A00D3BD39 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F021E39F2062F93A00D3BD39 /* TdfParser.swift */; };
 		F04B28BD2065B503003A1ACC /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BC2065B503003A1ACC /* MapFeature.swift */; };
 		F04B28BF2065B70F003A1ACC /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BE2065B70F003A1ACC /* MapView.swift */; };
@@ -124,6 +128,10 @@
 		B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utility+GLKit.swift"; sourceTree = "<group>"; };
 		F015C79120AC9DD600873642 /* unit-view-grid.glsl.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = "unit-view-grid.glsl.vert"; sourceTree = "<group>"; };
 		F015C79320AC9E3C00873642 /* unit-view-grid.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = "unit-view-grid.glsl.frag"; sourceTree = "<group>"; };
+		F015C79520ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitView+OpenglCore33Renderer.swift"; sourceTree = "<group>"; };
+		F015C79720AE261400873642 /* UnitView+OpenglLegacyRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitView+OpenglLegacyRenderer.swift"; sourceTree = "<group>"; };
+		F015C7A120AE43EF00873642 /* ModelView+OpenglCore33Renderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "ModelView+OpenglCore33Renderer.swift"; path = "../../HPIView/HPIView/ModelView+OpenglCore33Renderer.swift"; sourceTree = "<group>"; };
+		F015C7A220AE43F000873642 /* ModelView+OpenglLegacyRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "ModelView+OpenglLegacyRenderer.swift"; path = "../../HPIView/HPIView/ModelView+OpenglLegacyRenderer.swift"; sourceTree = "<group>"; };
 		F021E39F2062F93A00D3BD39 /* TdfParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
 		F04B28BC2065B503003A1ACC /* MapFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
 		F04B28BE2065B70F003A1ACC /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
@@ -193,9 +201,13 @@
 				B5E26F371ED9F0ED006C329B /* GafView.swift */,
 				F04B28BE2065B70F003A1ACC /* MapView.swift */,
 				B5C5568E1E3437EF001BEFAB /* ModelView.swift */,
+				F015C7A120AE43EF00873642 /* ModelView+OpenglCore33Renderer.swift */,
+				F015C7A220AE43F000873642 /* ModelView+OpenglLegacyRenderer.swift */,
 				B57C32B620702B9700B24C99 /* PaletteView.swift */,
 				B5E26F4D1EE3BFB4006C329B /* TntView.swift */,
 				B5E26F431EE3745F006C329B /* UnitView.swift */,
+				F015C79520ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift */,
+				F015C79720AE261400873642 /* UnitView+OpenglLegacyRenderer.swift */,
 				F015C79320AC9E3C00873642 /* unit-view-grid.glsl.frag */,
 				F015C79120AC9DD600873642 /* unit-view-grid.glsl.vert */,
 				F0AAC55320AB56CA00D62553 /* unit-view-lighted.glsl.frag */,
@@ -389,7 +401,9 @@
 				B5C556911E353FC1001BEFAB /* UnitBrowser.swift in Sources */,
 				B5E26F051ED9EB05006C329B /* hpi.swift in Sources */,
 				B5E26F0C1ED9EB05006C329B /* UnitObject.swift in Sources */,
+				F015C79820AE261400873642 /* UnitView+OpenglLegacyRenderer.swift in Sources */,
 				B5E26F441EE3745F006C329B /* UnitView.swift in Sources */,
+				F015C7A420AE43F100873642 /* ModelView+OpenglLegacyRenderer.swift in Sources */,
 				F0D9A49820586F230081DC15 /* MapModel.swift in Sources */,
 				B5B258642065CD0100DD6A15 /* MapInfo.swift in Sources */,
 				F0D9A4A62059FEE60081DC15 /* Utility+OpenGL.swift in Sources */,
@@ -411,6 +425,7 @@
 				B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */,
 				B5C5568F1E3437EF001BEFAB /* ModelView.swift in Sources */,
 				B5C556821E2F1747001BEFAB /* FinderView.swift in Sources */,
+				F015C7A320AE43F100873642 /* ModelView+OpenglCore33Renderer.swift in Sources */,
 				B5E26F4E1EE3BFB4006C329B /* TntView.swift in Sources */,
 				F0D9A49E2059F9180081DC15 /* Palette.swift in Sources */,
 				B57C32B3206DEDF500B24C99 /* SideData.swift in Sources */,
@@ -418,6 +433,7 @@
 				B5E26F521EE48A97006C329B /* Filesystem.swift in Sources */,
 				B51FF3721EECA1F3009B509A /* FileReadHandle.swift in Sources */,
 				B5E26F0B1ED9EB05006C329B /* UnitModel.swift in Sources */,
+				F015C79620ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift in Sources */,
 				B5E26F3E1EDB4A02006C329B /* UnitTextureAtlas.swift in Sources */,
 				B5E26F031ED9EB05006C329B /* gaf.swift in Sources */,
 				B57C32B720702B9700B24C99 /* PaletteView.swift in Sources */,
