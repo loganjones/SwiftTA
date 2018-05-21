@@ -660,11 +660,20 @@ private func taRandom(min: _StackValue, max: _StackValue) -> _StackValue {
 private func getUnitValue(execution: ScriptExecutionContext) throws {
     
     let what = try execution.thread.stack.pop()
+    if let uv = UnitScript.UnitValue(rawValue: what) {
+        // print("[\(execution.thread.id)] Get \(uv)")
+        switch uv {
+        default: () // TODO: Do something with requested UnitValue here.
+        }
+    }
+    else {
+        // TODO: Do something with out-of-bounds UnitValue here.
+        print("[\(execution.thread.id)] Get Unit-Value[\(what)?]")
+    }
     
     // TODO: Implement getFunctionResult
     execution.thread.stack.push(0)
     
-    print("[\(execution.thread.id)] Get Unit-Value[\(what)]")
     execution.thread.instructionPointer += 1
 }
 

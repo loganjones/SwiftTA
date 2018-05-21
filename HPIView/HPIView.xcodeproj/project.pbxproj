@@ -31,6 +31,16 @@
 		B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F2F1ED9ECE9006C329B /* CobView.swift */; };
 		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
 		B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */; };
+		F015C79A20AE369600873642 /* ModelView+OpenglCore33Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79920AE369600873642 /* ModelView+OpenglCore33Renderer.swift */; };
+		F015C79D20AE3D9600873642 /* unit-view-grid.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = F015C79B20AE3D9500873642 /* unit-view-grid.glsl.vert */; };
+		F015C79E20AE3D9600873642 /* unit-view-grid.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F015C79C20AE3D9500873642 /* unit-view-grid.glsl.frag */; };
+		F015C7A020AE421000873642 /* ModelView+OpenglLegacyRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79F20AE421000873642 /* ModelView+OpenglLegacyRenderer.swift */; };
+		F0AAC55620AB83F700D62553 /* Utility+GLKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AAC55520AB83F700D62553 /* Utility+GLKit.swift */; };
+		F0AAC55920AB842C00D62553 /* UnitTextureAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AAC55820AB842C00D62553 /* UnitTextureAtlas.swift */; };
+		F0AAC55A20AB844700D62553 /* ModelTexturePack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F141ED9EB80006C329B /* ModelTexturePack.swift */; };
+		F0AAC55E20AB84C600D62553 /* unit-view-lighted.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F0AAC55B20AB84C500D62553 /* unit-view-lighted.glsl.frag */; };
+		F0AAC55F20AB84C600D62553 /* unit-view.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F0AAC55C20AB84C600D62553 /* unit-view.glsl.frag */; };
+		F0AAC56020AB84C600D62553 /* unit-view.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = F0AAC55D20AB84C600D62553 /* unit-view.glsl.vert */; };
 		F0AEB0E22098FB590087B36B /* QuickLookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AEB0E12098FB580087B36B /* QuickLookView.swift */; };
 		F0D23B92207402CD00C0A245 /* Palette+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B91207402CC00C0A245 /* Palette+Files.swift */; };
 		F0D23B932074034400C0A245 /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */; };
@@ -84,6 +94,15 @@
 		B5E26F311ED9EDD7006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GafView.swift; sourceTree = "<group>"; };
 		B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
 		B5E26F491EE3AF5F006C329B /* ta_TNT.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_TNT.h; sourceTree = "<group>"; };
+		F015C79920AE369600873642 /* ModelView+OpenglCore33Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelView+OpenglCore33Renderer.swift"; sourceTree = "<group>"; };
+		F015C79B20AE3D9500873642 /* unit-view-grid.glsl.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-grid.glsl.vert"; path = "../../TAassets/TAassets/unit-view-grid.glsl.vert"; sourceTree = "<group>"; };
+		F015C79C20AE3D9500873642 /* unit-view-grid.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-grid.glsl.frag"; path = "../../TAassets/TAassets/unit-view-grid.glsl.frag"; sourceTree = "<group>"; };
+		F015C79F20AE421000873642 /* ModelView+OpenglLegacyRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ModelView+OpenglLegacyRenderer.swift"; sourceTree = "<group>"; };
+		F0AAC55520AB83F700D62553 /* Utility+GLKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+GLKit.swift"; sourceTree = "<group>"; };
+		F0AAC55820AB842C00D62553 /* UnitTextureAtlas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTextureAtlas.swift; sourceTree = "<group>"; };
+		F0AAC55B20AB84C500D62553 /* unit-view-lighted.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-lighted.glsl.frag"; path = "../../TAassets/TAassets/unit-view-lighted.glsl.frag"; sourceTree = "<group>"; };
+		F0AAC55C20AB84C600D62553 /* unit-view.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view.glsl.frag"; path = "../../TAassets/TAassets/unit-view.glsl.frag"; sourceTree = "<group>"; };
+		F0AAC55D20AB84C600D62553 /* unit-view.glsl.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view.glsl.vert"; path = "../../TAassets/TAassets/unit-view.glsl.vert"; sourceTree = "<group>"; };
 		F0AEB0E12098FB580087B36B /* QuickLookView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QuickLookView.swift; path = ../../TAassets/TAassets/QuickLookView.swift; sourceTree = "<group>"; };
 		F0D23B91207402CC00C0A245 /* Palette+Files.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Palette+Files.swift"; sourceTree = "<group>"; };
 		F0D23B942074036700C0A245 /* TdfParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
@@ -136,6 +155,8 @@
 				B5E26F2F1ED9ECE9006C329B /* CobView.swift */,
 				B5E26F311ED9EDD7006C329B /* GafView.swift */,
 				B553EE351DDFE2270033C70D /* ModelView.swift */,
+				F015C79920AE369600873642 /* ModelView+OpenglCore33Renderer.swift */,
+				F015C79F20AE421000873642 /* ModelView+OpenglLegacyRenderer.swift */,
 				B57C32B420702B4700B24C99 /* PaletteView.swift */,
 				F0AEB0E12098FB580087B36B /* QuickLookView.swift */,
 				F0D9A49B2059F6D90081DC15 /* TntView.swift */,
@@ -146,6 +167,11 @@
 				B50F6A561D87A54B0016C15B /* MainMenu.xib */,
 				B50F6A591D87A54B0016C15B /* Info.plist */,
 				B5B472121E13A02600FC79E2 /* PALETTE.PAL */,
+				F015C79C20AE3D9500873642 /* unit-view-grid.glsl.frag */,
+				F015C79B20AE3D9500873642 /* unit-view-grid.glsl.vert */,
+				F0AAC55B20AB84C500D62553 /* unit-view-lighted.glsl.frag */,
+				F0AAC55C20AB84C600D62553 /* unit-view.glsl.frag */,
+				F0AAC55D20AB84C600D62553 /* unit-view.glsl.vert */,
 			);
 			path = HPIView;
 			sourceTree = "<group>";
@@ -189,8 +215,10 @@
 				B5E26F1F1ED9EB80006C329B /* UnitObject.swift */,
 				B5E26F201ED9EB80006C329B /* UnitScript.swift */,
 				B56086742055B519005AAEC6 /* UnitScript+CobDecompile.swift */,
+				F0AAC55820AB842C00D62553 /* UnitTextureAtlas.swift */,
 				B5E26F221ED9EB80006C329B /* Utility.swift */,
 				F0D9A4A12059FBAD0081DC15 /* Utility+Cocoa.swift */,
+				F0AAC55520AB83F700D62553 /* Utility+GLKit.swift */,
 				F0D9A4A72059FF080081DC15 /* Utility+OpenGL.swift */,
 			);
 			name = Common;
@@ -260,7 +288,12 @@
 			files = (
 				B50F6A551D87A54B0016C15B /* Assets.xcassets in Resources */,
 				B50F6A531D87A54B0016C15B /* HpiBrowserWindow.xib in Resources */,
+				F0AAC56020AB84C600D62553 /* unit-view.glsl.vert in Resources */,
+				F0AAC55F20AB84C600D62553 /* unit-view.glsl.frag in Resources */,
+				F015C79D20AE3D9600873642 /* unit-view-grid.glsl.vert in Resources */,
 				B503B5E51E17559000CBB149 /* PALETTE.PAL in Resources */,
+				F0AAC55E20AB84C600D62553 /* unit-view-lighted.glsl.frag in Resources */,
+				F015C79E20AE3D9600873642 /* unit-view-grid.glsl.frag in Resources */,
 				B5D4B6DB1E04E5F200ADBE65 /* HpiFinderRow.xib in Resources */,
 				B50F6A581D87A54B0016C15B /* MainMenu.xib in Resources */,
 			);
@@ -275,6 +308,7 @@
 			files = (
 				F0D23B972074038600C0A245 /* SideData.swift in Sources */,
 				B51FF3701EEC966E009B509A /* FileReadHandle.swift in Sources */,
+				F015C7A020AE421000873642 /* ModelView+OpenglLegacyRenderer.swift in Sources */,
 				B51FF36E1EEC6711009B509A /* Filesystem.swift in Sources */,
 				F0D9A4A82059FF080081DC15 /* Utility+OpenGL.swift in Sources */,
 				F0D9A4A02059FA3D0081DC15 /* Palette.swift in Sources */,
@@ -288,15 +322,19 @@
 				F0AEB0E22098FB590087B36B /* QuickLookView.swift in Sources */,
 				B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */,
 				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,
+				F0AAC55620AB83F700D62553 /* Utility+GLKit.swift in Sources */,
 				B57C32B520702B4700B24C99 /* PaletteView.swift in Sources */,
 				F0D9A49A20588A810081DC15 /* MapModel.swift in Sources */,
 				B5E26F231ED9EB80006C329B /* gaf.swift in Sources */,
+				F015C79A20AE369600873642 /* ModelView+OpenglCore33Renderer.swift in Sources */,
 				B50F6A501D87A54B0016C15B /* HpiDocument.swift in Sources */,
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
 				F0D23B952074036800C0A245 /* TdfParser.swift in Sources */,
 				B553EE381DE004AB0033C70D /* FinderView.swift in Sources */,
+				F0AAC55920AB842C00D62553 /* UnitTextureAtlas.swift in Sources */,
 				B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */,
 				F0D23B92207402CD00C0A245 /* Palette+Files.swift in Sources */,
+				F0AAC55A20AB844700D62553 /* ModelTexturePack.swift in Sources */,
 				F0D23B9B207403AD00C0A245 /* MapInfo.swift in Sources */,
 				F0D23B932074034400C0A245 /* UnitInfo.swift in Sources */,
 				B553EE361DDFE2270033C70D /* ModelView.swift in Sources */,

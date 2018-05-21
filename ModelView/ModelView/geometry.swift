@@ -91,6 +91,13 @@ func ×(lhs: Vector3, rhs: Vector3) -> Vector3 {
     )
 }
 
+extension Vertex3 {
+    static var zero: Vertex3 { return Vertex3(x: 0, y: 0, z: 0) }
+}
+extension Vector3 {
+    static var zero: Vector3 { return Vector3(x: 0, y: 0, z: 0) }
+}
+
 
 func glVertex(_ v: Vertex3) {
     glVertex3d(v.x, v.y, v.z)
@@ -100,4 +107,9 @@ func glNormal(_ v: Vector3) {
 }
 func glTranslate(_ v: Vector3) {
     glTranslated(v.x, v.y, v.z)
+}
+
+func glBufferData<T>(_ target: GLenum, _ data: [T], _ usage: GLenum) {
+    var d = data
+    glBufferData(target, MemoryLayout<T>.stride * data.count, &d, usage)
 }

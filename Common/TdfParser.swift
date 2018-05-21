@@ -287,6 +287,19 @@ extension TdfParser.Object {
         return value
     }
     
+    func boolProperty(_ name: String, default: Bool = false) -> Bool {
+        guard let value = properties[name] else { return `default` }
+        if let number = Int(value) { return number != 0 }
+        // TODO: Maybe handle 'TRUE', 'FALSE', etc. as accepted TDF Boolean values.
+        return `default`
+    }
+    
+    func numericProperty<T: Numeric & LosslessStringConvertible>(_ name: String, default: T = 0) -> T {
+        guard let value = properties[name] else { return `default` }
+        if let number = T(value) { return number }
+        return `default`
+    }
+    
 }
 
 // MARK:- Core State Machine

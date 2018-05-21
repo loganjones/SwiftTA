@@ -234,7 +234,7 @@ class UnitDetailViewController: NSViewController {
         let script = try UnitScript(contentsOf: scriptFile)
         let atlas = UnitTextureAtlas(for: model.textures, from: shared.textures)
         let palette = try Palette.texturePalette(for: unit, in: shared.sides, from: shared.filesystem)
-        try tempView.modelView.load(model, script, atlas, shared.filesystem, palette)
+        try tempView.modelView.load(unit, model, script, atlas, shared.filesystem, palette)
         
         //try tempSaveAtlasToFile(atlas, palette)
     }
