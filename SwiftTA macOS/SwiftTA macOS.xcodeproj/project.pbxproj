@@ -1,0 +1,516 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B5CAAF0820B26BB2003B17D7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF0720B26BB2003B17D7 /* AppDelegate.swift */; };
+		B5CAAF0A20B26BB2003B17D7 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF0920B26BB2003B17D7 /* GameViewController.swift */; };
+		B5CAAF0C20B26BB3003B17D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0B20B26BB3003B17D7 /* Assets.xcassets */; };
+		B5CAAF0F20B26BB3003B17D7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0D20B26BB3003B17D7 /* Main.storyboard */; };
+		F0A9DE2320B48C23007E71C1 /* OpenGLViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2220B48C23007E71C1 /* OpenGLViewController.swift */; };
+		F0A9DE2620B49B50007E71C1 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F0A9DE2520B49B50007E71C1 /* OpenGL.framework */; };
+		F0A9DE4B20B4C7B6007E71C1 /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2820B4C7B6007E71C1 /* Geometry.swift */; };
+		F0A9DE4C20B4C7B6007E71C1 /* ModelTexturePack.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2920B4C7B6007E71C1 /* ModelTexturePack.swift */; };
+		F0A9DE4D20B4C7B6007E71C1 /* MapInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2A20B4C7B6007E71C1 /* MapInfo.swift */; };
+		F0A9DE4E20B4C7B6007E71C1 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2B20B4C7B6007E71C1 /* TdfParser.swift */; };
+		F0A9DE4F20B4C7B6007E71C1 /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2C20B4C7B6007E71C1 /* pcx.swift */; };
+		F0A9DE5020B4C7B6007E71C1 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2D20B4C7B6007E71C1 /* Palette.swift */; };
+		F0A9DE5120B4C7B7007E71C1 /* gaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2F20B4C7B6007E71C1 /* gaf.swift */; };
+		F0A9DE5220B4C7B7007E71C1 /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3220B4C7B6007E71C1 /* MapFeature.swift */; };
+		F0A9DE5320B4C7B7007E71C1 /* UnitData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3320B4C7B6007E71C1 /* UnitData.swift */; };
+		F0A9DE5420B4C7B7007E71C1 /* UnitScript+CobDecompile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3420B4C7B6007E71C1 /* UnitScript+CobDecompile.swift */; };
+		F0A9DE5520B4C7B7007E71C1 /* SideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3520B4C7B6007E71C1 /* SideData.swift */; };
+		F0A9DE5620B4C7B7007E71C1 /* Utility+GLKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3620B4C7B6007E71C1 /* Utility+GLKit.swift */; };
+		F0A9DE5720B4C7B7007E71C1 /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3720B4C7B6007E71C1 /* UnitInfo.swift */; };
+		F0A9DE5820B4C7B7007E71C1 /* Filesystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3A20B4C7B6007E71C1 /* Filesystem.swift */; };
+		F0A9DE5920B4C7B7007E71C1 /* Palette+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3B20B4C7B6007E71C1 /* Palette+Files.swift */; };
+		F0A9DE5A20B4C7B7007E71C1 /* UnitScript+Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3C20B4C7B6007E71C1 /* UnitScript+Instructions.swift */; };
+		F0A9DE5B20B4C7B7007E71C1 /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3D20B4C7B6007E71C1 /* UnitModel+Instance.swift */; };
+		F0A9DE5C20B4C7B7007E71C1 /* UnitScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3E20B4C7B6007E71C1 /* UnitScript.swift */; };
+		F0A9DE5D20B4C7B7007E71C1 /* UnitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE3F20B4C7B6007E71C1 /* UnitModel.swift */; };
+		F0A9DE5E20B4C7B7007E71C1 /* Utility+OpenGL.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4020B4C7B6007E71C1 /* Utility+OpenGL.swift */; };
+		F0A9DE5F20B4C7B7007E71C1 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4320B4C7B6007E71C1 /* Utility.swift */; };
+		F0A9DE6020B4C7B7007E71C1 /* Utility+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4420B4C7B6007E71C1 /* Utility+Cocoa.swift */; };
+		F0A9DE6120B4C7B7007E71C1 /* UnitTextureAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4520B4C7B6007E71C1 /* UnitTextureAtlas.swift */; };
+		F0A9DE6220B4C7B7007E71C1 /* hpi.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4620B4C7B6007E71C1 /* hpi.swift */; };
+		F0A9DE6320B4C7B7007E71C1 /* FileReadHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4720B4C7B6007E71C1 /* FileReadHandle.swift */; };
+		F0A9DE6420B4C7B7007E71C1 /* UnitScript+VM.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4820B4C7B6007E71C1 /* UnitScript+VM.swift */; };
+		F0A9DE6520B4C7B7007E71C1 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4920B4C7B6007E71C1 /* MapModel.swift */; };
+		F0A9DE6620B4C7B7007E71C1 /* UnitObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4A20B4C7B6007E71C1 /* UnitObject.swift */; };
+		F0F5408D21223B4600221A9C /* Utility+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5408C21223B4600221A9C /* Utility+Metal.swift */; };
+		F0F5409C21237D1400221A9C /* MetalTntShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409821237D1200221A9C /* MetalTntShaders.metal */; };
+		F0F5409D21237D1400221A9C /* MetalRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409A21237D1300221A9C /* MetalRenderer.swift */; };
+		F0F5409E21237D1400221A9C /* MetalTiledTntDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409B21237D1300221A9C /* MetalTiledTntDrawable.swift */; };
+		F0F540A021237D2400221A9C /* GameRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409F21237D2400221A9C /* GameRenderer.swift */; };
+		F0F540A2212380D000221A9C /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F540A1212380D000221A9C /* GameState.swift */; };
+		F0F540A82123880C00221A9C /* MetalOneTextureTntDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F540A72123880C00221A9C /* MetalOneTextureTntDrawable.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B5CAAF0420B26BB2003B17D7 /* SwiftTA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftTA.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5CAAF0720B26BB2003B17D7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B5CAAF0920B26BB2003B17D7 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
+		B5CAAF0B20B26BB3003B17D7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B5CAAF0E20B26BB3003B17D7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		B5CAAF1020B26BB3003B17D7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B5CAAF1120B26BB3003B17D7 /* SwiftTA_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftTA_macOS.entitlements; sourceTree = "<group>"; };
+		F0A9DE2220B48C23007E71C1 /* OpenGLViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGLViewController.swift; sourceTree = "<group>"; };
+		F0A9DE2520B49B50007E71C1 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		F0A9DE2820B4C7B6007E71C1 /* Geometry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
+		F0A9DE2920B4C7B6007E71C1 /* ModelTexturePack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelTexturePack.swift; sourceTree = "<group>"; };
+		F0A9DE2A20B4C7B6007E71C1 /* MapInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapInfo.swift; sourceTree = "<group>"; };
+		F0A9DE2B20B4C7B6007E71C1 /* TdfParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
+		F0A9DE2C20B4C7B6007E71C1 /* pcx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pcx.swift; sourceTree = "<group>"; };
+		F0A9DE2D20B4C7B6007E71C1 /* Palette.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Palette.swift; sourceTree = "<group>"; };
+		F0A9DE2E20B4C7B6007E71C1 /* ta_COB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB.h; sourceTree = "<group>"; };
+		F0A9DE2F20B4C7B6007E71C1 /* gaf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = gaf.swift; sourceTree = "<group>"; };
+		F0A9DE3020B4C7B6007E71C1 /* ta_TNT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_TNT.h; sourceTree = "<group>"; };
+		F0A9DE3120B4C7B6007E71C1 /* ta_3DO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_3DO.h; sourceTree = "<group>"; };
+		F0A9DE3220B4C7B6007E71C1 /* MapFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
+		F0A9DE3320B4C7B6007E71C1 /* UnitData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitData.swift; sourceTree = "<group>"; };
+		F0A9DE3420B4C7B6007E71C1 /* UnitScript+CobDecompile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+CobDecompile.swift"; sourceTree = "<group>"; };
+		F0A9DE3520B4C7B6007E71C1 /* SideData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideData.swift; sourceTree = "<group>"; };
+		F0A9DE3620B4C7B6007E71C1 /* Utility+GLKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+GLKit.swift"; sourceTree = "<group>"; };
+		F0A9DE3720B4C7B6007E71C1 /* UnitInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitInfo.swift; sourceTree = "<group>"; };
+		F0A9DE3820B4C7B6007E71C1 /* ta_GAF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_GAF.h; sourceTree = "<group>"; };
+		F0A9DE3920B4C7B6007E71C1 /* ta_COB_Instructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB_Instructions.h; sourceTree = "<group>"; };
+		F0A9DE3A20B4C7B6007E71C1 /* Filesystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Filesystem.swift; sourceTree = "<group>"; };
+		F0A9DE3B20B4C7B6007E71C1 /* Palette+Files.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Palette+Files.swift"; sourceTree = "<group>"; };
+		F0A9DE3C20B4C7B6007E71C1 /* UnitScript+Instructions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+Instructions.swift"; sourceTree = "<group>"; };
+		F0A9DE3D20B4C7B6007E71C1 /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
+		F0A9DE3E20B4C7B6007E71C1 /* UnitScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitScript.swift; sourceTree = "<group>"; };
+		F0A9DE3F20B4C7B6007E71C1 /* UnitModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitModel.swift; sourceTree = "<group>"; };
+		F0A9DE4020B4C7B6007E71C1 /* Utility+OpenGL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+OpenGL.swift"; sourceTree = "<group>"; };
+		F0A9DE4120B4C7B6007E71C1 /* pcx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pcx.h; sourceTree = "<group>"; };
+		F0A9DE4220B4C7B6007E71C1 /* ta_HPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_HPI.h; sourceTree = "<group>"; };
+		F0A9DE4320B4C7B6007E71C1 /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
+		F0A9DE4420B4C7B6007E71C1 /* Utility+Cocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Cocoa.swift"; sourceTree = "<group>"; };
+		F0A9DE4520B4C7B6007E71C1 /* UnitTextureAtlas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTextureAtlas.swift; sourceTree = "<group>"; };
+		F0A9DE4620B4C7B6007E71C1 /* hpi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = hpi.swift; sourceTree = "<group>"; };
+		F0A9DE4720B4C7B6007E71C1 /* FileReadHandle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
+		F0A9DE4820B4C7B6007E71C1 /* UnitScript+VM.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+VM.swift"; sourceTree = "<group>"; };
+		F0A9DE4920B4C7B6007E71C1 /* MapModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapModel.swift; sourceTree = "<group>"; };
+		F0A9DE4A20B4C7B6007E71C1 /* UnitObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitObject.swift; sourceTree = "<group>"; };
+		F0A9DE6720B4CA48007E71C1 /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
+		F0F5408C21223B4600221A9C /* Utility+Metal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Metal.swift"; sourceTree = "<group>"; };
+		F0F5409821237D1200221A9C /* MetalTntShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalTntShaders.metal; sourceTree = "<group>"; };
+		F0F5409921237D1300221A9C /* MetalTntShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalTntShaderTypes.h; sourceTree = "<group>"; };
+		F0F5409A21237D1300221A9C /* MetalRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalRenderer.swift; sourceTree = "<group>"; };
+		F0F5409B21237D1300221A9C /* MetalTiledTntDrawable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalTiledTntDrawable.swift; sourceTree = "<group>"; };
+		F0F5409F21237D2400221A9C /* GameRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameRenderer.swift; sourceTree = "<group>"; };
+		F0F540A1212380D000221A9C /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		F0F540A72123880C00221A9C /* MetalOneTextureTntDrawable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalOneTextureTntDrawable.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B5CAAF0120B26BB2003B17D7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F0A9DE2620B49B50007E71C1 /* OpenGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B5CAAEFB20B26BB2003B17D7 = {
+			isa = PBXGroup;
+			children = (
+				F0A9DE2720B4C7B6007E71C1 /* Common */,
+				B5CAAF0620B26BB2003B17D7 /* SwiftTA macOS */,
+				B5CAAF0520B26BB2003B17D7 /* Products */,
+				F0A9DE2420B49B4F007E71C1 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		B5CAAF0520B26BB2003B17D7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B5CAAF0420B26BB2003B17D7 /* SwiftTA.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B5CAAF0620B26BB2003B17D7 /* SwiftTA macOS */ = {
+			isa = PBXGroup;
+			children = (
+				B5CAAF0720B26BB2003B17D7 /* AppDelegate.swift */,
+				B5CAAF0920B26BB2003B17D7 /* GameViewController.swift */,
+				F0A9DE2220B48C23007E71C1 /* OpenGLViewController.swift */,
+				F0A9DE6720B4CA48007E71C1 /* BridgingHeader.h */,
+				B5CAAF0B20B26BB3003B17D7 /* Assets.xcassets */,
+				B5CAAF0D20B26BB3003B17D7 /* Main.storyboard */,
+				B5CAAF1020B26BB3003B17D7 /* Info.plist */,
+				B5CAAF1120B26BB3003B17D7 /* SwiftTA_macOS.entitlements */,
+			);
+			path = "SwiftTA macOS";
+			sourceTree = "<group>";
+		};
+		F0A9DE2420B49B4F007E71C1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F0A9DE2520B49B50007E71C1 /* OpenGL.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F0A9DE2720B4C7B6007E71C1 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				F0A9DE4720B4C7B6007E71C1 /* FileReadHandle.swift */,
+				F0A9DE3A20B4C7B6007E71C1 /* Filesystem.swift */,
+				F0A9DE2F20B4C7B6007E71C1 /* gaf.swift */,
+				F0F5409F21237D2400221A9C /* GameRenderer.swift */,
+				F0F540A1212380D000221A9C /* GameState.swift */,
+				F0A9DE2820B4C7B6007E71C1 /* Geometry.swift */,
+				F0A9DE4620B4C7B6007E71C1 /* hpi.swift */,
+				F0A9DE3220B4C7B6007E71C1 /* MapFeature.swift */,
+				F0A9DE2A20B4C7B6007E71C1 /* MapInfo.swift */,
+				F0A9DE4920B4C7B6007E71C1 /* MapModel.swift */,
+				F0F540A72123880C00221A9C /* MetalOneTextureTntDrawable.swift */,
+				F0F5409A21237D1300221A9C /* MetalRenderer.swift */,
+				F0F5409B21237D1300221A9C /* MetalTiledTntDrawable.swift */,
+				F0F5409821237D1200221A9C /* MetalTntShaders.metal */,
+				F0F5409921237D1300221A9C /* MetalTntShaderTypes.h */,
+				F0A9DE2920B4C7B6007E71C1 /* ModelTexturePack.swift */,
+				F0A9DE2D20B4C7B6007E71C1 /* Palette.swift */,
+				F0A9DE3B20B4C7B6007E71C1 /* Palette+Files.swift */,
+				F0A9DE4120B4C7B6007E71C1 /* pcx.h */,
+				F0A9DE2C20B4C7B6007E71C1 /* pcx.swift */,
+				F0A9DE3520B4C7B6007E71C1 /* SideData.swift */,
+				F0A9DE3120B4C7B6007E71C1 /* ta_3DO.h */,
+				F0A9DE3920B4C7B6007E71C1 /* ta_COB_Instructions.h */,
+				F0A9DE2E20B4C7B6007E71C1 /* ta_COB.h */,
+				F0A9DE3820B4C7B6007E71C1 /* ta_GAF.h */,
+				F0A9DE4220B4C7B6007E71C1 /* ta_HPI.h */,
+				F0A9DE3020B4C7B6007E71C1 /* ta_TNT.h */,
+				F0A9DE2B20B4C7B6007E71C1 /* TdfParser.swift */,
+				F0A9DE3320B4C7B6007E71C1 /* UnitData.swift */,
+				F0A9DE3720B4C7B6007E71C1 /* UnitInfo.swift */,
+				F0A9DE3F20B4C7B6007E71C1 /* UnitModel.swift */,
+				F0A9DE3D20B4C7B6007E71C1 /* UnitModel+Instance.swift */,
+				F0A9DE4A20B4C7B6007E71C1 /* UnitObject.swift */,
+				F0A9DE3E20B4C7B6007E71C1 /* UnitScript.swift */,
+				F0A9DE3420B4C7B6007E71C1 /* UnitScript+CobDecompile.swift */,
+				F0A9DE3C20B4C7B6007E71C1 /* UnitScript+Instructions.swift */,
+				F0A9DE4820B4C7B6007E71C1 /* UnitScript+VM.swift */,
+				F0A9DE4520B4C7B6007E71C1 /* UnitTextureAtlas.swift */,
+				F0A9DE4320B4C7B6007E71C1 /* Utility.swift */,
+				F0A9DE4420B4C7B6007E71C1 /* Utility+Cocoa.swift */,
+				F0A9DE3620B4C7B6007E71C1 /* Utility+GLKit.swift */,
+				F0F5408C21223B4600221A9C /* Utility+Metal.swift */,
+				F0A9DE4020B4C7B6007E71C1 /* Utility+OpenGL.swift */,
+			);
+			name = Common;
+			path = ../Common;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B5CAAF0320B26BB2003B17D7 /* SwiftTA macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B5CAAF1420B26BB3003B17D7 /* Build configuration list for PBXNativeTarget "SwiftTA macOS" */;
+			buildPhases = (
+				B5CAAF0020B26BB2003B17D7 /* Sources */,
+				B5CAAF0120B26BB2003B17D7 /* Frameworks */,
+				B5CAAF0220B26BB2003B17D7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "SwiftTA macOS";
+			productName = "SwiftTA macOS";
+			productReference = B5CAAF0420B26BB2003B17D7 /* SwiftTA.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B5CAAEFC20B26BB2003B17D7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0930;
+				LastUpgradeCheck = 0930;
+				ORGANIZATIONNAME = "Logan Jones";
+				TargetAttributes = {
+					B5CAAF0320B26BB2003B17D7 = {
+						CreatedOnToolsVersion = 9.3.1;
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 0;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = B5CAAEFF20B26BB2003B17D7 /* Build configuration list for PBXProject "SwiftTA macOS" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B5CAAEFB20B26BB2003B17D7;
+			productRefGroup = B5CAAF0520B26BB2003B17D7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B5CAAF0320B26BB2003B17D7 /* SwiftTA macOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B5CAAF0220B26BB2003B17D7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B5CAAF0C20B26BB3003B17D7 /* Assets.xcassets in Resources */,
+				B5CAAF0F20B26BB3003B17D7 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B5CAAF0020B26BB2003B17D7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F0F5409C21237D1400221A9C /* MetalTntShaders.metal in Sources */,
+				F0F5408D21223B4600221A9C /* Utility+Metal.swift in Sources */,
+				F0A9DE5520B4C7B7007E71C1 /* SideData.swift in Sources */,
+				F0A9DE6220B4C7B7007E71C1 /* hpi.swift in Sources */,
+				F0A9DE5220B4C7B7007E71C1 /* MapFeature.swift in Sources */,
+				F0A9DE5A20B4C7B7007E71C1 /* UnitScript+Instructions.swift in Sources */,
+				F0A9DE4D20B4C7B6007E71C1 /* MapInfo.swift in Sources */,
+				B5CAAF0A20B26BB2003B17D7 /* GameViewController.swift in Sources */,
+				F0A9DE5120B4C7B7007E71C1 /* gaf.swift in Sources */,
+				F0A9DE5720B4C7B7007E71C1 /* UnitInfo.swift in Sources */,
+				F0A9DE6420B4C7B7007E71C1 /* UnitScript+VM.swift in Sources */,
+				F0A9DE5620B4C7B7007E71C1 /* Utility+GLKit.swift in Sources */,
+				F0A9DE4E20B4C7B6007E71C1 /* TdfParser.swift in Sources */,
+				F0A9DE5020B4C7B6007E71C1 /* Palette.swift in Sources */,
+				F0F5409D21237D1400221A9C /* MetalRenderer.swift in Sources */,
+				F0A9DE4C20B4C7B6007E71C1 /* ModelTexturePack.swift in Sources */,
+				F0F540A2212380D000221A9C /* GameState.swift in Sources */,
+				F0A9DE4B20B4C7B6007E71C1 /* Geometry.swift in Sources */,
+				F0A9DE5B20B4C7B7007E71C1 /* UnitModel+Instance.swift in Sources */,
+				F0A9DE5920B4C7B7007E71C1 /* Palette+Files.swift in Sources */,
+				F0A9DE6520B4C7B7007E71C1 /* MapModel.swift in Sources */,
+				F0A9DE2320B48C23007E71C1 /* OpenGLViewController.swift in Sources */,
+				B5CAAF0820B26BB2003B17D7 /* AppDelegate.swift in Sources */,
+				F0F5409E21237D1400221A9C /* MetalTiledTntDrawable.swift in Sources */,
+				F0A9DE4F20B4C7B6007E71C1 /* pcx.swift in Sources */,
+				F0A9DE6620B4C7B7007E71C1 /* UnitObject.swift in Sources */,
+				F0A9DE5C20B4C7B7007E71C1 /* UnitScript.swift in Sources */,
+				F0F540A021237D2400221A9C /* GameRenderer.swift in Sources */,
+				F0F540A82123880C00221A9C /* MetalOneTextureTntDrawable.swift in Sources */,
+				F0A9DE5E20B4C7B7007E71C1 /* Utility+OpenGL.swift in Sources */,
+				F0A9DE5420B4C7B7007E71C1 /* UnitScript+CobDecompile.swift in Sources */,
+				F0A9DE6020B4C7B7007E71C1 /* Utility+Cocoa.swift in Sources */,
+				F0A9DE5F20B4C7B7007E71C1 /* Utility.swift in Sources */,
+				F0A9DE6320B4C7B7007E71C1 /* FileReadHandle.swift in Sources */,
+				F0A9DE5D20B4C7B7007E71C1 /* UnitModel.swift in Sources */,
+				F0A9DE6120B4C7B7007E71C1 /* UnitTextureAtlas.swift in Sources */,
+				F0A9DE5820B4C7B7007E71C1 /* Filesystem.swift in Sources */,
+				F0A9DE5320B4C7B7007E71C1 /* UnitData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B5CAAF0D20B26BB3003B17D7 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B5CAAF0E20B26BB3003B17D7 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		B5CAAF1220B26BB3003B17D7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B5CAAF1320B26BB3003B17D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		B5CAAF1520B26BB3003B17D7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "SwiftTA macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "Toasty.SwiftTA-macOS";
+				PRODUCT_NAME = SwiftTA;
+				SWIFT_OBJC_BRIDGING_HEADER = "SwiftTA macOS/BridgingHeader.h";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Debug;
+		};
+		B5CAAF1620B26BB3003B17D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "SwiftTA macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "Toasty.SwiftTA-macOS";
+				PRODUCT_NAME = SwiftTA;
+				SWIFT_OBJC_BRIDGING_HEADER = "SwiftTA macOS/BridgingHeader.h";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B5CAAEFF20B26BB2003B17D7 /* Build configuration list for PBXProject "SwiftTA macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B5CAAF1220B26BB3003B17D7 /* Debug */,
+				B5CAAF1320B26BB3003B17D7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B5CAAF1420B26BB3003B17D7 /* Build configuration list for PBXNativeTarget "SwiftTA macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B5CAAF1520B26BB3003B17D7 /* Debug */,
+				B5CAAF1620B26BB3003B17D7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B5CAAEFC20B26BB2003B17D7 /* Project object */;
+}

@@ -61,6 +61,10 @@ extension vector_float2 {
         self.init(Float(s.width), Float(s.height))
     }
     
+    init(_ s: Size2D) {
+        self.init(Float(s.width), Float(s.height))
+    }
+    
     static var zero: vector_float2 { return vector_float2(0) }
     
 }
@@ -254,6 +258,10 @@ extension MTLRenderCommandEncoder {
     
 }
 
+extension MTLTexture {
+    var size2D: Size2D { return Size2D(width, height) }
+}
+
 extension CGRect {
     
     init(origin: vector_float2, size: vector_float2) {
@@ -376,7 +384,4 @@ extension MTLRenderCommandEncoder {
         self.drawIndexedPrimitives(type: primitiveType, indexCount: indexCount, indexType: indexType, indexBuffer: indexBuffer.buffer, indexBufferOffset: indexBuffer.offset)
     }
     
-}
-extension MTLTexture {
-    var size: Size2D { return Size2D(width, height) }
 }

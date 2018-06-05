@@ -719,7 +719,7 @@ private func startScript(execution: ScriptExecutionContext) throws {
     let paramCount = execution.immediate(at: 2)
     
     let module = try execution.process.module(at: moduleIndex)
-    let params = try execution.thread.stack.pop(count: paramCount)
+    let params = try execution.thread.stack.pop(count: Int(paramCount))
     
     execution.process.startScript(module, parameters: params.reversed())
     execution.thread.instructionPointer += 3
@@ -742,7 +742,7 @@ private func callScript(execution: ScriptExecutionContext) throws {
     let paramCount = execution.immediate(at: 2)
     
     let module = try execution.process.module(at: moduleIndex)
-    let params = try execution.thread.stack.pop(count: paramCount)
+    let params = try execution.thread.stack.pop(count: Int(paramCount))
     
     execution.thread.instructionPointer += 3
     execution.thread.callScript(module, parameters: params.reversed())
@@ -948,14 +948,6 @@ private func dropUnit(execution: ScriptExecutionContext) throws {
 // MARK:- Stack Helpers
 
 private typealias _StackValue = UnitScript.CodeUnit
-
-private extension UnitScript.Thread.Stack {
-    
-    mutating func pop(count n: _StackValue) throws -> [Element] {
-        return try pop(count: Int(n))
-    }
-    
-}
 
 // MARK:- Operator Helpers
 

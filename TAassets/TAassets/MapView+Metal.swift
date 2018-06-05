@@ -377,7 +377,7 @@ extension MetalMapFeatureRenderer {
             
             if gafFrames.count == 1 {
                 if let texture = try? makeTexture(for: gafFrames[0], using: palette),
-                    let instances = buildInstances(of: (texture.size, gafFrames[0].offset, info.footprint), from: occurrences, in: map)
+                    let instances = buildInstances(of: (texture.size2D, gafFrames[0].offset, info.footprint), from: occurrences, in: map)
                 {
                     features.append(.static(StaticFeature(texture: texture, instances: instances.0, instancesVertexCount: instances.1)))
                 }
@@ -386,7 +386,7 @@ extension MetalMapFeatureRenderer {
                     let shadowItem = gafListing[shadowName],
                     let shadowFrame = try? shadowItem.extractFrame(index: 0, from: gafHandle),
                     let shadowTexture = try? makeTexture(for: shadowFrame, using: shadowPalette),
-                    let shadowInstances = buildInstances(of: (shadowTexture.size, shadowFrame.offset, info.footprint), from: occurrences, in: map)
+                    let shadowInstances = buildInstances(of: (shadowTexture.size2D, shadowFrame.offset, info.footprint), from: occurrences, in: map)
                 {
                     shadows.append(.static(StaticFeature(texture: shadowTexture, instances: shadowInstances.0, instancesVertexCount: shadowInstances.1)))
                 }
@@ -395,7 +395,7 @@ extension MetalMapFeatureRenderer {
                 // TEMP
                 print("TODO: Support animated map feature \(name) (\(gafFrames.count) frames)")
                 let texture = try! makeTexture(for: gafFrames[0], using: palette)
-                let instances = buildInstances(of: (texture.size, gafFrames[0].offset, info.footprint), from: occurrences, in: map)!
+                let instances = buildInstances(of: (texture.size2D, gafFrames[0].offset, info.footprint), from: occurrences, in: map)!
                 features.append(.static(StaticFeature(texture: texture, instances: instances.0, instancesVertexCount: instances.1)))
             }
         }
@@ -479,9 +479,9 @@ extension MetalMapFeatureRenderer.Feature {
     var size: Size2D {
         switch self {
         case .static(let f):
-            return f.texture.size
+            return f.texture.size2D
         case .animated(let f):
-            return f.texture.size
+            return f.texture.size2D
         }
     }
     

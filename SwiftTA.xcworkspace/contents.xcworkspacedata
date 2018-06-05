@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:SwiftTA macOS/SwiftTA macOS.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:SwiftTA iOS/SwiftTA iOS.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:TAassets/TAassets.xcodeproj">
    </FileRef>
    <FileRef

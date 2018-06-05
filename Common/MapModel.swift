@@ -8,6 +8,9 @@
 
 import Foundation
 
+// TEMP
+import CoreGraphics
+
 
 enum MapModel {
     case ta(TaMapModel)
@@ -148,7 +151,7 @@ struct TaMapModel: MapModelType {
 
 extension TaMapModel {
     
-    func tileColumns(in rect: NSRect) -> CountableClosedRange<Int> {
+    func tileColumns(in rect: CGRect) -> CountableClosedRange<Int> {
         let tileWidth = tileSet.tileSize.width
         let start = Int(floor(rect.minX)) / tileWidth
         var end = Int(ceil(rect.maxX)) / tileWidth
@@ -156,7 +159,7 @@ extension TaMapModel {
         return max(start,0)...min(end, tileIndexMap.size.width-1)
     }
     
-    func tileRows(in rect: NSRect) -> CountableClosedRange<Int> {
+    func tileRows(in rect: CGRect) -> CountableClosedRange<Int> {
         let tileheight = tileSet.tileSize.height
         let start = Int(floor(rect.minY)) / tileheight
         var end = Int(ceil(rect.maxY)) / tileheight
@@ -164,7 +167,7 @@ extension TaMapModel {
         return max(start,0)...min(end, tileIndexMap.size.height-1)
     }
     
-    func eachTile(in rect: NSRect, visit: (_ tile: Data, _ index: Int, _ column: Int, _ row: Int) -> ()) {
+    func eachTile(in rect: CGRect, visit: (_ tile: Data, _ index: Int, _ column: Int, _ row: Int) -> ()) {
         let rows = tileRows(in: rect)
         let columns = tileColumns(in: rect)
         tileIndexMap.eachIndex(inColumns: columns, rows: rows) { (index, column, row) in
@@ -303,7 +306,7 @@ extension TakMapModel {
 
 extension TakMapModel {
     
-    func tileColumns(in rect: NSRect) -> CountableClosedRange<Int> {
+    func tileColumns(in rect: CGRect) -> CountableClosedRange<Int> {
         let tileWidth = tileSize.width
         let start = Int(floor(rect.minX)) / tileWidth
         var end = Int(ceil(rect.maxX)) / tileWidth
@@ -311,7 +314,7 @@ extension TakMapModel {
         return max(start,0)...min(end, tileIndexMap.size.width-1)
     }
     
-    func tileRows(in rect: NSRect) -> CountableClosedRange<Int> {
+    func tileRows(in rect: CGRect) -> CountableClosedRange<Int> {
         let tileheight = tileSize.height
         let start = Int(floor(rect.minY)) / tileheight
         var end = Int(ceil(rect.maxY)) / tileheight

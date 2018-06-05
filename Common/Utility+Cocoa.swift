@@ -6,7 +6,11 @@
 //  Copyright © 2017 Logan Jones. All rights reserved.
 //
 
+#if canImport(AppKit)
 import AppKit
+#elseif canImport(UIKit)
+import UIKit
+#endif
 
 // MARK:- Text File Loading
 
@@ -173,6 +177,7 @@ extension CGImage {
     
 }
 
+#if canImport(AppKit)
 extension NSImage {
     
     convenience init(imageIndices: Data, size: Size2D, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws {
@@ -199,10 +204,11 @@ extension NSImage {
     }
     
 }
+#endif
 
 // MARK:- Misc Conversions
 
-extension NSPoint {
+extension CGPoint {
     
     init(_ point: Point2D) {
         self.init(x: point.x, y: point.y)
@@ -217,7 +223,7 @@ extension NSPoint {
     
 }
 
-extension NSSize {
+extension CGSize {
     
     init(_ size: Size2D) {
         self.init(width: size.width, height: size.height)
@@ -232,7 +238,7 @@ extension NSSize {
     
 }
 
-extension NSRect {
+extension CGRect {
     
     init(origin: Point2D, size: Size2D) {
         self.init(x: origin.x, y: origin.y, width: size.width, height: size.height)
@@ -246,6 +252,10 @@ extension NSRect {
         self.init(x: 0, y: 0, width: size.width, height: size.height)
     }
     
+    init(size: CGSize) {
+        self.init(x: 0, y: 0, width: size.width, height: size.height)
+    }
+    
     init(_ rect: Rect2D) {
         self.init(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
     }
@@ -254,6 +264,7 @@ extension NSRect {
 
 extension Palette.Color {
     
+    #if canImport(AppKit)
     var nsColor: NSColor {
         return NSColor(calibratedRed: CGFloat(red) / 255.0,
                        green: CGFloat(green) / 255.0,
@@ -267,5 +278,6 @@ extension Palette.Color {
                        blue: CGFloat(blue) / 255.0,
                        alpha: CGFloat(alpha) / 255.0)
     }
+    #endif
     
 }

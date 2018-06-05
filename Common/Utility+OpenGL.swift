@@ -7,7 +7,7 @@
 //
 
 import Cocoa
-import OpenGL
+import OpenGL.GL
 
 
 func glVertex(_ v: Vertex3) {
