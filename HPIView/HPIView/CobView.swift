@@ -8,13 +8,20 @@
 
 import Cocoa
 
-class CobView: NSView {
+class GenericTextView: NSView {
     
-    private unowned let textView: NSTextView
+    unowned let textView: NSTextView
+    
+    var font = NSFont.userFixedPitchFont(ofSize: 11) ?? NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular) {
+        didSet {
+            let range = NSRange(location: 0, length: textView.textStorage?.length ?? 0)
+            textView.textStorage?.setAttributes([NSAttributedStringKey.font : font], range: range)
+        }
+    }
     
     override init(frame frameRect: NSRect) {
         
-        let scroll = NSScrollView(frame: NSRect(x: 0, y: 0, width: frameRect.size.width, height: frameRect.size.height))
+        let scroll = NSScrollView(frame: NSRect(x: 1, y: 1, width: frameRect.size.width-2, height: frameRect.size.height-2))
         scroll.borderType = .noBorder
         scroll.hasVerticalScroller = true
         scroll.hasHorizontalScroller = false
@@ -29,7 +36,7 @@ class CobView: NSView {
         text.autoresizingMask = [.width]
         text.textContainer?.containerSize = NSSize(width: contentSize.width, height: CGFloat.greatestFiniteMagnitude)
         text.textContainer?.widthTracksTextView = true
-        text.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        text.font = font
         text.isEditable = false
         text.isSelectable = true
         self.textView = text
@@ -38,11 +45,24 @@ class CobView: NSView {
         
         scroll.documentView = text
         self.addSubview(scroll)
+        
+        wantsLayer = true
+        layer?.borderColor = NSColor.windowFrameColor.cgColor
+        layer?.borderWidth = 1
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    var text: String {
+        get { return textView.string }
+        set(new) { textView.textStorage?.setAttributedString(NSAttributedString(string: new, attributes: [NSAttributedStringKey.font: font])) }
+    }
+    
+}
+
+class CobView: GenericTextView {
     
     func load(_ script: UnitScript) {
         textView.string = ""
@@ -50,10 +70,15 @@ class CobView: NSView {
             else { return }
         
         textStorage.beginEditing()
-        script.decompile(writingTo: textStorage.append)
+        script.decompile(writingTo: self.append)
         textStorage.endEditing()
         
         setNeedsDisplay(bounds)
+    }
+    
+    func append(_ s: String) {
+        let text = NSAttributedString(string: s, attributes: [NSAttributedStringKey.font: font])
+        textView.textStorage?.append(text)
     }
     
 }
@@ -63,20 +88,4 @@ private func computeModuleLengths(from script: UnitScript) -> [Int] {
         let end = index+1 == script.modules.count ? script.code.count : script.modules[index+1].offset
         return module.offset - end
     }
-}
-
-
-
-
-
-
-
-
-private extension NSTextStorage {
-    
-    func append(_ s: String) {
-        let text = NSAttributedString(string: s)
-        self.append(text)
-    }
-    
 }

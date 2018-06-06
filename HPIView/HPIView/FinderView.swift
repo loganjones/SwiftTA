@@ -168,6 +168,8 @@ class FinderView<Item: FinderViewItem>: NSView {
         tierField.frame = NSRect(x: 0, y: 0, width: frame.maxX, height: tierField.frame.size.height)
         tierField.addSubview(tier)
         tiers.append(tier)
+        
+        preview?.removeFromSuperview()
     }
     
     fileprivate func clear(after tier: Tier) {
