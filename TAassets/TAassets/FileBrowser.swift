@@ -14,6 +14,10 @@ class FileBrowserViewController: NSViewController, ContentViewController {
     var finderView: FinderView<Item>!
     var mainPalette = Palette()
     
+    let previewController = FilePreviewController()
+    var previewContentController: NSViewController?
+
+    
     override func loadView() {
         let mainView = NSView()
         
@@ -77,145 +81,150 @@ private extension FileBrowserViewController {
         return view
     }
     
-    func preview(for item: Item, at pathDirectories: [Directory]) -> NSView? {
-        switch item {
+    enum PreviewError: Error {
+        case directory
+        case notGaf
+        case notSupported
+    }
+    
+    func preview(for item: Item, at path: [Directory]) -> NSView? {
+        do {
+            switch item {
+            case .directory, .gafArchive:
+                throw PreviewError.directory
+            case .file(let f):
+                try configurePreviewContent(forFile: f, at: path)
+            case .gafImage(let i):
+                try configurePreviewContent(forGafImage: i, at: path)
+            }
             
-        case .directory, .gafArchive:
-            print("No preview supported for: \(item)")
+            if previewController.parent != self {
+                addChildViewController(previewController)
+            }
+            
+            return previewController.view
+        }
+        catch {
+            previewController.removeFromParentViewController()
+            previewController.contentView = nil
             return nil
-            
-        case .file(let f):
-            return preview(forFile: f, at: pathDirectories)
-            
-        case .gafImage(let i):
-            return preview(forGafImage: i, at: pathDirectories)
-            
         }
     }
     
-    func preview(forFile file: FileSystem.File, at pathDirectories: [Directory]) -> NSView? {
-        
-        let pathString = pathDirectories.map({ $0.name }).joined(separator: "/") + "/" + file.name
+    func bindContentView<T>(as viewType: T.Type, deafultFrame: NSRect = NSRect(x: 0, y: 0, width: 88, height: 88)) -> T where T: NSView {
+        if let view = previewController.contentView as? T {
+            return view
+        }
+        else {
+            previewContentController?.removeFromParentViewController()
+            previewContentController = nil
+            
+            let view = T(frame: deafultFrame)
+            previewController.contentView = view
+            return view
+        }
+    }
+    
+    func bindContentViewController<T>(as viewType: T.Type) -> T where T: NSViewController {
+        if let controller = previewContentController as? T {
+            return controller
+        }
+        else {
+            previewContentController?.removeFromParentViewController()
+            
+            let controller = T()
+            addChildViewController(controller)
+            previewContentController = controller
+            previewController.contentView = controller.view
+            return controller
+        }
+    }
+    
+    func configurePreviewContent(forFile file: FileSystem.File, at path: [Directory]) throws {
+
+        let pathString = path.map({ $0.name }).joined(separator: "/") + "/" + file.name
         print("Selected Path: \(pathString)")
         
-        let fileHandle: FileSystem.FileHandle
-        do {
-            fileHandle = try shared.filesystem.openFile(file)
-        }
-        catch {
-            print("Failed to extract \(file.name) for preview: \(error)")
-            return nil
-        }
+        let fileHandle = try shared.filesystem.openFile(file)
         
-        let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
-        preview.title = file.name
-        preview.size = file.info.size
-        preview.source = file.archiveURL.lastPathComponent
-        
-        let contentView = preview.contentView
-        let subview: NSView
+        let preview = previewController
+        preview.hpiItemTitle = file.name
+        preview.hpiItemSize = file.info.size
+        preview.hpiItemSource = file.archiveURL.lastPathComponent
         
         do {
             if file.hasExtension("pcx") {
                 switch try Pcx.analyze(contentsOf: fileHandle) {
                 case .image:
                     let pcxImage = try NSImage(pcxContentsOf: fileHandle)
-                    let pcxView = NSImageView(frame: contentView.bounds)
-                    pcxView.image = pcxImage
-                    subview = pcxView
+                    let view = bindContentView(as: NSImageView.self)
+                    view.image = pcxImage
                 case .palette:
                     let palette = try Pcx.extractPalette(contentsOf: fileHandle)
-                    let paletteView = PaletteView(frame: contentView.bounds)
-                    paletteView.load(palette)
-                    subview = paletteView
+                    let view = bindContentView(as: PaletteView.self)
+                    view.load(palette)
                 }
             }
             else if file.hasExtension("pal") {
                 let palette = Palette(palContentsOf: fileHandle)
-                let paletteView = PaletteView(frame: contentView.bounds)
-                paletteView.load(palette)
-                subview = paletteView
+                let view = bindContentView(as: PaletteView.self)
+                view.load(palette)
             }
             else if file.hasExtension("3do") {
                 let model = try UnitModel(contentsOf: fileHandle)
-                let view = Model3DOView(frame: contentView.bounds)
-                try view.load(model)
-                subview = view
+                let controller = bindContentViewController(as: ModelViewController.self)
+                try controller.load(model)
             }
             else if file.hasExtension("cob") {
                 let script = try UnitScript(contentsOf: fileHandle)
-                let view = CobView(frame: contentView.bounds)
+                let view = bindContentView(as: CobView.self)
                 view.load(script)
-                subview = view
             }
             else if file.hasExtension("tnt") {
-                let view = TntView(frame: contentView.bounds)
+                let view = bindContentView(as: TntView.self)
                 try view.load(contentsOf: fileHandle, from: shared.filesystem)
-                subview = view
+            }
+            else if file.hasExtension(["fbi", "bos", "gui", "tdf", "ota"]) {
+                let data = fileHandle.readDataToEndOfFile()
+                let text = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .ascii) ?? ""
+                let view = bindContentView(as: GenericTextView.self)
+                view.text = text
             }
             else {
-                let view = QuickLookView(frame: contentView.bounds)
-                try view.load(contentsOf: fileHandle)
-                subview = view
+                throw PreviewError.notSupported
             }
         }
         catch {
-            print("Failed to load load \(file.name) for preview: \(error)")
-            let view = QuickLookView(frame: contentView.bounds)
-            try? view.load(contentsOf: fileHandle)
-            subview = view
+            if case PreviewError.notSupported = error {
+                // File type not supported for preview; use QuickLook.
+            }
+            else {
+                print("Failed to load preview from \(file.name): \(error)")
+            }
+            let quicklook = bindContentViewController(as: QuickLookViewController.self)
+            try quicklook.load(contentsOf: fileHandle)
         }
-            
-        subview.translatesAutoresizingMaskIntoConstraints = false
-        preview.contentView.addSubview(subview)
-        NSLayoutConstraint.activate([
-            subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            subview.topAnchor.constraint(equalTo: contentView.topAnchor),
-            subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-            ])
-        
-        return preview
     }
     
-    func preview(forGafImage item: GafItem, at path: [Directory]) -> NSView? {
-        
+    func configurePreviewContent(forGafImage item: GafItem, at path: [Directory]) throws {
+
         // MORE TEMP
         guard case .gaf(let gaf, _, _)? = path.last
-            else { return nil }
-        
+            else { throw PreviewError.notGaf }
+
         let pathString = path.map({ $0.name }).joined(separator: "/")
         print("Selected Path: \(pathString)")
         
-        let preview = PreviewContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
-        preview.title = item.name
-        preview.size = 13
-        preview.source = gaf.archiveURL.lastPathComponent
+        let preview = previewController
+        preview.hpiItemTitle = item.name
+        preview.hpiItemSize = 13
+        preview.hpiItemSource = gaf.archiveURL.lastPathComponent
         
         // TEMP
-        do {
-            let contentView = preview.contentView
-            let subview: NSView
-            
-            let view = GafView(frame: contentView.bounds)
-            try view.load(item, from: try shared.filesystem.openFile(gaf), using: mainPalette)
-            subview = view
-            
-            subview.translatesAutoresizingMaskIntoConstraints = false
-            preview.contentView.addSubview(subview)
-            NSLayoutConstraint.activate([
-                subview.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-                subview.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-                subview.topAnchor.constraint(equalTo: contentView.topAnchor),
-                subview.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-                ])
-        }
-        catch {
-            
-        }
+        let view = bindContentView(as: GafView.self)
+        let reader = try shared.filesystem.openFile(gaf)
+        try view.load(item, from: reader, using: mainPalette)
         // END TEMP
-        
-        return preview
     }
     
 }
@@ -350,80 +359,27 @@ extension FileBrowserViewController.Directory: FinderViewDirectory {
     
 }
 
-private class PreviewContainerView: NSView {
+protocol FilePreviewDisplay {
+    var hpiItemTitle: String { get set }
+    var hpiItemSize: Int { get set }
+    var hpiItemSource: String { get set }
+}
+
+class FilePreviewController: NSViewController, FilePreviewDisplay {
     
-    private unowned let titleLabel: NSTextField
-    private unowned let sizeLabel: NSTextField
-    private unowned let sourceLabel: NSTextField
-    unowned let contentView: NSView
-    
-    override init(frame frameRect: NSRect) {
-        let titleLabel = NSTextField(labelWithString: "Title")
-        titleLabel.font = NSFont.systemFont(ofSize: 18)
-        titleLabel.textColor = NSColor.labelColor
-        let sizeLabel = NSTextField(labelWithString: "Empty")
-        sizeLabel.font = NSFont.systemFont(ofSize: 12)
-        sizeLabel.textColor = NSColor.secondaryLabelColor
-        let sourceLabel = NSTextField(labelWithString: "None")
-        sourceLabel.font = NSFont.systemFont(ofSize: 9)
-        sourceLabel.textColor = NSColor.secondaryLabelColor
-        let contentBox = NSView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
-        
-        self.titleLabel = titleLabel
-        self.sizeLabel = sizeLabel
-        self.sourceLabel = sourceLabel
-        self.contentView = contentBox
-        super.init(frame: frameRect)
-        
-        addSubview(contentBox)
-        addSubview(titleLabel)
-        addSubview(sizeLabel)
-        addSubview(sourceLabel)
-        
-        contentBox.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        sizeLabel.translatesAutoresizingMaskIntoConstraints = false
-        sourceLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            contentBox.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8),
-            contentBox.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8),
-            contentBox.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),
-            contentBox.heightAnchor.constraint(equalTo: self.heightAnchor, multiplier: 0.61803398875),
-            
-            titleLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            titleLabel.topAnchor.constraint(equalTo: contentBox.bottomAnchor, constant: 8),
-            
-            sizeLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            sizeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 0),
-            
-            sourceLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            sourceLabel.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 0),
-            ])
+    var hpiItemTitle: String {
+        get { return preview.titleLabel.stringValue }
+        set(new) { preview.titleLabel.stringValue = new }
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    var title: String {
-        get { return titleLabel.stringValue }
-        set(new) { titleLabel.stringValue = new }
-    }
-    
-    var size: Int {
+    var hpiItemSize: Int {
         get { return sizeValue }
         set(new) { sizeValue = new }
     }
     
-    var source: String {
-        get { return sourceLabel.stringValue }
-        set(new) { sourceLabel.stringValue = new }
-    }
-    
     private var sizeValue: Int = 0 {
         didSet {
-            sizeLabel.stringValue = sizeFormatter.string(fromByteCount: Int64(sizeValue))
+            preview.sizeLabel.stringValue = sizeFormatter.string(fromByteCount: Int64(sizeValue))
         }
     }
     
@@ -432,5 +388,102 @@ private class PreviewContainerView: NSView {
         formatter.countStyle = .file
         return formatter
     }()
+    
+    var hpiItemSource: String {
+        get { return preview.sourceLabel.stringValue }
+        set(new) { preview.sourceLabel.stringValue = new }
+    }
+    
+    private var preview: ContainerView {
+        return view as! ContainerView
+    }
+    
+    var contentView: NSView? {
+        get { return preview.contentView }
+        set(new) { preview.contentView = new }
+    }
+    
+    private class ContainerView: NSView {
+        
+        unowned let titleLabel: NSTextField
+        unowned let sizeLabel: NSTextField
+        unowned let sourceLabel: NSTextField
+        let emptyContentView: NSView
+        
+        weak var contentView: NSView? {
+            didSet {
+                guard contentView != oldValue else { return }
+                oldValue?.removeFromSuperview()
+                if let contentView = contentView {
+                    addSubview(contentView)
+                    contentView.translatesAutoresizingMaskIntoConstraints = false
+                    addContentViewConstraints(contentView)
+                }
+                else {
+                    oldValue?.removeFromSuperview()
+                    addSubview(emptyContentView)
+                    addContentViewConstraints(emptyContentView)
+                }
+            }
+        }
+        
+        override init(frame frameRect: NSRect) {
+            let titleLabel = NSTextField(labelWithString: "Title")
+            titleLabel.font = NSFont.systemFont(ofSize: 18)
+            titleLabel.textColor = NSColor.labelColor
+            let sizeLabel = NSTextField(labelWithString: "Empty")
+            sizeLabel.font = NSFont.systemFont(ofSize: 12)
+            sizeLabel.textColor = NSColor.secondaryLabelColor
+            let sourceLabel = NSTextField(labelWithString: "None")
+            sourceLabel.font = NSFont.systemFont(ofSize: 9)
+            sourceLabel.textColor = NSColor.secondaryLabelColor
+            let contentBox = NSView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
+            
+            self.titleLabel = titleLabel
+            self.sizeLabel = sizeLabel
+            self.sourceLabel = sourceLabel
+            self.emptyContentView = contentBox
+            super.init(frame: frameRect)
+            
+            addSubview(contentBox)
+            addSubview(titleLabel)
+            addSubview(sizeLabel)
+            addSubview(sourceLabel)
+            
+            contentBox.translatesAutoresizingMaskIntoConstraints = false
+            titleLabel.translatesAutoresizingMaskIntoConstraints = false
+            sizeLabel.translatesAutoresizingMaskIntoConstraints = false
+            sourceLabel.translatesAutoresizingMaskIntoConstraints = false
+            
+            addContentViewConstraints(contentBox)
+            NSLayoutConstraint.activate([
+                titleLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+                sizeLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+                sizeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 0),
+                sourceLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+                sourceLabel.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 0),
+                ])
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        private func addContentViewConstraints(_ contentBox: NSView) {
+            NSLayoutConstraint.activate([
+                contentBox.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8),
+                contentBox.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8),
+                contentBox.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),
+                contentBox.heightAnchor.constraint(equalTo: self.heightAnchor, multiplier: 0.61803398875),
+                titleLabel.topAnchor.constraint(equalTo: contentBox.bottomAnchor, constant: 8),
+                ])
+        }
+        
+    }
+    
+    override func loadView() {
+        let preview = ContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
+        self.view = preview
+    }
     
 }

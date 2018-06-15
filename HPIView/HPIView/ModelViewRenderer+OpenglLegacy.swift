@@ -1,5 +1,5 @@
 //
-//  UnitView+OpenglLegacyRenderer.swift
+//  ModelViewRenderer+OpenglLegacy.swift
 //  TAassets
 //
 //  Created by Logan Jones on 5/17/18.
@@ -12,7 +12,7 @@ import OpenGL.GL3
 import GLKit
 
 
-class ModelViewOpenglLegacyRenderer: ModelViewRenderer {
+class ModelOpenglLegacyRenderer: ModelOpenglRenderer {
     
     static let desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] = [
         UInt32(NSOpenGLPFAMinimumPolicy),
@@ -26,7 +26,7 @@ class ModelViewOpenglLegacyRenderer: ModelViewRenderer {
     private var modelTexture: GLuint = 0
     
     private let gridSize = Size2D(width: 16, height: 16)
-    private let gridSpacing: Int = Model3DOView.gridSize
+    private let gridSpacing: Int = ModelViewState.gridSize
     
     init() {
         
@@ -36,7 +36,7 @@ class ModelViewOpenglLegacyRenderer: ModelViewRenderer {
         initScene()
     }
     
-    func drawFrame(_ viewState: Model3DOView.ViewState) {
+    func drawFrame(_ viewState: ModelViewState) {
         
         if let newModel = toLoad {
             model = GLWholeModel(newModel)
@@ -54,7 +54,7 @@ class ModelViewOpenglLegacyRenderer: ModelViewRenderer {
 
 // MARK:- Setup
 
-private extension ModelViewOpenglLegacyRenderer {
+private extension ModelOpenglLegacyRenderer {
     
     func makeTexture(_ texture: UnitTextureAtlas, _ data: Data) -> GLuint {
         
@@ -87,7 +87,7 @@ private extension ModelViewOpenglLegacyRenderer {
 
 // MARK:- Rendering
 
-private extension ModelViewOpenglLegacyRenderer {
+private extension ModelOpenglLegacyRenderer {
     
     func initScene() {
         glLightfv(GLenum(GL_LIGHT0), GLenum(GL_POSITION), [ 5.0, 5.0, 10.0, 0.0 ])
@@ -107,7 +107,7 @@ private extension ModelViewOpenglLegacyRenderer {
         glTexEnvf(GLenum(GL_TEXTURE_ENV), GLenum(GL_TEXTURE_ENV_MODE), GLfloat(GL_MODULATE))
     }
     
-    func reshape(_ viewState: Model3DOView.ViewState) {
+    func reshape(_ viewState: ModelViewState) {
         glViewport(0, 0, GLsizei(viewState.viewportSize.width), GLsizei(viewState.viewportSize.height))
         
         glMatrixMode(GLenum(GL_PROJECTION))
@@ -121,7 +121,7 @@ private extension ModelViewOpenglLegacyRenderer {
         glTranslated(GLdouble(scene.width / 2), GLdouble(scene.height / 2), 0.0)
     }
     
-    func drawScene(_ viewState: Model3DOView.ViewState) {
+    func drawScene(_ viewState: ModelViewState) {
         
         reshape(viewState)
         
@@ -148,7 +148,7 @@ private extension ModelViewOpenglLegacyRenderer {
         glPopMatrix()
     }
     
-    func drawGrid(_ viewState: Model3DOView.ViewState) {
+    func drawGrid(_ viewState: ModelViewState) {
         
         glDisable(GLenum(GL_TEXTURE_2D))
         glDisable(GLenum(GL_LIGHTING))
@@ -179,7 +179,7 @@ private extension ModelViewOpenglLegacyRenderer {
         glPopMatrix()
     }
     
-    func drawUnit(_ viewState: Model3DOView.ViewState) {
+    func drawUnit(_ viewState: ModelViewState) {
         
         glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture)
         

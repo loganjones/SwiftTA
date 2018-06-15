@@ -337,8 +337,8 @@ extension HpiBrowserViewController {
             }
             else if file.hasExtension("3do") {
                 let model = try UnitModel(contentsOf: fileHandle)
-                let view = bindContentView(as: Model3DOView.self)
-                try view.load(model)
+                let controller = bindContentViewController(as: ModelViewController.self)
+                try controller.load(model)
             }
             else if file.hasExtension("cob") {
                 let script = try UnitScript(contentsOf: fileHandle)

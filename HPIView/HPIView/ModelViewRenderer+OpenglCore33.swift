@@ -1,5 +1,5 @@
 //
-//  ModelView+OpenglCore33Renderer.swift
+//  ModelViewRenderer+OpenglCore33.swift
 //  HPIView
 //
 //  Created by Logan Jones on 5/17/18.
@@ -12,7 +12,7 @@ import OpenGL.GL3
 import GLKit
 
 
-class ModelViewOpenglCore33Renderer: ModelViewRenderer {
+class ModelOpenglCore33Renderer: ModelOpenglRenderer {
     
     static let desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] = [
         UInt32(NSOpenGLPFAAllowOfflineRenderers),
@@ -50,7 +50,7 @@ class ModelViewOpenglCore33Renderer: ModelViewRenderer {
         grid = GLWorldSpaceGrid(size: Size2D(width: 16, height: 16))
     }
     
-    func drawFrame(_ viewState: Model3DOView.ViewState) {
+    func drawFrame(_ viewState: ModelViewState) {
         
         unitViewProgram.setCurrent(lighted: viewState.lighted)
         
@@ -71,7 +71,7 @@ class ModelViewOpenglCore33Renderer: ModelViewRenderer {
 
 // MARK:- Setup
 
-private extension ModelViewOpenglCore33Renderer {
+private extension ModelOpenglCore33Renderer {
     
     func loadShaderCode(forResource name: String, withExtension ext: String) throws -> String {
         guard let url = Bundle.main.url(forResource: name, withExtension: ext) else { throw RuntimeError("Neccessary shader file not found.") }
@@ -105,7 +105,7 @@ private extension ModelViewOpenglCore33Renderer {
 
 // MARK:- Rendering
 
-private extension ModelViewOpenglCore33Renderer {
+private extension ModelOpenglCore33Renderer {
     
     func initScene() {
         glEnable(GLenum(GL_CULL_FACE))
@@ -119,7 +119,7 @@ private extension ModelViewOpenglCore33Renderer {
         glTexEnvf(GLenum(GL_TEXTURE_ENV), GLenum(GL_TEXTURE_ENV_MODE), GLfloat(GL_MODULATE))
     }
     
-    func drawScene(_ viewState: Model3DOView.ViewState) {
+    func drawScene(_ viewState: ModelViewState) {
         
         glViewport(0, 0, GLsizei(viewState.viewportSize.width), GLsizei(viewState.viewportSize.height))
         
@@ -138,7 +138,7 @@ private extension ModelViewOpenglCore33Renderer {
         glUseProgram(0)
     }
     
-    func drawGrid(_ viewState: Model3DOView.ViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
+    func drawGrid(_ viewState: ModelViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
         let view = GLKMatrix4Translate(sceneView, Float(-grid.size.width / 2), Float(-grid.size.height / 2), 0)
         
 //        let model = GLKMatrix4MakeTranslation(0, Float(viewState.movement), -0.5)
@@ -152,7 +152,7 @@ private extension ModelViewOpenglCore33Renderer {
         grid.draw()
     }
     
-    func drawUnit(_ viewState: Model3DOView.ViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
+    func drawUnit(_ viewState: ModelViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
         glUseProgram(unitViewProgram.current.id)
         glUniformGLKMatrix4(unitViewProgram.current.uniform_model, GLKMatrix4Identity)
         glUniformGLKMatrix4(unitViewProgram.current.uniform_view, sceneView)
@@ -553,7 +553,7 @@ private class GLWorldSpaceGrid {
     private let vbo: [GLuint]
     private let elementCount: Int
     
-    init(size: Size2D, gridSpacing: Int = Model3DOView.gridSize) {
+    init(size: Size2D, gridSpacing: Int = ModelViewState.gridSize) {
         
         var vertices = [Vertex3](repeating: .zero, count: (size.width * 2) + (size.height * 2) + (size.area * 4) )
         do {

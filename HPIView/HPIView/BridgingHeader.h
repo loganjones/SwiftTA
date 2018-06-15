@@ -13,3 +13,5 @@
 #include "ta_HPI.h"
 #include "ta_TNT.h"
 #include "zlib.h"
+
+#import "ModelViewRenderer+MetalShaderTypes.h"
