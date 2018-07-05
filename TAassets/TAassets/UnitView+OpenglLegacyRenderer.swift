@@ -15,18 +15,18 @@ import GLKit
 class UnitViewOpenglLegacyRenderer: UnitViewRenderer {
     
     static let desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] = [
+        UInt32(NSOpenGLPFADoubleBuffer),
         UInt32(NSOpenGLPFAMinimumPolicy),
         UInt32(NSOpenGLPFADepthSize), UInt32(16),
         UInt32(NSOpenGLPFAAlphaSize), UInt32(8),
         0
     ]
     
-    private var toLoad: UnitView.UnitInstance?
     private var model: GLInstancePieces?
-    private var modelTexture: GLuint = 0
+    private var modelTexture: OpenglTextureResource?
     
     private let gridSize = Size2D(width: 16, height: 16)
-    private let gridSpacing: Int = UnitView.gridSize
+    private let gridSpacing: Int = UnitViewState.gridSize
     
     init() {
         
@@ -36,14 +36,7 @@ class UnitViewOpenglLegacyRenderer: UnitViewRenderer {
         initScene()
     }
     
-    func drawFrame(_ viewState: UnitView.ViewState, _ currentTime: Double, _ deltaTime: Double) {
-        
-        if let newUnit = toLoad {
-            model = GLInstancePieces(newUnit.modelInstance, of: newUnit.model, with: newUnit.textureAtlas)
-            modelTexture = makeTexture(newUnit.textureAtlas, newUnit.textureData)
-            toLoad = nil
-        }
-        
+    func drawFrame(_ viewState: UnitViewState, _ currentTime: Double, _ deltaTime: Double) {
         drawScene(viewState)
     }
     
@@ -51,8 +44,18 @@ class UnitViewOpenglLegacyRenderer: UnitViewRenderer {
         self.model?.instance = modelInstance
     }
     
-    func switchTo(_ unit: UnitView.UnitInstance) {
-        toLoad = unit
+    func switchTo(_ instance: UnitModel.Instance, of model: UnitModel, with textureAtlas: UnitTextureAtlas, textureData: Data) {
+        self.model = GLInstancePieces(instance, of: model, with: textureAtlas)
+        modelTexture = makeTexture(textureAtlas, textureData)
+    }
+    
+    func clear() {
+        model = nil
+        modelTexture = nil
+    }
+    
+    var hasLoadedModel: Bool {
+        return model != nil
     }
     
 }
@@ -61,11 +64,10 @@ class UnitViewOpenglLegacyRenderer: UnitViewRenderer {
 
 private extension UnitViewOpenglLegacyRenderer {
     
-    func makeTexture(_ texture: UnitTextureAtlas, _ data: Data) -> GLuint {
+    func makeTexture(_ textureAtlas: UnitTextureAtlas, _ data: Data) -> OpenglTextureResource {
         
-        var textureId: GLuint = 0
-        glGenTextures(1, &textureId)
-        glBindTexture(GLenum(GL_TEXTURE_2D), textureId)
+        let texture = OpenglTextureResource()
+        glBindTexture(GLenum(GL_TEXTURE_2D), texture.id)
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_MAG_FILTER), GL_NEAREST)
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_MIN_FILTER), GL_NEAREST)
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_WRAP_S), GL_REPEAT )
@@ -76,8 +78,8 @@ private extension UnitViewOpenglLegacyRenderer {
                 GLenum(GL_TEXTURE_2D),
                 0,
                 GLint(GL_RGBA),
-                GLsizei(texture.size.width),
-                GLsizei(texture.size.height),
+                GLsizei(textureAtlas.size.width),
+                GLsizei(textureAtlas.size.height),
                 0,
                 GLenum(GL_RGBA),
                 GLenum(GL_UNSIGNED_BYTE),
@@ -85,7 +87,7 @@ private extension UnitViewOpenglLegacyRenderer {
         }
         
         printGlErrors(prefix: "Model Texture: ")
-        return textureId
+        return texture
     }
     
 }
@@ -112,7 +114,7 @@ private extension UnitViewOpenglLegacyRenderer {
         glTexEnvf(GLenum(GL_TEXTURE_ENV), GLenum(GL_TEXTURE_ENV_MODE), GLfloat(GL_MODULATE))
     }
     
-    func reshape(_ viewState: UnitView.ViewState) {
+    func reshape(_ viewState: UnitViewState) {
         glViewport(0, 0, GLsizei(viewState.viewportSize.width), GLsizei(viewState.viewportSize.height))
         
         glMatrixMode(GLenum(GL_PROJECTION))
@@ -126,7 +128,7 @@ private extension UnitViewOpenglLegacyRenderer {
         glTranslated(GLdouble(scene.width / 2), GLdouble(scene.height / 2), 0.0)
     }
     
-    func drawScene(_ viewState: UnitView.ViewState) {
+    func drawScene(_ viewState: UnitViewState) {
         
         reshape(viewState)
         
@@ -153,7 +155,7 @@ private extension UnitViewOpenglLegacyRenderer {
         glPopMatrix()
     }
     
-    func drawGrid(_ viewState: UnitView.ViewState) {
+    func drawGrid(_ viewState: UnitViewState) {
         
         glDisable(GLenum(GL_TEXTURE_2D))
         glDisable(GLenum(GL_LIGHTING))
@@ -184,9 +186,9 @@ private extension UnitViewOpenglLegacyRenderer {
         glPopMatrix()
     }
     
-    func drawUnit(_ viewState: UnitView.ViewState) {
+    func drawUnit(_ viewState: UnitViewState) {
         
-        glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture)
+        glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture?.id ?? 0)
         
         switch viewState.drawMode {
             

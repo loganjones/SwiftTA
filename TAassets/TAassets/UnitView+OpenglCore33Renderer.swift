@@ -23,9 +23,8 @@ class UnitViewOpenglCore33Renderer: UnitViewRenderer {
         0
     ]
     
-    private var toLoad: UnitView.UnitInstance?
     private var model: GLBufferedModel?
-    private var modelTexture: GLuint = 0
+    private var modelTexture: OpenglTextureResource?
     private var program_unlit: GLuint = 0
     private var program_lighted: GLuint = 0
     
@@ -47,21 +46,15 @@ class UnitViewOpenglCore33Renderer: UnitViewRenderer {
     
     func initializeOpenglState() {
         initScene()
-        (unitViewProgram, gridProgram) = try! makePrograms()
+
+        do { (unitViewProgram, gridProgram) = try makePrograms() }
+        catch { print("Shader Initialization Error: \(error)") }
+
         grid = GLWorldSpaceGrid(size: Size2D(width: 16, height: 16))
     }
     
-    func drawFrame(_ viewState: UnitView.ViewState, _ currentTime: Double, _ deltaTime: Double) {
-        
+    func drawFrame(_ viewState: UnitViewState, _ currentTime: Double, _ deltaTime: Double) {
         unitViewProgram.setCurrent(lighted: viewState.lighted)
-        
-        if let newUnit = toLoad {
-            model = nil
-            model = GLBufferedModel(newUnit.modelInstance, of: newUnit.model, with: newUnit.textureAtlas)
-            modelTexture = makeTexture(newUnit.textureAtlas, newUnit.textureData)
-            toLoad = nil
-        }
-        
         drawScene(viewState)
     }
     
@@ -69,8 +62,18 @@ class UnitViewOpenglCore33Renderer: UnitViewRenderer {
         self.model?.applyChanges(model, modelInstance)
     }
     
-    func switchTo(_ unit: UnitView.UnitInstance) {
-        toLoad = unit
+    func switchTo(_ instance: UnitModel.Instance, of model: UnitModel, with textureAtlas: UnitTextureAtlas, textureData: Data) {
+        self.model = GLBufferedModel(instance, of: model, with: textureAtlas)
+        modelTexture = makeTexture(textureAtlas, textureData)
+    }
+    
+    func clear() {
+        model = nil
+        modelTexture = nil
+    }
+    
+    var hasLoadedModel: Bool {
+        return model != nil
     }
     
 }
@@ -79,11 +82,10 @@ class UnitViewOpenglCore33Renderer: UnitViewRenderer {
 
 private extension UnitViewOpenglCore33Renderer {
     
-    func makeTexture(_ texture: UnitTextureAtlas, _ data: Data) -> GLuint {
+    func makeTexture(_ textureAtlas: UnitTextureAtlas, _ data: Data) -> OpenglTextureResource {
         
-        var textureId: GLuint = 0
-        glGenTextures(1, &textureId)
-        glBindTexture(GLenum(GL_TEXTURE_2D), textureId)
+        let texture = OpenglTextureResource()
+        glBindTexture(GLenum(GL_TEXTURE_2D), texture.id)
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_MAG_FILTER), GL_NEAREST)
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_MIN_FILTER), GL_NEAREST)
         glTexParameteri(GLenum(GL_TEXTURE_2D), GLenum(GL_TEXTURE_WRAP_S), GL_REPEAT )
@@ -94,8 +96,8 @@ private extension UnitViewOpenglCore33Renderer {
                 GLenum(GL_TEXTURE_2D),
                 0,
                 GLint(GL_RGBA),
-                GLsizei(texture.size.width),
-                GLsizei(texture.size.height),
+                GLsizei(textureAtlas.size.width),
+                GLsizei(textureAtlas.size.height),
                 0,
                 GLenum(GL_RGBA),
                 GLenum(GL_UNSIGNED_BYTE),
@@ -103,7 +105,7 @@ private extension UnitViewOpenglCore33Renderer {
         }
         
         printGlErrors(prefix: "Model Texture: ")
-        return textureId
+        return texture
     }
     
     func loadShaderCode(forResource name: String, withExtension ext: String) throws -> String {
@@ -152,7 +154,7 @@ private extension UnitViewOpenglCore33Renderer {
         glTexEnvf(GLenum(GL_TEXTURE_ENV), GLenum(GL_TEXTURE_ENV_MODE), GLfloat(GL_MODULATE))
     }
     
-    func drawScene(_ viewState: UnitView.ViewState) {
+    func drawScene(_ viewState: UnitViewState) {
         
         glViewport(0, 0, GLsizei(viewState.viewportSize.width), GLsizei(viewState.viewportSize.height))
         
@@ -171,7 +173,7 @@ private extension UnitViewOpenglCore33Renderer {
         glUseProgram(0)
     }
     
-    func drawGrid(_ viewState: UnitView.ViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
+    func drawGrid(_ viewState: UnitViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
         let view = GLKMatrix4Translate(sceneView, Float(-grid.size.width / 2), Float(-grid.size.height / 2), 0)
         
         let model = GLKMatrix4MakeTranslation(0, Float(viewState.movement), -0.5)
@@ -185,7 +187,7 @@ private extension UnitViewOpenglCore33Renderer {
         grid.draw()
     }
     
-    func drawUnit(_ viewState: UnitView.ViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
+    func drawUnit(_ viewState: UnitViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
         glUseProgram(unitViewProgram.current.id)
         glUniformGLKMatrix4(unitViewProgram.current.uniform_model, GLKMatrix4Identity)
         glUniformGLKMatrix4(unitViewProgram.current.uniform_view, sceneView)
@@ -200,7 +202,7 @@ private extension UnitViewOpenglCore33Renderer {
         glUniformGLKVector3(unitViewProgram.current.uniform_viewPosition, viewPosition)
         
         glActiveTexture(GLenum(GL_TEXTURE0));
-        glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture);
+        glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture?.id ?? 0);
         glUniform1i(unitViewProgram.current.uniform_texture, 0);
         
         switch viewState.drawMode {
@@ -653,7 +655,7 @@ private class GLWorldSpaceGrid {
     private let vbo: [GLuint]
     private let elementCount: Int
     
-    init(size: Size2D, gridSpacing: Int = UnitView.gridSize) {
+    init(size: Size2D, gridSpacing: Int = UnitViewState.gridSize) {
         
         var vertices = [Vertex3](repeating: .zero, count: (size.width * 2) + (size.height * 2) + (size.area * 4) )
         do {
