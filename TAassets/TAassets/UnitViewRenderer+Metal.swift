@@ -1,8 +1,8 @@
 //
-//  ModelViewRenderer+Metal.swift
-//  HPIView
+//  UnitViewRenderer+Metal.swift
+//  TAassets
 //
-//  Created by Logan Jones on 6/12/18.
+//  Created by Logan Jones on 7/11/18.
 //  Copyright © 2018 Logan Jones. All rights reserved.
 //
 
@@ -11,7 +11,7 @@ import MetalKit
 import simd
 
 
-class ModelMetalBasicRenderer {
+class BasicMetalUnitViewRenderer {
     
     let device: MTLDevice
     private let commandQueue: MTLCommandQueue
@@ -21,10 +21,12 @@ class ModelMetalBasicRenderer {
     private let gridUniformOffset: Int
     
     private var modelPipelineState: MTLRenderPipelineState!
+    private var modelUnlitPipelineState: MTLRenderPipelineState!
     private var gridPipelineState: MTLRenderPipelineState!
     private var depthState: MTLDepthStencilState!
     
     private var model: MetalModel?
+    private var texture: MTLTexture?
     private var grid: MetalGrid!
     
     private let taPerspective = matrix_float4x4(columns: (
@@ -32,12 +34,12 @@ class ModelMetalBasicRenderer {
         vector_float4( 0,   1,   0,   0),
         vector_float4( 0,-0.5,   1,   0),
         vector_float4( 0,   0,   0,   1)
-        ))
+    ))
     
     init(_ device: MTLDevice) {
         self.device = device
         commandQueue = device.makeCommandQueue()!
-        let alignedModelUniformsSize = alignSizeForMetalBuffer(MemoryLayout<ModelMetalRenderer_ModelUniforms>.size)
+        let alignedModelUniformsSize = alignSizeForMetalBuffer(MemoryLayout<UnitMetalRenderer_ModelUniforms>.size)
         let alignedGridUniformsSize = alignSizeForMetalBuffer(MemoryLayout<ModelMetalRenderer_GridUniforms>.size)
         uniformBuffer = device.makeBuffer(length: alignedModelUniformsSize + alignedModelUniformsSize + alignedGridUniformsSize, options:[.storageModeShared])!
         modelUniformOffset = 0
@@ -47,7 +49,7 @@ class ModelMetalBasicRenderer {
     
 }
 
-extension ModelMetalBasicRenderer: ModelMetalRenderer {
+extension BasicMetalUnitViewRenderer: MetalUnitViewRenderer {
     
     func configure(view: MTKView) {
         
@@ -59,7 +61,7 @@ extension ModelMetalBasicRenderer: ModelMetalRenderer {
         catch { print("Failed to initialize Metal state: \(error)") }
     }
     
-    func drawFrame(in view: MTKView, _ viewState: ModelViewState) {
+    func drawFrame(in view: MTKView, _ viewState: UnitViewState) {
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
         defer { commandBuffer.commit() }
         
@@ -70,7 +72,7 @@ extension ModelMetalBasicRenderer: ModelMetalRenderer {
         let gridView = matrix_float4x4.translate(sceneView, Float(-grid.size.width / 2), Float(-grid.size.height / 2), 0)
         let normal = matrix_float3x3(topLeftOf: sceneView).inverse.transpose
         
-        let uniforms = UnsafeMutableRawPointer(uniformBuffer.contents() + modelUniformOffset).bindMemory(to:ModelMetalRenderer_ModelUniforms.self, capacity:1)
+        let uniforms = UnsafeMutableRawPointer(uniformBuffer.contents() + modelUniformOffset).bindMemory(to:UnitMetalRenderer_ModelUniforms.self, capacity:1)
         uniforms.pointee.modelMatrix = modelMatrix
         uniforms.pointee.viewMatrix = sceneView
         uniforms.pointee.projectionMatrix = projection
@@ -78,17 +80,31 @@ extension ModelMetalBasicRenderer: ModelMetalRenderer {
         
         uniforms.pointee.lightPosition = vector_float3(50, 50, 100)
         uniforms.pointee.viewPosition = vector_float3(viewState.sceneSize.width / 2, viewState.sceneSize.height / 2, 0)
-        uniforms.pointee.objectColor = vector_float4(0.95, 0.85, 0.80, 1)
+        switch (viewState.drawMode, viewState.textured) {
+        case (.solid, true), (.outlined, true), (.wireframe, _):
+            uniforms.pointee.objectColor = vector_float4(0)
+        case (.solid, false), (.outlined, false):
+            uniforms.pointee.objectColor = vector_float4(0.95, 0.85, 0.80, 1)
+        }
+        
+        if let model = model {
+            let pieceMats = uniformBuffer.contents() + (modelUniformOffset + MemoryLayout<UnitMetalRenderer_ModelUniforms>.size - (MemoryLayout<matrix_float4x4>.size * 40))
+            let count = model.transformations.count
+            model.transformations.withUnsafeBytes() {
+                pieceMats.copyMemory(from: $0.baseAddress!, byteCount: MemoryLayout<matrix_float4x4>.stride * count)
+            }
+        }
         
         if viewState.drawMode == .wireframe || viewState.drawMode == .outlined {
             let wireUniformsR = UnsafeMutableRawPointer(uniformBuffer.contents() + wireUniformOffset)
-            wireUniformsR.copyMemory(from: UnsafeRawPointer(uniformBuffer.contents() + modelUniformOffset), byteCount: MemoryLayout<ModelMetalRenderer_ModelUniforms>.stride)
-            let wireUniforms = wireUniformsR.bindMemory(to:ModelMetalRenderer_ModelUniforms.self, capacity:1)
+            wireUniformsR.copyMemory(from: UnsafeRawPointer(uniformBuffer.contents() + modelUniformOffset), byteCount: MemoryLayout<UnitMetalRenderer_ModelUniforms>.stride)
+            let wireUniforms = wireUniformsR.bindMemory(to:UnitMetalRenderer_ModelUniforms.self, capacity:1)
             wireUniforms.pointee.objectColor = vector_float4(0.4, 0.35, 0.3, 1)
         }
         
         let gridUniforms = (UnsafeMutableRawPointer(uniformBuffer.contents()) + gridUniformOffset).bindMemory(to:ModelMetalRenderer_GridUniforms.self, capacity:1)
-        gridUniforms.pointee.gridMvpMatrix = projection * gridView * modelMatrix
+        let gridModelMatrix = matrix_float4x4.translation(0, Float(viewState.movement), -0.5)
+        gridUniforms.pointee.gridMvpMatrix = projection * gridView * gridModelMatrix
         gridUniforms.pointee.gridColor = vector_float4(0.9, 0.9, 0.9, 1)
         
         guard let renderPassDescriptor = view.currentRenderPassDescriptor else { return }
@@ -103,24 +119,25 @@ extension ModelMetalBasicRenderer: ModelMetalRenderer {
         
         renderEncoder.setRenderPipelineState(gridPipelineState)
         renderEncoder.setDepthStencilState(depthState)
-        renderEncoder.setVertexBuffer(uniformBuffer, offset: gridUniformOffset, index: ModelMetalRenderer_BufferIndex.uniforms.rawValue)
-        renderEncoder.setFragmentBuffer(uniformBuffer, offset: gridUniformOffset, index: ModelMetalRenderer_BufferIndex.uniforms.rawValue)
-        renderEncoder.setVertexBuffer(grid.buffer, offset: 0, index: ModelMetalRenderer_BufferIndex.gridVertices.rawValue)
+        renderEncoder.setVertexBuffer(uniformBuffer, offset: gridUniformOffset, index: UnitMetalRenderer_BufferIndex.uniforms.rawValue)
+        renderEncoder.setFragmentBuffer(uniformBuffer, offset: gridUniformOffset, index: UnitMetalRenderer_BufferIndex.uniforms.rawValue)
+        renderEncoder.setVertexBuffer(grid.buffer, offset: 0, index: UnitMetalRenderer_BufferIndex.gridVertices.rawValue)
         renderEncoder.drawPrimitives(type: .line, vertexStart: 0, vertexCount: grid.vertexCount)
         
         if let model = model {
-            renderEncoder.setRenderPipelineState(modelPipelineState)
+            renderEncoder.setRenderPipelineState(viewState.lighted ? modelPipelineState : modelUnlitPipelineState)
             renderEncoder.setDepthStencilState(depthState)
-            renderEncoder.setVertexBuffer(model.buffer, offset: 0, index: ModelMetalRenderer_BufferIndex.modelVertices.rawValue)
+            renderEncoder.setVertexBuffer(model.buffer, offset: 0, index: UnitMetalRenderer_BufferIndex.modelVertices.rawValue)
             if viewState.drawMode == .solid || viewState.drawMode == .outlined {
                 if viewState.drawMode == .outlined { renderEncoder.setDepthBias(-10, slopeScale: 1, clamp: -10) }
-                renderEncoder.setVertexBuffer(uniformBuffer, offset: modelUniformOffset, index: ModelMetalRenderer_BufferIndex.uniforms.rawValue)
-                renderEncoder.setFragmentBuffer(uniformBuffer, offset: modelUniformOffset, index: ModelMetalRenderer_BufferIndex.uniforms.rawValue)
+                renderEncoder.setVertexBuffer(uniformBuffer, offset: modelUniformOffset, index: UnitMetalRenderer_BufferIndex.uniforms.rawValue)
+                renderEncoder.setFragmentBuffer(uniformBuffer, offset: modelUniformOffset, index: UnitMetalRenderer_BufferIndex.uniforms.rawValue)
+                renderEncoder.setFragmentTexture(texture, index: UnitMetalRenderer_TextureIndex.color.rawValue)
                 renderEncoder.drawPrimitives(type: .triangle, vertexStart: model.vertexIndex, vertexCount: model.vertexCount)
             }
             if viewState.drawMode == .wireframe || viewState.drawMode == .outlined {
-                renderEncoder.setVertexBuffer(uniformBuffer, offset: wireUniformOffset, index: ModelMetalRenderer_BufferIndex.uniforms.rawValue)
-                renderEncoder.setFragmentBuffer(uniformBuffer, offset: wireUniformOffset, index: ModelMetalRenderer_BufferIndex.uniforms.rawValue)
+                renderEncoder.setVertexBuffer(uniformBuffer, offset: wireUniformOffset, index: UnitMetalRenderer_BufferIndex.uniforms.rawValue)
+                renderEncoder.setFragmentBuffer(uniformBuffer, offset: wireUniformOffset, index: UnitMetalRenderer_BufferIndex.uniforms.rawValue)
                 renderEncoder.drawPrimitives(type: .line, vertexStart: model.outlineIndex, vertexCount: model.outlineCount)
             }
         }
@@ -133,28 +150,45 @@ extension ModelMetalBasicRenderer: ModelMetalRenderer {
         }
     }
     
-    func switchTo(_ model: UnitModel) throws {
-        self.model = try MetalModel(model, device)
+    func switchTo(_ instance: UnitModel.Instance, of model: UnitModel, with textureAtlas: UnitTextureAtlas, textureData: Data) throws {
+        self.model = try MetalModel(model, textureAtlas, device)
+        texture = try BasicMetalUnitViewRenderer.makeTexture(device, textureAtlas, textureData)
+    }
+    
+    func clear() {
+        model = nil
+    }
+    
+    func updateForAnimations(_ model: UnitModel, _ modelInstance: UnitModel.Instance) {
+        self.model?.applyChanges(model, modelInstance)
     }
     
 }
 
-private extension ModelMetalBasicRenderer {
+private extension BasicMetalUnitViewRenderer {
     
     func initializeState(in view: MTKView) throws {
         
-        let modelVertexDescriptor = ModelMetalBasicRenderer.buildModelVertexDescriptor()
-        let gridVertexDescriptor = ModelMetalBasicRenderer.buildGridVertexDescriptor()
+        let modelVertexDescriptor = BasicMetalUnitViewRenderer.buildModelVertexDescriptor()
+        let gridVertexDescriptor = BasicMetalUnitViewRenderer.buildGridVertexDescriptor()
         
         guard let library = device.makeDefaultLibrary() else {
             throw InitializationError.noDefaultShaderLibrary
         }
         
-        modelPipelineState = try ModelMetalBasicRenderer.buildRenderPipeline(
+        modelPipelineState = try BasicMetalUnitViewRenderer.buildRenderPipeline(
             named: "Model Pipeline",
             library: library, device: device, view: view,
-            vertexDescriptor: modelVertexDescriptor)
-        gridPipelineState = try ModelMetalBasicRenderer.buildRenderPipeline(
+            vertexDescriptor: modelVertexDescriptor,
+            vertexFunctionName: "unitVertexShader",
+            fragmentFunctionName: "unitFragmentShader")
+        modelUnlitPipelineState = try BasicMetalUnitViewRenderer.buildRenderPipeline(
+            named: "Model Pipeline",
+            library: library, device: device, view: view,
+            vertexDescriptor: modelVertexDescriptor,
+            vertexFunctionName: "unitVertexShader",
+            fragmentFunctionName: "unitUnlitFragmentShader")
+        gridPipelineState = try BasicMetalUnitViewRenderer.buildRenderPipeline(
             named: "Grid Pipeline",
             library: library, device: device, view: view,
             vertexDescriptor: gridVertexDescriptor,
@@ -173,23 +207,25 @@ private extension ModelMetalBasicRenderer {
     }
     
     class func buildModelVertexDescriptor() -> MTLVertexDescriptor {
-        let configurator = MetalVertexDescriptorConfigurator<ModelMetalRenderer_ModelVertexAttribute, ModelMetalRenderer_BufferIndex>()
+        let configurator = MetalVertexDescriptorConfigurator<UnitMetalRenderer_ModelVertexAttribute, UnitMetalRenderer_BufferIndex>()
         var offset = 0
-
+        
         configurator.setAttribute(.position, format: .float3, offset: offset, bufferIndex: .modelVertices)
         offset += MemoryLayout<vector_float3>.stride
         configurator.setAttribute(.normal, format: .float3, offset: offset, bufferIndex: .modelVertices)
         offset += MemoryLayout<vector_float3>.stride
         configurator.setAttribute(.texcoord, format: .float2, offset: offset, bufferIndex: .modelVertices)
         offset += MemoryLayout<vector_float2>.stride
-
-        configurator.setLayout(.modelVertices, stride: MemoryLayout<ModelMetalRenderer_ModelVertex>.stride, stepRate: 1, stepFunction: .perVertex)
+        configurator.setAttribute(.pieceIndex, format: .int, offset: offset, bufferIndex: .modelVertices)
+        offset += MemoryLayout<Int32>.stride
+        
+        configurator.setLayout(.modelVertices, stride: MemoryLayout<UnitMetalRenderer_ModelVertex>.stride, stepRate: 1, stepFunction: .perVertex)
         
         return configurator.vertexDescriptor
     }
     
     class func buildGridVertexDescriptor() -> MTLVertexDescriptor {
-        let configurator = MetalVertexDescriptorConfigurator<ModelMetalRenderer_GridVertexAttribute, ModelMetalRenderer_BufferIndex>()
+        let configurator = MetalVertexDescriptorConfigurator<ModelMetalRenderer_GridVertexAttribute, UnitMetalRenderer_BufferIndex>()
         
         configurator.setAttribute(.position, format: .float3, offset: 0, bufferIndex: .gridVertices)
         configurator.setLayout(.gridVertices, stride: MemoryLayout<ModelMetalRenderer_GridVertex>.stride, stepRate: 1, stepFunction: .perVertex)
@@ -222,6 +258,25 @@ private extension ModelMetalBasicRenderer {
         case badDepthState
     }
     
+    class func makeTexture(_ device: MTLDevice, _ textureAtlas: UnitTextureAtlas, _ data: Data) throws -> MTLTexture {
+        
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba8Unorm, width: textureAtlas.size.width, height: textureAtlas.size.height, mipmapped: false)
+        guard let texture = device.makeTexture(descriptor: descriptor) else {
+            throw TextureError.badTextureDescriptor
+        }
+        
+        data.withUnsafeBytes { (p: UnsafePointer<UInt8>) -> () in
+            let r = MTLRegion(origin: MTLOrigin(x: 0, y: 0, z: 0), size: MTLSize(width: textureAtlas.size.width, height: textureAtlas.size.height, depth: 1))
+            texture.replace(region: r, mipmapLevel: 0, withBytes: p, bytesPerRow: textureAtlas.size.width * 4)
+        }
+        
+        return texture
+    }
+    
+    enum TextureError: Swift.Error {
+        case badTextureDescriptor
+    }
+    
 }
 
 // MARK:- Model
@@ -234,12 +289,14 @@ private class MetalModel {
     let outlineCount: Int
     let outlineIndex: Int
     
-    init(_ model: UnitModel, _ device: MTLDevice) throws {
+    private(set) var transformations: [matrix_float4x4]
+    
+    init(_ model: UnitModel, _ textures: UnitTextureAtlas, _ device: MTLDevice) throws {
         
         let vertexCount = MetalModel.countVertices(in: model)
         let outlineCount = MetalModel.countOutlineVertices(in: model)
-        let vertexSize = vertexCount * MemoryLayout<ModelMetalRenderer_ModelVertex>.stride
-        let outlineSize = outlineCount * MemoryLayout<ModelMetalRenderer_ModelVertex>.stride
+        let vertexSize = vertexCount * MemoryLayout<UnitMetalRenderer_ModelVertex>.stride
+        let outlineSize = outlineCount * MemoryLayout<UnitMetalRenderer_ModelVertex>.stride
         
         guard let buffer = device.makeBuffer(length: vertexSize + outlineSize, options: [.storageModeShared]) else {
             throw Error.makeBufferFailure
@@ -247,9 +304,9 @@ private class MetalModel {
         
         buffer.label = "UnitModel"
         
-        var p = UnsafeMutableRawPointer(buffer.contents()).bindMemory(to: ModelMetalRenderer_ModelVertex.self, capacity: vertexCount)
-        MetalModel.collectVertexAttributes(pieceIndex: model.root, model: model, vertexBuffer: &p)
-        p = (UnsafeMutableRawPointer(buffer.contents()) + vertexSize).bindMemory(to: ModelMetalRenderer_ModelVertex.self, capacity: outlineCount)
+        var p = UnsafeMutableRawPointer(buffer.contents()).bindMemory(to: UnitMetalRenderer_ModelVertex.self, capacity: vertexCount)
+        MetalModel.collectVertexAttributes(pieceIndex: model.root, model: model, textures: textures, vertexBuffer: &p)
+        p = (UnsafeMutableRawPointer(buffer.contents()) + vertexSize).bindMemory(to: UnitMetalRenderer_ModelVertex.self, capacity: outlineCount)
         MetalModel.collectOutlineVertexAttributes(pieceIndex: model.root, model: model, vertexBuffer: &p)
         
         self.buffer = buffer
@@ -257,10 +314,15 @@ private class MetalModel {
         self.vertexIndex = 0
         self.outlineCount = outlineCount
         self.outlineIndex = vertexCount
+        self.transformations = [matrix_float4x4](repeating: .identity, count: model.pieces.count)
     }
     
     enum Error: Swift.Error {
         case makeBufferFailure
+    }
+    
+    func applyChanges(_ model: UnitModel, _ modelInstance: UnitModel.Instance) {
+        MetalModel.applyPieceTransformations(model: model, instance: modelInstance, transformations: &transformations)
     }
     
 }
@@ -287,25 +349,25 @@ private extension MetalModel {
         }
     }
     
-    static func collectVertexAttributes(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, parentOffset: vector_float3 = .zero, vertexBuffer: inout UnsafeMutablePointer<ModelMetalRenderer_ModelVertex>) {
+    static func collectVertexAttributes(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, textures: UnitTextureAtlas, vertexBuffer: inout UnsafeMutablePointer<UnitMetalRenderer_ModelVertex>) {
         
         let piece = model.pieces[pieceIndex]
-        let offset = vector_float3(piece.offset) + parentOffset
         
         for primitiveIndex in piece.primitives {
             guard primitiveIndex != model.groundPlate else { continue }
-            collectVertexAttributes(primitive: model.primitives[primitiveIndex], pieceIndex: pieceIndex, model: model, offset: offset, vertexBuffer: &vertexBuffer)
+            collectVertexAttributes(primitive: model.primitives[primitiveIndex], pieceIndex: pieceIndex, model: model, textures: textures, vertexBuffer: &vertexBuffer)
         }
         
         for child in piece.children {
-            collectVertexAttributes(pieceIndex: child, model: model, parentOffset: offset, vertexBuffer: &vertexBuffer)
+            collectVertexAttributes(pieceIndex: child, model: model, textures: textures, vertexBuffer: &vertexBuffer)
         }
     }
     
-    static func collectVertexAttributes(primitive: UnitModel.Primitive, pieceIndex: UnitModel.Pieces.Index, model: UnitModel, offset: vector_float3, vertexBuffer: inout UnsafeMutablePointer<ModelMetalRenderer_ModelVertex>) {
+    static func collectVertexAttributes(primitive: UnitModel.Primitive, pieceIndex: UnitModel.Pieces.Index, model: UnitModel, textures: UnitTextureAtlas, vertexBuffer: inout UnsafeMutablePointer<UnitMetalRenderer_ModelVertex>) {
         
-        let vertices = primitive.indices.map({ vector_float3(model.vertices[$0]) + offset })
-        let texCoords = /*textures?.textureCoordinates(for: primitive.texture) ??*/ (vector_float2.zero, vector_float2.zero, vector_float2.zero, vector_float2.zero)
+        let vertices = primitive.indices.map({ vector_float3(model.vertices[$0]) })
+        let texCoordsA = textures.textureCoordinates(for: primitive.texture)
+        let texCoords = (vector_float2(texCoordsA.0), vector_float2(texCoordsA.1), vector_float2(texCoordsA.2), vector_float2(texCoordsA.3))
         
         switch vertices.count {
             
@@ -318,62 +380,60 @@ private extension MetalModel {
             // Triangle 0,2,1
             let normal = makeNormal(0,2,1, in: vertices)
             append(&vertexBuffer,
-                texCoords.0, vertices[0],
-                texCoords.2, vertices[2],
-                texCoords.1, vertices[1],
-                normal, pieceIndex
+                   texCoords.0, vertices[0],
+                   texCoords.2, vertices[2],
+                   texCoords.1, vertices[1],
+                   normal, pieceIndex
             )
             
         case 4: // Single Quad, split into two triangles
             // Triangle 0,2,1
             let normal = makeNormal(0,2,1, in: vertices)
             append(&vertexBuffer,
-                texCoords.0, vertices[0],
-                texCoords.2, vertices[2],
-                texCoords.1, vertices[1],
-                normal, pieceIndex
+                   texCoords.0, vertices[0],
+                   texCoords.2, vertices[2],
+                   texCoords.1, vertices[1],
+                   normal, pieceIndex
             )
             // Triangle 0,3,2
             append(&vertexBuffer,
-                texCoords.0, vertices[0],
-                texCoords.3, vertices[3],
-                texCoords.2, vertices[2],
-                normal, pieceIndex
+                   texCoords.0, vertices[0],
+                   texCoords.3, vertices[3],
+                   texCoords.2, vertices[2],
+                   normal, pieceIndex
             )
             
         default: // Polygon with more than 4 sides
             let normal = makeNormal(0,2,1, in: vertices)
             for n in 2 ..< vertices.count {
                 append(&vertexBuffer,
-                    texCoords.0, vertices[0],
-                    texCoords.2, vertices[n],
-                    texCoords.1, vertices[n-1],
-                    normal, pieceIndex
+                       texCoords.0, vertices[0],
+                       texCoords.2, vertices[n],
+                       texCoords.1, vertices[n-1],
+                       normal, pieceIndex
                 )
             }
         }
     }
     
-    static func collectOutlineVertexAttributes(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, parentOffset: vector_float3 = .zero, vertexBuffer: inout UnsafeMutablePointer<ModelMetalRenderer_ModelVertex>) {
+    static func collectOutlineVertexAttributes(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, vertexBuffer: inout UnsafeMutablePointer<UnitMetalRenderer_ModelVertex>) {
         
         let piece = model.pieces[pieceIndex]
-        let offset = vector_float3(piece.offset) + parentOffset
         
         for primitiveIndex in piece.primitives {
             guard primitiveIndex != model.groundPlate else { continue }
-            collectOutlineVertexAttributes(primitive: model.primitives[primitiveIndex], pieceIndex: pieceIndex, model: model, offset: offset, vertexBuffer: &vertexBuffer)
+            collectOutlineVertexAttributes(primitive: model.primitives[primitiveIndex], pieceIndex: pieceIndex, model: model, vertexBuffer: &vertexBuffer)
         }
         
         for child in piece.children {
-            collectOutlineVertexAttributes(pieceIndex: child, model: model, parentOffset: offset, vertexBuffer: &vertexBuffer)
+            collectOutlineVertexAttributes(pieceIndex: child, model: model, vertexBuffer: &vertexBuffer)
         }
     }
     
-    static func collectOutlineVertexAttributes(primitive: UnitModel.Primitive, pieceIndex: UnitModel.Pieces.Index, model: UnitModel, offset: vector_float3, vertexBuffer: inout UnsafeMutablePointer<ModelMetalRenderer_ModelVertex>) {
+    static func collectOutlineVertexAttributes(primitive: UnitModel.Primitive, pieceIndex: UnitModel.Pieces.Index, model: UnitModel, vertexBuffer: inout UnsafeMutablePointer<UnitMetalRenderer_ModelVertex>) {
         
         guard primitive.indices.count >= 2 else { return }
-        let vertices = primitive.indices.map({ vector_float3(model.vertices[$0]) + offset })
-        
+        let vertices = primitive.indices.map({ vector_float3(model.vertices[$0]) })
         
         let normal = vertices.count > 2 ? makeNormal(0,2,1, in: vertices) : (vertices[1] - vertices[0])
         
@@ -382,7 +442,6 @@ private extension MetalModel {
         }
         let n = vertices.count - 1
         appendLine(&vertexBuffer, vertices[n], vertices[0], normal, pieceIndex)
-        
     }
     
     private static func makeNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [vector_float3]) -> vector_float3 {
@@ -394,7 +453,7 @@ private extension MetalModel {
         return u × v
     }
     
-    static func append(_ vertexBuffer: inout UnsafeMutablePointer<ModelMetalRenderer_ModelVertex>,
+    static func append(_ vertexBuffer: inout UnsafeMutablePointer<UnitMetalRenderer_ModelVertex>,
                        _ texCoord1: vector_float2, _ vertex1: vector_float3,
                        _ texCoord2: vector_float2, _ vertex2: vector_float3,
                        _ texCoord3: vector_float2, _ vertex3: vector_float3,
@@ -403,27 +462,94 @@ private extension MetalModel {
         vertexBuffer[0].position = vertex1
         vertexBuffer[0].texCoord = texCoord1
         vertexBuffer[0].normal = normal
+        vertexBuffer[0].pieceIndex = Int32(pieceIndex)
         vertexBuffer[1].position = vertex2
         vertexBuffer[1].texCoord = texCoord2
         vertexBuffer[1].normal = normal
+        vertexBuffer[1].pieceIndex = Int32(pieceIndex)
         vertexBuffer[2].position = vertex3
         vertexBuffer[2].texCoord = texCoord3
         vertexBuffer[2].normal = normal
+        vertexBuffer[2].pieceIndex = Int32(pieceIndex)
         vertexBuffer += 3
     }
     
-    static func appendLine(_ vertexBuffer: inout UnsafeMutablePointer<ModelMetalRenderer_ModelVertex>,
+    static func appendLine(_ vertexBuffer: inout UnsafeMutablePointer<UnitMetalRenderer_ModelVertex>,
                            _ vertex1: vector_float3,
                            _ vertex2: vector_float3,
                            _ normal: vector_float3,
                            _ pieceIndex: Int) {
         vertexBuffer[0].position = vertex1
-//        vertexBuffer[0].texCoord = texCoord1
         vertexBuffer[0].normal = normal
+        vertexBuffer[0].pieceIndex = Int32(pieceIndex)
         vertexBuffer[1].position = vertex2
-//        vertexBuffer[1].texCoord = texCoord2
         vertexBuffer[1].normal = normal
+        vertexBuffer[1].pieceIndex = Int32(pieceIndex)
         vertexBuffer += 2
+    }
+    
+    static func applyPieceTransformations(model: UnitModel, instance: UnitModel.Instance, transformations: inout [matrix_float4x4]) {
+        applyPieceTransformations(pieceIndex: model.root, p: matrix_float4x4.identity, model: model, instance: instance, transformations: &transformations)
+    }
+    
+    static func applyPieceTransformations(pieceIndex: UnitModel.Pieces.Index, p: matrix_float4x4, model: UnitModel, instance: UnitModel.Instance, transformations: inout [matrix_float4x4]) {
+        let piece = model.pieces[pieceIndex]
+        let anims = instance.pieces[pieceIndex]
+        
+        guard !anims.hidden else {
+            applyPieceDiscard(pieceIndex: pieceIndex, model: model, transformations: &transformations)
+            return
+        }
+        
+        let offset = vector_float3(piece.offset)
+        let move = vector_float3(anims.move)
+        
+        let rad2deg = Double.pi / 180
+        let sin = vector_float3( anims.turn.map { Darwin.sin($0 * rad2deg) } )
+        let cos = vector_float3( anims.turn.map { Darwin.cos($0 * rad2deg) } )
+        
+        let t = matrix_float4x4(columns: (
+            vector_float4(
+            cos.y * cos.z,
+            (sin.y * cos.x) + (sin.x * cos.y * sin.z),
+            (sin.x * sin.y) - (cos.x * cos.y * sin.z),
+            0),
+            
+            vector_float4(
+            -sin.y * cos.z,
+            (cos.x * cos.y) - (sin.x * sin.y * sin.z),
+            (sin.x * cos.y) + (cos.x * sin.y * sin.z),
+            0),
+            
+            vector_float4(
+            sin.z,
+            -sin.x * cos.z,
+            cos.x * cos.z,
+            0),
+            
+            vector_float4(
+            offset.x - move.x,
+            offset.y - move.z,
+            offset.z + move.y,
+            1)
+        ))
+        
+        let pt = p * t
+        transformations[pieceIndex] = pt
+        
+        for child in piece.children {
+            applyPieceTransformations(pieceIndex: child, p: pt, model: model, instance: instance, transformations: &transformations)
+        }
+    }
+    
+    static func applyPieceDiscard(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, transformations: inout [matrix_float4x4]) {
+        
+        transformations[pieceIndex] = matrix_float4x4.translation(0, 0, -1000)
+        
+        let piece = model.pieces[pieceIndex]
+        for child in piece.children {
+            applyPieceDiscard(pieceIndex: child, model: model, transformations: &transformations)
+        }
     }
     
 }
@@ -485,147 +611,6 @@ private class MetalGrid {
     
     enum Error: Swift.Error {
         case makeBufferFailure
-    }
-    
-}
-
-// MARK:- Utility
-
-extension vector_float4 {
-    init(_ v: vector_float3, _ w: Float = 1) {
-        self.init(v.x, v.y, v.z, w)
-    }
-    var xyz: vector_float3 { return vector_float3(x,y,z) }
-}
-
-extension vector_float3 {
-    init(_ v: Vector3) {
-        self.init(Float(v.x), Float(v.y), Float(v.z))
-    }
-    init(_ v: Vertex3) {
-        self.init(Float(v.x), Float(v.y), Float(v.z))
-    }
-    static var zero: vector_float3 { return vector_float3(x: 0, y: 0, z: 0) }
-}
-extension vector_float2 {
-    init(_ v: Vector2) {
-        self.init(Float(v.x), Float(v.y))
-    }
-    init(_ v: Vertex2) {
-        self.init(Float(v.x), Float(v.y))
-    }
-    static var zero: vector_float2 { return vector_float2(x: 0, y: 0) }
-}
-func ×(lhs: vector_float3, rhs: vector_float3) -> vector_float3 {
-    return simd_cross(lhs, rhs)
-}
-
-extension matrix_float4x4 {
-    
-    static var identity: matrix_float4x4 {
-        return matrix_float4x4(columns:(vector_float4( 1, 0, 0, 0),
-                                        vector_float4( 0, 1, 0, 0),
-                                        vector_float4( 0, 0, 1, 0),
-                                        vector_float4( 0, 0, 0, 1)))
-    }
-    
-    static func ortho(_ left: Float, _ right: Float, _ bottom: Float, _ top: Float, _ nearZ: Float, _ farZ: Float) -> matrix_float4x4 {
-        let xs = 2.0 / (right - left)
-        let ys = 2.0 / (top - bottom)
-        let zs = -2.0 / (farZ - nearZ)
-        let tx = -( (right + left) / (right - left) )
-        let ty = -( (top + bottom) / (top - bottom) )
-        let tz = -( (farZ + nearZ) / (farZ - nearZ) )
-        return matrix_float4x4(columns:(vector_float4(xs,  0,  0,  0),
-                                        vector_float4( 0, ys,  0,  0),
-                                        vector_float4( 0,  0, zs,  0),
-                                        vector_float4(tx, ty, tz,  1)))
-    }
-    
-    static func translation(_ translationX: Float, _ translationY: Float, _ translationZ: Float) -> matrix_float4x4 {
-        return matrix_float4x4(columns:(vector_float4(1, 0, 0, 0),
-                                        vector_float4(0, 1, 0, 0),
-                                        vector_float4(0, 0, 1, 0),
-                                        vector_float4(translationX, translationY, translationZ, 1)))
-    }
-    
-    static func translate(_ m: matrix_float4x4, _ v: vector_float3) -> matrix_float4x4 {
-        let t = translation(v.x, v.y, v.z)
-        return m * t
-    }
-    static func translate(_ m: matrix_float4x4, _ translationX: Float, _ translationY: Float, _ translationZ: Float) -> matrix_float4x4 {
-        let t = translation(translationX, translationY, translationZ)
-        return m * t
-    }
-    
-    static func rotation(radians: Float, axis: vector_float3) -> matrix_float4x4 {
-        let unitAxis = normalize(axis)
-        let ct = cosf(radians)
-        let st = sinf(radians)
-        let ci = 1 - ct
-        let x = unitAxis.x
-        let y = unitAxis.y
-        let z = unitAxis.z
-        return matrix_float4x4(columns:(vector_float4(    ct + x * x * ci, y * x * ci + z * st, z * x * ci - y * st, 0),
-                                        vector_float4(x * y * ci - z * st,     ct + y * y * ci, z * y * ci + x * st, 0),
-                                        vector_float4(x * z * ci + y * st, y * z * ci - x * st,     ct + z * z * ci, 0),
-                                        vector_float4(                  0,                   0,                   0, 1)))
-    }
-    
-    static func rotate(_ m: matrix_float4x4, radians: Float, axis: vector_float3) -> matrix_float4x4 {
-        let r = rotation(radians: radians, axis: axis)
-        return m * r
-    }
-    
-}
-
-extension matrix_float3x3 {
-    
-    init(topLeftOf m44: matrix_float4x4) {
-        self.init(columns:(m44.columns.0.xyz,
-                           m44.columns.1.xyz,
-                           m44.columns.2.xyz))
-    }
-    
-    static var identity: matrix_float3x3 {
-        return matrix_float3x3(columns:(vector_float3( 1, 0, 0),
-                                        vector_float3( 0, 1, 0),
-                                        vector_float3( 0, 0, 1)))
-    }
-    
-}
-
-func alignSizeForMetalBuffer(_ size: Int) -> Int {
-    return (size & ~0xFF) + 0x100
-}
-
-struct MetalVertexDescriptorConfigurator<VertexAttribute, BufferIndex>
-    where VertexAttribute: RawRepresentable, BufferIndex: RawRepresentable, VertexAttribute.RawValue == Int, BufferIndex.RawValue == Int
-{
-    let vertexDescriptor = MTLVertexDescriptor()
-    
-    func setAttribute(_ va: VertexAttribute, with configure: (MTLVertexAttributeDescriptor) -> ()) {
-        guard let attr = vertexDescriptor.attributes[va.rawValue] else { return }
-        configure(attr)
-    }
-    
-    func setAttribute(_ va: VertexAttribute, format: MTLVertexFormat, offset: Int = 0, bufferIndex: BufferIndex) {
-        guard let attr = vertexDescriptor.attributes[va.rawValue] else { return }
-        attr.format = format
-        attr.offset = offset
-        attr.bufferIndex = bufferIndex.rawValue
-    }
-    
-    func setLayout(_ bi: BufferIndex, with configure: (MTLVertexBufferLayoutDescriptor) -> ()) {
-        guard let layout = vertexDescriptor.layouts[bi.rawValue] else { return }
-        configure(layout)
-    }
-    
-    func setLayout(_ bi: BufferIndex, stride: Int, stepRate: Int = 1, stepFunction: MTLVertexStepFunction = .perVertex) {
-        guard let layout = vertexDescriptor.layouts[bi.rawValue] else { return }
-        layout.stride = stride
-        layout.stepRate = stepRate
-        layout.stepFunction = stepFunction
     }
     
 }

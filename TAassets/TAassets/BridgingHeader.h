@@ -15,3 +15,4 @@
 #include "zlib.h"
 
 #import "ModelViewRenderer+MetalShaderTypes.h"
+#import "UnitViewRenderer+MetalShaderTypes.h"
