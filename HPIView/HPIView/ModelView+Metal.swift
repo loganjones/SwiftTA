@@ -10,10 +10,10 @@ import Cocoa
 import MetalKit
 
 
-class ModelMetalView<StateProvider: ModelViewStateProvider>: MTKView, MTKViewDelegate, ModelViewLoader {
+class MetalModelView<StateProvider: ModelViewStateProvider>: MTKView, MTKViewDelegate, ModelViewLoader {
     
     unowned let stateProvider: StateProvider
-    private let renderer: ModelMetalRenderer
+    private let renderer: MetalModelViewRenderer
     
     required init?(modelViewFrame frameRect: CGRect, stateProvider: StateProvider) {
         self.stateProvider = stateProvider
@@ -23,7 +23,7 @@ class ModelMetalView<StateProvider: ModelViewStateProvider>: MTKView, MTKViewDel
             return nil
         }
         
-        renderer = ModelMetalBasicRenderer(defaultDevice)
+        renderer = BasicMetalModelViewRenderer(defaultDevice)
         super.init(frame: frameRect, device: defaultDevice)
         self.delegate = self
         
@@ -60,7 +60,7 @@ class ModelMetalView<StateProvider: ModelViewStateProvider>: MTKView, MTKViewDel
     
 }
 
-protocol ModelMetalRenderer {
+protocol MetalModelViewRenderer {
     func configure(view: MTKView)
     func drawFrame(in view: MTKView, _ viewState: ModelViewState)
     func switchTo(_ model: UnitModel) throws

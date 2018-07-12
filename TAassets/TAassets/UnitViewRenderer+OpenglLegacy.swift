@@ -12,7 +12,7 @@ import OpenGL.GL3
 import GLKit
 
 
-class UnitViewOpenglLegacyRenderer: UnitViewRenderer {
+class LegacyOpenglUnitViewRenderer: OpenglUnitViewRenderer {
     
     static let desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] = [
         UInt32(NSOpenGLPFADoubleBuffer),
@@ -62,7 +62,7 @@ class UnitViewOpenglLegacyRenderer: UnitViewRenderer {
 
 // MARK:- Setup
 
-private extension UnitViewOpenglLegacyRenderer {
+private extension LegacyOpenglUnitViewRenderer {
     
     func makeTexture(_ textureAtlas: UnitTextureAtlas, _ data: Data) -> OpenglTextureResource {
         
@@ -94,7 +94,7 @@ private extension UnitViewOpenglLegacyRenderer {
 
 // MARK:- Rendering
 
-private extension UnitViewOpenglLegacyRenderer {
+private extension LegacyOpenglUnitViewRenderer {
     
     func initScene() {
         glLightfv(GLenum(GL_LIGHT0), GLenum(GL_POSITION), [ 5.0, 5.0, 10.0, 0.0 ])

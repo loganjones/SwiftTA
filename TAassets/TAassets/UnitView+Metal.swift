@@ -10,7 +10,7 @@ import Foundation
 import MetalKit
 
 
-class UnitMetalView<StateProvider: UnitViewStateProvider>: MTKView, MTKViewDelegate, UnitViewLoader {
+class MetalUnitView<StateProvider: UnitViewStateProvider>: MTKView, MTKViewDelegate, UnitViewLoader {
     
     unowned let stateProvider: StateProvider
     private var renderer: MetalUnitViewRenderer

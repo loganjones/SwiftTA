@@ -12,7 +12,7 @@ import OpenGL.GL3
 import GLKit
 
 
-class ModelOpenglCore33Renderer: ModelOpenglRenderer {
+class Core33OpenglModelViewRenderer: OpenglModelViewRenderer {
     
     static let desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] = [
         UInt32(NSOpenGLPFAAllowOfflineRenderers),
@@ -71,7 +71,7 @@ class ModelOpenglCore33Renderer: ModelOpenglRenderer {
 
 // MARK:- Setup
 
-private extension ModelOpenglCore33Renderer {
+private extension Core33OpenglModelViewRenderer {
     
     func loadShaderCode(forResource name: String, withExtension ext: String) throws -> String {
         guard let url = Bundle.main.url(forResource: name, withExtension: ext) else { throw RuntimeError("Neccessary shader file not found.") }
@@ -105,7 +105,7 @@ private extension ModelOpenglCore33Renderer {
 
 // MARK:- Rendering
 
-private extension ModelOpenglCore33Renderer {
+private extension Core33OpenglModelViewRenderer {
     
     func initScene() {
         glEnable(GLenum(GL_CULL_FACE))

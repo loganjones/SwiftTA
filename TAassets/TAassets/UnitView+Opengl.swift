@@ -10,10 +10,10 @@ import Cocoa
 import OpenGL
 
 
-class UnitOpenglView<StateProvider: UnitViewStateProvider>: NSOpenGLView, UnitViewLoader {
+class OpenglUnitView<StateProvider: UnitViewStateProvider>: NSOpenGLView, UnitViewLoader {
     
     unowned let stateProvider: StateProvider
-    private var renderer: UnitViewRenderer
+    private var renderer: OpenglUnitViewRenderer
     private let displayLink: CVDisplayLink
     private var displayLinkCallback: CVDisplayLink.CallbackBox!
     
@@ -25,12 +25,12 @@ class UnitOpenglView<StateProvider: UnitViewStateProvider>: NSOpenGLView, UnitVi
         self.stateProvider = stateProvider
         
         let format: NSOpenGLPixelFormat?
-        if let core = NSOpenGLPixelFormat(attributes: UnitViewOpenglCore33Renderer.desiredPixelFormatAttributes) {
-            renderer = UnitViewOpenglCore33Renderer()
+        if let core = NSOpenGLPixelFormat(attributes: Core33OpenglUnitViewRenderer.desiredPixelFormatAttributes) {
+            renderer = Core33OpenglUnitViewRenderer()
             format = core
         }
-        else if let legacy = NSOpenGLPixelFormat(attributes: UnitViewOpenglLegacyRenderer.desiredPixelFormatAttributes) {
-            renderer = UnitViewOpenglLegacyRenderer()
+        else if let legacy = NSOpenGLPixelFormat(attributes: LegacyOpenglUnitViewRenderer.desiredPixelFormatAttributes) {
+            renderer = LegacyOpenglUnitViewRenderer()
             format = legacy
         }
         else {
@@ -183,7 +183,7 @@ class UnitOpenglView<StateProvider: UnitViewStateProvider>: NSOpenGLView, UnitVi
     
 }
 
-protocol UnitViewRenderer {
+protocol OpenglUnitViewRenderer {
     
     static var desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] { get }
     

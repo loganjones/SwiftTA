@@ -48,8 +48,8 @@
 		B5F89FF320AA6DED0082943E /* Utility+GLKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */; };
 		F015C79220AC9DD700873642 /* unit-view-grid.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = F015C79120AC9DD600873642 /* unit-view-grid.glsl.vert */; };
 		F015C79420AC9E3C00873642 /* unit-view-grid.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F015C79320AC9E3C00873642 /* unit-view-grid.glsl.frag */; };
-		F015C79620ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79520ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift */; };
-		F015C79820AE261400873642 /* UnitView+OpenglLegacyRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79720AE261400873642 /* UnitView+OpenglLegacyRenderer.swift */; };
+		F015C79620ADFFFF00873642 /* UnitViewRenderer+OpenglCore33.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79520ADFFFF00873642 /* UnitViewRenderer+OpenglCore33.swift */; };
+		F015C79820AE261400873642 /* UnitViewRenderer+OpenglLegacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79720AE261400873642 /* UnitViewRenderer+OpenglLegacy.swift */; };
 		F021E3A02062F93A00D3BD39 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F021E39F2062F93A00D3BD39 /* TdfParser.swift */; };
 		F04B28BD2065B503003A1ACC /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BC2065B503003A1ACC /* MapFeature.swift */; };
 		F04B28BF2065B70F003A1ACC /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BE2065B70F003A1ACC /* MapView.swift */; };
@@ -137,8 +137,8 @@
 		B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utility+GLKit.swift"; sourceTree = "<group>"; };
 		F015C79120AC9DD600873642 /* unit-view-grid.glsl.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = "unit-view-grid.glsl.vert"; sourceTree = "<group>"; };
 		F015C79320AC9E3C00873642 /* unit-view-grid.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = "unit-view-grid.glsl.frag"; sourceTree = "<group>"; };
-		F015C79520ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitView+OpenglCore33Renderer.swift"; sourceTree = "<group>"; };
-		F015C79720AE261400873642 /* UnitView+OpenglLegacyRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitView+OpenglLegacyRenderer.swift"; sourceTree = "<group>"; };
+		F015C79520ADFFFF00873642 /* UnitViewRenderer+OpenglCore33.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitViewRenderer+OpenglCore33.swift"; sourceTree = "<group>"; };
+		F015C79720AE261400873642 /* UnitViewRenderer+OpenglLegacy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitViewRenderer+OpenglLegacy.swift"; sourceTree = "<group>"; };
 		F021E39F2062F93A00D3BD39 /* TdfParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
 		F04B28BC2065B503003A1ACC /* MapFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
 		F04B28BE2065B70F003A1ACC /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
@@ -233,11 +233,11 @@
 				F08A641F20EEC2D5001E5982 /* UnitView.swift */,
 				F07B5CC620F671FF00491322 /* UnitView+Metal.swift */,
 				B5E26F431EE3745F006C329B /* UnitView+Opengl.swift */,
-				F015C79520ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift */,
-				F015C79720AE261400873642 /* UnitView+OpenglLegacyRenderer.swift */,
 				F07B5CC820F673C100491322 /* UnitViewRenderer+Metal.swift */,
 				F07B5CCA20F67A3A00491322 /* UnitViewRenderer+MetalShaders.metal */,
 				F07B5CCB20F67A3A00491322 /* UnitViewRenderer+MetalShaderTypes.h */,
+				F015C79520ADFFFF00873642 /* UnitViewRenderer+OpenglCore33.swift */,
+				F015C79720AE261400873642 /* UnitViewRenderer+OpenglLegacy.swift */,
 				F015C79320AC9E3C00873642 /* unit-view-grid.glsl.frag */,
 				F015C79120AC9DD600873642 /* unit-view-grid.glsl.vert */,
 				F0AAC55320AB56CA00D62553 /* unit-view-lighted.glsl.frag */,
@@ -433,7 +433,7 @@
 				B5C556911E353FC1001BEFAB /* UnitBrowser.swift in Sources */,
 				B5E26F051ED9EB05006C329B /* hpi.swift in Sources */,
 				B5E26F0C1ED9EB05006C329B /* UnitObject.swift in Sources */,
-				F015C79820AE261400873642 /* UnitView+OpenglLegacyRenderer.swift in Sources */,
+				F015C79820AE261400873642 /* UnitViewRenderer+OpenglLegacy.swift in Sources */,
 				B5E26F441EE3745F006C329B /* UnitView+Opengl.swift in Sources */,
 				F0D9A49820586F230081DC15 /* MapModel.swift in Sources */,
 				B5B258642065CD0100DD6A15 /* MapInfo.swift in Sources */,
@@ -469,7 +469,7 @@
 				F08A641B20EEAA47001E5982 /* ModelViewRenderer+Metal.swift in Sources */,
 				B51FF3721EECA1F3009B509A /* FileReadHandle.swift in Sources */,
 				B5E26F0B1ED9EB05006C329B /* UnitModel.swift in Sources */,
-				F015C79620ADFFFF00873642 /* UnitView+OpenglCore33Renderer.swift in Sources */,
+				F015C79620ADFFFF00873642 /* UnitViewRenderer+OpenglCore33.swift in Sources */,
 				F08A641E20EEAA47001E5982 /* ModelViewRenderer+OpenglCore33.swift in Sources */,
 				B5E26F3E1EDB4A02006C329B /* UnitTextureAtlas.swift in Sources */,
 				F07B5CC720F671FF00491322 /* UnitView+Metal.swift in Sources */,

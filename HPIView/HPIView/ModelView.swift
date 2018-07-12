@@ -17,8 +17,8 @@ class ModelViewController: NSViewController {
         let defaultFrame = NSRect(x: 0, y: 0, width: 640, height: 480)
         
         if let modelView: NSView & ModelViewLoader = nil
-            ?? ModelMetalView(modelViewFrame: defaultFrame, stateProvider: self)
-            ?? ModelOpenglView(modelViewFrame: defaultFrame, stateProvider: self)
+            ?? MetalModelView(modelViewFrame: defaultFrame, stateProvider: self)
+            ?? OpenglModelView(modelViewFrame: defaultFrame, stateProvider: self)
         {
             view = modelView
             modelLoader = modelView

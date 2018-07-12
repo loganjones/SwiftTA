@@ -12,7 +12,7 @@ import OpenGL.GL3
 import GLKit
 
 
-class UnitViewOpenglCore33Renderer: UnitViewRenderer {
+class Core33OpenglUnitViewRenderer: OpenglUnitViewRenderer {
     
     static let desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] = [
         UInt32(NSOpenGLPFAAllowOfflineRenderers),
@@ -80,7 +80,7 @@ class UnitViewOpenglCore33Renderer: UnitViewRenderer {
 
 // MARK:- Setup
 
-private extension UnitViewOpenglCore33Renderer {
+private extension Core33OpenglUnitViewRenderer {
     
     func makeTexture(_ textureAtlas: UnitTextureAtlas, _ data: Data) -> OpenglTextureResource {
         
@@ -140,7 +140,7 @@ private extension UnitViewOpenglCore33Renderer {
 
 // MARK:- Rendering
 
-private extension UnitViewOpenglCore33Renderer {
+private extension Core33OpenglUnitViewRenderer {
     
     func initScene() {
         glEnable(GLenum(GL_CULL_FACE))

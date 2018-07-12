@@ -10,21 +10,21 @@ import Cocoa
 import OpenGL
 
 
-class ModelOpenglView<StateProvider: ModelViewStateProvider>: NSOpenGLView, ModelViewLoader {
+class OpenglModelView<StateProvider: ModelViewStateProvider>: NSOpenGLView, ModelViewLoader {
     
     unowned let stateProvider: StateProvider
-    private let renderer: ModelOpenglRenderer
+    private let renderer: OpenglModelViewRenderer
     
     required init?(modelViewFrame frameRect: NSRect, stateProvider: StateProvider) {
         self.stateProvider = stateProvider
         
         let format: NSOpenGLPixelFormat?
-        if let core = NSOpenGLPixelFormat(attributes: ModelOpenglCore33Renderer.desiredPixelFormatAttributes) {
-            renderer = ModelOpenglCore33Renderer()
+        if let core = NSOpenGLPixelFormat(attributes: Core33OpenglModelViewRenderer.desiredPixelFormatAttributes) {
+            renderer = Core33OpenglModelViewRenderer()
             format = core
         }
-        else if let legacy = NSOpenGLPixelFormat(attributes: ModelOpenglLegacyRenderer.desiredPixelFormatAttributes) {
-            renderer = ModelOpenglLegacyRenderer()
+        else if let legacy = NSOpenGLPixelFormat(attributes: LegacyOpenglModelViewRenderer.desiredPixelFormatAttributes) {
+            renderer = LegacyOpenglModelViewRenderer()
             format = legacy
         }
         else {
@@ -93,7 +93,7 @@ class ModelOpenglView<StateProvider: ModelViewStateProvider>: NSOpenGLView, Mode
     
 }
 
-protocol ModelOpenglRenderer {
+protocol OpenglModelViewRenderer {
     
     static var desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] { get }
     

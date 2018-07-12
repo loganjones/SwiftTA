@@ -11,7 +11,7 @@ import MetalKit
 import simd
 
 
-class ModelMetalBasicRenderer {
+class BasicMetalModelViewRenderer {
     
     let device: MTLDevice
     private let commandQueue: MTLCommandQueue
@@ -40,7 +40,7 @@ class ModelMetalBasicRenderer {
     
 }
 
-extension ModelMetalBasicRenderer: ModelMetalRenderer {
+extension BasicMetalModelViewRenderer: MetalModelViewRenderer {
     
     func configure(view: MTKView) {
         
@@ -132,22 +132,22 @@ extension ModelMetalBasicRenderer: ModelMetalRenderer {
     
 }
 
-private extension ModelMetalBasicRenderer {
+private extension BasicMetalModelViewRenderer {
     
     func initializeState(in view: MTKView) throws {
         
-        let modelVertexDescriptor = ModelMetalBasicRenderer.buildModelVertexDescriptor()
-        let gridVertexDescriptor = ModelMetalBasicRenderer.buildGridVertexDescriptor()
+        let modelVertexDescriptor = BasicMetalModelViewRenderer.buildModelVertexDescriptor()
+        let gridVertexDescriptor = BasicMetalModelViewRenderer.buildGridVertexDescriptor()
         
         guard let library = device.makeDefaultLibrary() else {
             throw InitializationError.noDefaultShaderLibrary
         }
         
-        modelPipelineState = try ModelMetalBasicRenderer.buildRenderPipeline(
+        modelPipelineState = try BasicMetalModelViewRenderer.buildRenderPipeline(
             named: "Model Pipeline",
             library: library, device: device, view: view,
             vertexDescriptor: modelVertexDescriptor)
-        gridPipelineState = try ModelMetalBasicRenderer.buildRenderPipeline(
+        gridPipelineState = try BasicMetalModelViewRenderer.buildRenderPipeline(
             named: "Grid Pipeline",
             library: library, device: device, view: view,
             vertexDescriptor: gridVertexDescriptor,

@@ -21,8 +21,8 @@ class UnitViewController: NSViewController {
         let defaultFrame = NSRect(x: 0, y: 0, width: 640, height: 480)
         
         if let modelView: NSView & UnitViewLoader = nil
-            ?? UnitMetalView(modelViewFrame: defaultFrame, stateProvider: self)
-            ?? UnitOpenglView(modelViewFrame: defaultFrame, stateProvider: self)
+            ?? MetalUnitView(modelViewFrame: defaultFrame, stateProvider: self)
+            ?? OpenglUnitView(modelViewFrame: defaultFrame, stateProvider: self)
         {
             view = modelView
             unitView = modelView
