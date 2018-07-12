@@ -34,6 +34,7 @@
 		F015C79D20AE3D9600873642 /* unit-view-grid.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = F015C79B20AE3D9500873642 /* unit-view-grid.glsl.vert */; };
 		F015C79E20AE3D9600873642 /* unit-view-grid.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F015C79C20AE3D9500873642 /* unit-view-grid.glsl.frag */; };
 		F015C7A020AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79F20AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift */; };
+		F07B5CD020F7FEFF00491322 /* Utility+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07B5CCF20F7FEFF00491322 /* Utility+Metal.swift */; };
 		F08A641120EE86CD001E5982 /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08A641020EE86CD001E5982 /* ModelView.swift */; };
 		F0AAC55620AB83F700D62553 /* Utility+GLKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AAC55520AB83F700D62553 /* Utility+GLKit.swift */; };
 		F0AAC55920AB842C00D62553 /* UnitTextureAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AAC55820AB842C00D62553 /* UnitTextureAtlas.swift */; };
@@ -100,6 +101,7 @@
 		F015C79B20AE3D9500873642 /* unit-view-grid.glsl.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-grid.glsl.vert"; path = "../../TAassets/TAassets/unit-view-grid.glsl.vert"; sourceTree = "<group>"; };
 		F015C79C20AE3D9500873642 /* unit-view-grid.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-grid.glsl.frag"; path = "../../TAassets/TAassets/unit-view-grid.glsl.frag"; sourceTree = "<group>"; };
 		F015C79F20AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ModelViewRenderer+OpenglLegacy.swift"; sourceTree = "<group>"; };
+		F07B5CCF20F7FEFF00491322 /* Utility+Metal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Metal.swift"; sourceTree = "<group>"; };
 		F08A641020EE86CD001E5982 /* ModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelView.swift; sourceTree = "<group>"; };
 		F0AAC55520AB83F700D62553 /* Utility+GLKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+GLKit.swift"; sourceTree = "<group>"; };
 		F0AAC55820AB842C00D62553 /* UnitTextureAtlas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTextureAtlas.swift; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				B5E26F221ED9EB80006C329B /* Utility.swift */,
 				F0D9A4A12059FBAD0081DC15 /* Utility+Cocoa.swift */,
 				F0AAC55520AB83F700D62553 /* Utility+GLKit.swift */,
+				F07B5CCF20F7FEFF00491322 /* Utility+Metal.swift */,
 				F0D9A4A72059FF080081DC15 /* Utility+OpenGL.swift */,
 			);
 			name = Common;
@@ -316,6 +319,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F07B5CD020F7FEFF00491322 /* Utility+Metal.swift in Sources */,
 				F0D23B972074038600C0A245 /* SideData.swift in Sources */,
 				F0C74B7120D0744000F52B01 /* ModelViewRenderer+Metal.swift in Sources */,
 				B51FF3701EEC966E009B509A /* FileReadHandle.swift in Sources */,

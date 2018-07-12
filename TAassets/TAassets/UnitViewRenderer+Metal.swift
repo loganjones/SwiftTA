@@ -29,13 +29,6 @@ class BasicMetalUnitViewRenderer {
     private var texture: MTLTexture?
     private var grid: MetalGrid!
     
-    private let taPerspective = matrix_float4x4(columns: (
-        vector_float4(-1,   0,   0,   0),
-        vector_float4( 0,   1,   0,   0),
-        vector_float4( 0,-0.5,   1,   0),
-        vector_float4( 0,   0,   0,   1)
-    ))
-    
     init(_ device: MTLDevice) {
         self.device = device
         commandQueue = device.makeCommandQueue()!
@@ -68,7 +61,7 @@ extension BasicMetalUnitViewRenderer: MetalUnitViewRenderer {
         let modelMatrix = matrix_float4x4.identity
         let projection = matrix_float4x4.ortho(0, viewState.sceneSize.width, viewState.sceneSize.height, 0, -1024, 256)
         let sceneCentering = matrix_float4x4.translation(viewState.sceneSize.width / 2, viewState.sceneSize.height / 2, 0)
-        let sceneView = matrix_float4x4.rotate(sceneCentering * taPerspective, radians: -viewState.rotateZ * (Float.pi / 180.0), axis: vector_float3(0, 0, 1))
+        let sceneView = matrix_float4x4.rotate(sceneCentering * matrix_float4x4.taPerspective, radians: -viewState.rotateZ * (Float.pi / 180.0), axis: vector_float3(0, 0, 1))
         let gridView = matrix_float4x4.translate(sceneView, Float(-grid.size.width / 2), Float(-grid.size.height / 2), 0)
         let normal = matrix_float3x3(topLeftOf: sceneView).inverse.transpose
         
@@ -82,7 +75,7 @@ extension BasicMetalUnitViewRenderer: MetalUnitViewRenderer {
         uniforms.pointee.viewPosition = vector_float3(viewState.sceneSize.width / 2, viewState.sceneSize.height / 2, 0)
         switch (viewState.drawMode, viewState.textured) {
         case (.solid, true), (.outlined, true), (.wireframe, _):
-            uniforms.pointee.objectColor = vector_float4(0)
+            uniforms.pointee.objectColor = vector_float4.zero
         case (.solid, false), (.outlined, false):
             uniforms.pointee.objectColor = vector_float4(0.95, 0.85, 0.80, 1)
         }
