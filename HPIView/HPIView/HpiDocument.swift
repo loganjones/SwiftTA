@@ -81,7 +81,7 @@ class HpiBrowserViewController: NSViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        finder.register(NSNib(nibNamed: NSNib.Name(rawValue: "HpiFinderRow"), bundle: nil), forIdentifier: "HpiItem")
+        finder.register(NSNib(nibNamed: "HpiFinderRow", bundle: nil), forIdentifier: "HpiItem")
         finder.createRowView = { [weak self] (item, tableView) in return self?.rowView(for: item, in: tableView) }
         finder.createContentView = { [weak self] (item, path) in return self?.preview(for: item, at: path) }
         finder.setRoot(directory: Directory(hpiDocument.filesystem.root, in: hpiDocument.filesystem))
@@ -231,7 +231,7 @@ extension HpiBrowserViewController {
         switch item {
             
         case .directory:
-            view.imageView?.image = NSImage(named: .folder)
+            view.imageView?.image = NSImage(named: NSImage.folderName)
             
         case .file, .gafArchive:
             let ext = URL(fileURLWithPath: item.name, isDirectory: false).pathExtension.lowercased()
@@ -265,13 +265,13 @@ extension HpiBrowserViewController {
             }
             
             if previewController.parent != self {
-                addChildViewController(previewController)
+                addChild(previewController)
             }
             
             return previewController.view
         }
         catch {
-            previewController.removeFromParentViewController()
+            previewController.removeFromParent()
             previewController.contentView = nil
             return nil
         }
@@ -282,7 +282,7 @@ extension HpiBrowserViewController {
             return view
         }
         else {
-            previewContentController?.removeFromParentViewController()
+            previewContentController?.removeFromParent()
             previewContentController = nil
             
             let view = T(frame: deafultFrame)
@@ -296,10 +296,10 @@ extension HpiBrowserViewController {
             return controller
         }
         else {
-            previewContentController?.removeFromParentViewController()
+            previewContentController?.removeFromParent()
             
             let controller = T()
-            addChildViewController(controller)
+            addChild(controller)
             previewContentController = controller
             previewController.contentView = controller.view
             return controller
@@ -395,7 +395,7 @@ extension HpiBrowserViewController {
 
 extension HpiBrowserViewController {
     
-    override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.action == #selector(extract) {
             return finder.selectedItems.count > 0
         }

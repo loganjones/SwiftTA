@@ -15,7 +15,7 @@ class GenericTextView: NSView {
     var font = NSFont.userFixedPitchFont(ofSize: 11) ?? NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular) {
         didSet {
             let range = NSRange(location: 0, length: textView.textStorage?.length ?? 0)
-            textView.textStorage?.setAttributes([NSAttributedStringKey.font : font], range: range)
+            textView.textStorage?.setAttributes([.font : font], range: range)
         }
     }
     
@@ -57,7 +57,7 @@ class GenericTextView: NSView {
     
     var text: String {
         get { return textView.string }
-        set(new) { textView.textStorage?.setAttributedString(NSAttributedString(string: new, attributes: [NSAttributedStringKey.font: font])) }
+        set(new) { textView.textStorage?.setAttributedString(NSAttributedString(string: new, attributes: [.font: font])) }
     }
     
 }
@@ -77,7 +77,7 @@ class CobView: GenericTextView {
     }
     
     func append(_ s: String) {
-        let text = NSAttributedString(string: s, attributes: [NSAttributedStringKey.font: font])
+        let text = NSAttributedString(string: s, attributes: [.font: font])
         textView.textStorage?.append(text)
     }
     
