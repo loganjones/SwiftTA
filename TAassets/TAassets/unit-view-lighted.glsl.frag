@@ -43,4 +43,5 @@ void main(void) {
     else {
         out_color = lightContribution * objectColor;
     }
+    
 }

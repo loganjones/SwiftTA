@@ -1,5 +1,5 @@
 //
-//  UnitView+OpenglLegacyRenderer.swift
+//  ModelViewRenderer+OpenglLegacy.swift
 //  TAassets
 //
 //  Created by Logan Jones on 5/17/18.
@@ -12,7 +12,7 @@ import OpenGL.GL3
 import GLKit
 
 
-class UnitViewOpenglLegacyRenderer: UnitViewRenderer {
+class LegacyOpenglModelViewRenderer: OpenglModelViewRenderer {
     
     static let desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] = [
         UInt32(NSOpenGLPFAMinimumPolicy),
@@ -21,12 +21,12 @@ class UnitViewOpenglLegacyRenderer: UnitViewRenderer {
         0
     ]
     
-    private var toLoad: UnitView.UnitInstance?
-    private var model: GLInstancePieces?
+    private var toLoad: UnitModel?
+    private var model: GLWholeModel?
     private var modelTexture: GLuint = 0
     
     private let gridSize = Size2D(width: 16, height: 16)
-    private let gridSpacing: Int = UnitView.gridSize
+    private let gridSpacing: Int = ModelViewState.gridSize
     
     init() {
         
@@ -36,30 +36,25 @@ class UnitViewOpenglLegacyRenderer: UnitViewRenderer {
         initScene()
     }
     
-    func drawFrame(_ viewState: UnitView.ViewState, _ currentTime: Double, _ deltaTime: Double) {
+    func drawFrame(_ viewState: ModelViewState) {
         
-        if let newUnit = toLoad {
-            model = GLInstancePieces(newUnit.modelInstance, of: newUnit.model, with: newUnit.textureAtlas)
-            modelTexture = makeTexture(newUnit.textureAtlas, newUnit.textureData)
+        if let newModel = toLoad {
+            model = GLWholeModel(newModel)
             toLoad = nil
         }
         
         drawScene(viewState)
     }
     
-    func updateForAnimations(_ model: UnitModel, _ modelInstance: UnitModel.Instance) {
-        self.model?.instance = modelInstance
-    }
-    
-    func switchTo(_ unit: UnitView.UnitInstance) {
-        toLoad = unit
+    func switchTo(_ model: UnitModel) {
+        toLoad = model
     }
     
 }
 
 // MARK:- Setup
 
-private extension UnitViewOpenglLegacyRenderer {
+private extension LegacyOpenglModelViewRenderer {
     
     func makeTexture(_ texture: UnitTextureAtlas, _ data: Data) -> GLuint {
         
@@ -92,7 +87,7 @@ private extension UnitViewOpenglLegacyRenderer {
 
 // MARK:- Rendering
 
-private extension UnitViewOpenglLegacyRenderer {
+private extension LegacyOpenglModelViewRenderer {
     
     func initScene() {
         glLightfv(GLenum(GL_LIGHT0), GLenum(GL_POSITION), [ 5.0, 5.0, 10.0, 0.0 ])
@@ -112,7 +107,7 @@ private extension UnitViewOpenglLegacyRenderer {
         glTexEnvf(GLenum(GL_TEXTURE_ENV), GLenum(GL_TEXTURE_ENV_MODE), GLfloat(GL_MODULATE))
     }
     
-    func reshape(_ viewState: UnitView.ViewState) {
+    func reshape(_ viewState: ModelViewState) {
         glViewport(0, 0, GLsizei(viewState.viewportSize.width), GLsizei(viewState.viewportSize.height))
         
         glMatrixMode(GLenum(GL_PROJECTION))
@@ -126,7 +121,7 @@ private extension UnitViewOpenglLegacyRenderer {
         glTranslated(GLdouble(scene.width / 2), GLdouble(scene.height / 2), 0.0)
     }
     
-    func drawScene(_ viewState: UnitView.ViewState) {
+    func drawScene(_ viewState: ModelViewState) {
         
         reshape(viewState)
         
@@ -153,7 +148,7 @@ private extension UnitViewOpenglLegacyRenderer {
         glPopMatrix()
     }
     
-    func drawGrid(_ viewState: UnitView.ViewState) {
+    func drawGrid(_ viewState: ModelViewState) {
         
         glDisable(GLenum(GL_TEXTURE_2D))
         glDisable(GLenum(GL_LIGHTING))
@@ -164,7 +159,7 @@ private extension UnitViewOpenglLegacyRenderer {
         let gridSpacing = self.gridSpacing
         
         let psize = CGSize(size * gridSpacing)
-        glTranslatef(GLfloat(-psize.width / 2), GLfloat(-psize.height / 2) + GLfloat(viewState.movement), -0.5)
+        glTranslatef(GLfloat(-psize.width / 2), GLfloat(-psize.height / 2), -0.5)
         
         var n = 0
         let addLine: (Vertex3, Vertex3) -> () = { (a, b) in glVertex(a); glVertex(b); n += 2 }
@@ -184,7 +179,7 @@ private extension UnitViewOpenglLegacyRenderer {
         glPopMatrix()
     }
     
-    func drawUnit(_ viewState: UnitView.ViewState) {
+    func drawUnit(_ viewState: ModelViewState) {
         
         glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture)
         
@@ -237,78 +232,66 @@ private extension UnitViewOpenglLegacyRenderer {
     
 }
 
-// MARK:- Draw Instance (UnitModel.Instance)
+// MARK:- Draw Model (UnitModel)
 
-private struct GLInstancePieces {
+private struct GLWholeModel {
     
-    private var filled: [GLuint]
-    private var wireframe: [GLuint]
-    fileprivate var model: UnitModel
-    fileprivate var instance: UnitModel.Instance
+    private var filledList: GLuint
+    private var wireframeList: GLuint
     
-    init(_ instance: UnitModel.Instance, of model: UnitModel, with textures: UnitTextureAtlas? = nil) {
-        let pieceCount = model.pieces.count
-        let lists = glGenLists(GLsizei(pieceCount * 2))
-        filled = Array(lists ..< (lists + GLuint(pieceCount)))
-        wireframe = Array((lists + GLuint(pieceCount)) ..< (lists + GLuint(pieceCount * 2)))
+    init(_ model: UnitModel) {
+        let lists = glGenLists(2)
+        filledList = lists + 0
+        wireframeList = lists + 1
         
-        GLInstancePieces.initPieces(filled, model: model, textures: textures, draw: ModelGL.drawFilledPrimitive)
-        GLInstancePieces.initPieces(wireframe, model: model, textures: textures, draw: ModelGL.drawWireShape)
+        glNewList(filledList, GLenum(GL_COMPILE))
+        GLWholeModel.drawFillModel(from: model)
+        glEndList()
         
-        self.model = model
-        self.instance = instance
+        glNewList(wireframeList, GLenum(GL_COMPILE))
+        GLWholeModel.drawWireModel(from: model)
+        glEndList()
     }
     
     func drawFilled() {
-        GLInstancePieces.drawPiece(at: model.root, instance: instance, model: model, displayLists: filled)
+        glCallList(filledList)
     }
     
     func drawWireframe() {
-        GLInstancePieces.drawPiece(at: model.root, instance: instance, model: model, displayLists: wireframe)
+        glCallList(wireframeList)
     }
     
-    static func initPieces(_ displayLists: [GLuint], model: UnitModel, textures: UnitTextureAtlas?, draw: ModelGL.DrawFunc) {
-        for i in 0 ..< displayLists.count {
-            let displayList = displayLists[i]
-            let piece = model.pieces[i]
-            glNewList(displayList, GLenum(GL_COMPILE))
-            for primitiveIndex in piece.primitives.reversed() {
-                guard primitiveIndex != model.groundPlate else { continue }
-                let primitive = model.primitives[primitiveIndex]
-                let indices = primitive.indices
-                let texCoords = textures?.textureCoordinates(for: primitive.texture) ?? ModelGL.ZeroTexCoords
-                draw( indices.map({ model.vertices[$0] }), texCoords )
-            }
-            glEndList()
-        }
+    static func drawWireModel(from model: UnitModel) {
+        drawPiece(at: model.root, in: model, level: 0, draw: ModelGL.drawWireShape)
     }
     
-    static func drawPiece(at pieceIndex: Int, instance: UnitModel.Instance, model: UnitModel, displayLists: [GLuint]) {
+    static func drawFillModel(from model: UnitModel) {
+        drawPiece(at: model.root, in: model, level: 0, draw: ModelGL.drawFilledPrimitive)
+    }
+    
+    static func drawPiece(at pieceIndex: Int, in model: UnitModel, level: Int, draw: ModelGL.DrawFunc) {
         
-        let state = instance.pieces[pieceIndex]
         let piece = model.pieces[pieceIndex]
         
         glPushMatrix()
-        glMultMatrixd(makeTransform(from: state, with: piece.offset))
+        glTranslate(piece.offset)
         
-        if !state.hidden {
-            glCallList(displayLists[pieceIndex])
+        for primitiveIndex in piece.primitives.reversed() {
+            guard primitiveIndex != model.groundPlate else { continue }
+            let primitive = model.primitives[primitiveIndex]
+            let indices = primitive.indices
+            draw( indices.map({ model.vertices[$0] }), ModelGL.ZeroTexCoords )
         }
         
         for childIndex in piece.children {
-            drawPiece(at: childIndex, instance: instance, model: model, displayLists: displayLists)
+            drawPiece(at: childIndex, in: model, level: level+1, draw: draw)
         }
         
         glPopMatrix()
         
     }
     
-    mutating func animate(_ script: UnitScript.Context, for deltaTime: Double) {
-        script.applyAnimations(to: &instance, for: deltaTime)
-    }
-    
 }
-
 
 // MARK:- Draw Piece Vertices
 
@@ -379,31 +362,4 @@ private extension ModelGL {
         }
     }
     
-}
-
-private func makeTransform(from piece: UnitModel.PieceState, with offset: Vector3) -> [Double] {
-    
-    var M: [Double] = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1]
-    
-    let rad2deg = Double.pi / 180
-    let sin = piece.turn.map { Darwin.sin($0 * rad2deg) }
-    let cos = piece.turn.map { Darwin.cos($0 * rad2deg) }
-    
-    M[12] = offset.x - piece.move.x
-    M[13] = offset.y - piece.move.z
-    M[14] = offset.z + piece.move.y
-    
-    M[0] = cos.y * cos.z
-    M[1] = (sin.y * cos.x) + (sin.x * cos.y * sin.z)
-    M[2] = (sin.x * sin.y) - (cos.x * cos.y * sin.z)
-    
-    M[4] = -sin.y * cos.z
-    M[5] = (cos.x * cos.y) - (sin.x * sin.y * sin.z)
-    M[6] = (sin.x * cos.y) + (cos.x * sin.y * sin.z)
-    
-    M[8] = sin.z
-    M[9] = -sin.x * cos.z
-    M[10] = cos.x * cos.z
-    
-    return M
 }

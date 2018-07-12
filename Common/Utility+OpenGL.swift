@@ -105,6 +105,22 @@ func glGetProgramInfoLog(_ program: GLuint) -> String? {
     return String(data: data, encoding: .utf8) ?? String(data: data, encoding: .ascii)
 }
 
+class OpenglTextureResource {
+    var id: GLuint
+    init() {
+        var textureId: GLuint = 0
+        glGenTextures(1, &textureId)
+        id = textureId
+    }
+    init(id: GLuint) {
+        self.id = id
+    }
+    deinit {
+        var textureId = id
+        glDeleteTextures(1, &textureId)
+    }
+}
+
 // MARK:- I am Error
 
 func printGlErrors(prefix: String = "") {

@@ -1,107 +1,126 @@
 //
 //  UnitView.swift
-//  HPIView
+//  TAassets
 //
-//  Created by Logan Jones on 11/18/16.
-//  Copyright © 2016 Logan Jones. All rights reserved.
+//  Created by Logan Jones on 7/5/18.
+//  Copyright © 2018 Logan Jones. All rights reserved.
 //
 
-import Cocoa
-import OpenGL
+import AppKit
 
-
-class UnitView: NSOpenGLView {
+class UnitViewController: NSViewController {
     
-    private var viewState = ViewState()
-    private var renderer: UnitViewRenderer
+    private(set) var viewState = UnitViewState()
+    private var unitView: UnitViewLoader!
+    
     private var unit: UnitInstance?
-    private var displayLink: CVDisplayLink?
-    
     private var loadTime: Double = 0
     private var shouldStartMoving = false
     
-    private var trackingMouse = false
-    
-    static let gridSize = 16
-    
-    override init(frame frameRect: NSRect) {
+    override func loadView() {
+        let defaultFrame = NSRect(x: 0, y: 0, width: 640, height: 480)
         
-        let format: NSOpenGLPixelFormat?
-        if let core = NSOpenGLPixelFormat(attributes: UnitViewOpenglCore33Renderer.desiredPixelFormatAttributes) {
-            renderer = UnitViewOpenglCore33Renderer()
-            format = core
-        }
-        else if let legacy = NSOpenGLPixelFormat(attributes: UnitViewOpenglLegacyRenderer.desiredPixelFormatAttributes) {
-            renderer = UnitViewOpenglLegacyRenderer()
-            format = legacy
+        if let modelView: NSView & UnitViewLoader = nil
+            ?? MetalUnitView(modelViewFrame: defaultFrame, stateProvider: self)
+            ?? OpenglUnitView(modelViewFrame: defaultFrame, stateProvider: self)
+        {
+            view = modelView
+            unitView = modelView
         }
         else {
-            renderer = EmptyRenderer()
-            format = nil
+            view = NSView(frame: defaultFrame)
+            unitView = DummyUnitViewLoader()
         }
-        
-        super.init(frame: frameRect, pixelFormat: format)!
-        wantsBestResolutionOpenGLSurface = true
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    func load(_ info: UnitInfo,
+              _ model: UnitModel,
+              _ script: UnitScript,
+              _ texture: UnitTextureAtlas,
+              _ filesystem: FileSystem,
+              _ palette: Palette) throws {
+        
+        let newUnit = UnitInstance(
+            info: info,
+            model: model,
+            modelInstance: UnitModel.Instance(for: model),
+            script: script,
+            scriptContext: try UnitScript.Context(script, model))
+        
+        try unitView.load(info, model, script, texture, filesystem, palette)
+        
+        loadTime = getTime()
+        newUnit.scriptContext.startScript("Create")
+        shouldStartMoving = newUnit.info.maxVelocity > 0
+        
+        viewState.isMoving = false
+        viewState.movement = 0
+        viewState.model = newUnit.model
+        viewState.modelInstance = newUnit.modelInstance
+        
+        unit = newUnit
+        computeSceneSize()
     }
     
-    deinit {
-        CVDisplayLinkStop(displayLink!)
+    func clear() {
+        unit = nil
+        viewState.model = nil
+        viewState.modelInstance = nil
+        unitView.clear()
     }
     
-    override var frame: NSRect {
-        didSet { viewState.viewportSize = convertToBacking(bounds).size }
-    }
-    
-    override func prepareOpenGL() {
-        super.prepareOpenGL()
-        
-        guard let context = openGLContext
-            else { return }
-        
-        var swapInt: GLint = 1
-        context.setValues(&swapInt, for: .swapInterval)
-        
-        renderer.initializeOpenglState()
-        
-        func UnitViewDisplayLinkCallback(displayLink: CVDisplayLink,
-                                         now: UnsafePointer<CVTimeStamp>,
-                                         outputTime: UnsafePointer<CVTimeStamp>,
-                                         flagsIn: CVOptionFlags,
-                                         flagsOut: UnsafeMutablePointer<CVOptionFlags>,
-                                         displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
-            
-            let currentTime = Double(now.pointee.videoTime) / Double(now.pointee.videoTimeScale)
-            let deltaTime = 1.0 / (outputTime.pointee.rateScalar * Double(outputTime.pointee.videoTimeScale) / Double(outputTime.pointee.videoRefreshPeriod))
-            
-            let view = unsafeBitCast(displayLinkContext, to: UnitView.self)
-            view.drawFrame(currentTime, deltaTime)
-            
-            return kCVReturnSuccess
-        }
-        
-        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
-        CVDisplayLinkSetOutputCallback(displayLink!, UnitViewDisplayLinkCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
-        CVDisplayLinkStart(displayLink!)
-    }
-    
-//    override func draw(_ dirtyRect: NSRect) {
-//        drawScene()
-//        glFlush()
-//    }
-    
-    fileprivate func drawFrame(_ currentTime: Double, _ deltaTime: Double) {
-        
-        guard let unit = unit else {
-            return
-        }
-        
-        viewState.aspectRatio = Float(viewState.viewportSize.height) / Float(viewState.viewportSize.width)
-        let w = Float( (unit.info.footprint.width + 8) * UnitView.gridSize )
+    private func computeSceneSize() {
+        let w = Float( ((unit?.info.footprint.width ?? 2) + 8) * ModelViewState.gridSize )
         viewState.sceneSize = (width: w, height: w * viewState.aspectRatio)
+    }
+    
+}
+
+private extension UnitViewController {
+    
+    struct UnitInstance {
+        var info: UnitInfo
+        var model: UnitModel
+        var modelInstance: UnitModel.Instance
+        var script: UnitScript
+        var scriptContext: UnitScript.Context
+    }
+    
+}
+
+extension UnitViewController: UnitViewStateProvider {
+    
+    func viewportChanged(to size: CGSize) {
+        viewState.viewportSize = size
+        viewState.aspectRatio = Float(viewState.viewportSize.height) / Float(viewState.viewportSize.width)
+        computeSceneSize()
+    }
+    
+    override func mouseDragged(with event: NSEvent) {
+        if event.modifierFlags.contains(.shift) { viewState.rotateX += GLfloat(event.deltaX) }
+        else if event.modifierFlags.contains(.option) { viewState.rotateY += GLfloat(event.deltaX) }
+        else { viewState.rotateZ += GLfloat(event.deltaX) }
+    }
+    
+    override func keyDown(with event: NSEvent) {
+        switch event.characters {
+        case .some("w"):
+            var drawMode = viewState.drawMode
+            let i = drawMode.rawValue
+            if let mode = UnitViewState.DrawMode(rawValue: i+1) { drawMode = mode }
+            else { drawMode = .solid }
+            viewState.drawMode = drawMode
+        case .some("t"):
+            viewState.textured = !viewState.textured
+        case .some("l"):
+            viewState.lighted = !viewState.lighted
+        default:
+            ()
+        }
+    }
+    
+    func updateAnimatingState(deltaTime: Double) {
+        guard var unit = unit else { return }
         
         if shouldStartMoving && getTime() > loadTime + 1 {
             unit.scriptContext.startScript("StartMoving")
@@ -112,12 +131,6 @@ class UnitView: NSOpenGLView {
         
         unit.scriptContext.run(for: unit.modelInstance, on: self)
         unit.scriptContext.applyAnimations(to: &unit.modelInstance, for: deltaTime)
-        renderer.updateForAnimations(unit.model, unit.modelInstance)
-        
-        guard let context = openGLContext
-            else { return }
-        context.makeCurrentContext()
-        CGLLockContext(context.cglContextObj!)
         
         if viewState.isMoving {
             let dt = deltaTime * 10
@@ -131,89 +144,19 @@ class UnitView: NSOpenGLView {
             viewState.movement += dt * speed
             viewState.speed = speed
             
-            let gridSize = Double(UnitView.gridSize)
+            let gridSize = Double(UnitViewState.gridSize)
             if viewState.movement > gridSize {
                 viewState.movement -= gridSize
             }
         }
         
-        renderer.drawFrame(viewState, currentTime, deltaTime)
-        glFlush()
-        
-        CGLFlushDrawable(context.cglContextObj!)
-        CGLUnlockContext(context.cglContextObj!)
-    }
-    
-    private struct ToLoad {
-        var unit: UnitInfo
-        var model: UnitModel
-        var instance: UnitModel.Instance
-        var scriptContext: UnitScript.Context
-        var texture: UnitTextureAtlas
-        var textureData: Data
-    }
-    
-    func load(_ info: UnitInfo,
-              _ model: UnitModel,
-              _ script: UnitScript,
-              _ texture: UnitTextureAtlas,
-              _ filesystem: FileSystem,
-              _ palette: Palette) throws {
-        let unit = try UnitInstance(info, model, script, texture, filesystem, palette)
+        viewState.modelInstance = unit.modelInstance
         self.unit = unit
-        
-        unit.scriptContext.startScript("Create")
-        loadTime = getTime()
-        shouldStartMoving = unit.info.maxVelocity > 0
-        viewState.isMoving = false
-        viewState.movement = 0
-        
-        renderer.switchTo(unit)
     }
     
-    override func mouseDown(with event: NSEvent) {
-        trackingMouse = true
-    }
-    
-    override func mouseUp(with event: NSEvent) {
-        trackingMouse = false
-    }
-    
-    override func mouseDragged(with event: NSEvent) {
-        if trackingMouse {
-            if event.modifierFlags.contains(.shift) { viewState.rotateX += GLfloat(event.deltaX) }
-            else if event.modifierFlags.contains(.option) { viewState.rotateY += GLfloat(event.deltaX) }
-            else { viewState.rotateZ += GLfloat(event.deltaX) }
-            setNeedsDisplay(bounds)
-        }
-    }
-    
-    override func keyDown(with event: NSEvent) {
-        switch event.characters {
-        case .some("w"):
-            var drawMode = viewState.drawMode
-            let i = drawMode.rawValue
-            if let mode = DrawMode(rawValue: i+1) { drawMode = mode }
-            else { drawMode = .solid }
-            viewState.drawMode = drawMode
-            setNeedsDisplay(bounds)
-        case .some("t"):
-            viewState.textured = !viewState.textured
-            setNeedsDisplay(bounds)
-        case .some("l"):
-            viewState.lighted = !viewState.lighted
-            setNeedsDisplay(bounds)
-        default:
-            ()
-        }
-    }
-    
-    override var acceptsFirstResponder: Bool {
-        return true
-    }
 }
 
-extension UnitView: ScriptMachine {
+extension UnitViewController: ScriptMachine {
     
     func getTime() -> Double {
         return Date.timeIntervalSinceReferenceDate
@@ -221,49 +164,28 @@ extension UnitView: ScriptMachine {
     
 }
 
-extension UnitView {
+struct UnitViewState {
     
-    class UnitInstance {
-        var info: UnitInfo
-        var model: UnitModel
-        var modelInstance: UnitModel.Instance
-        var textureAtlas: UnitTextureAtlas
-        var textureData: Data
-        var scriptContext: UnitScript.Context
-        
-        init(_ info: UnitInfo,
-             _ model: UnitModel,
-             _ script: UnitScript,
-             _ texture: UnitTextureAtlas,
-             _ filesystem: FileSystem,
-             _ palette: Palette) throws {
-            self.info = info
-            self.model = model
-            self.modelInstance = UnitModel.Instance(for: model)
-            self.textureAtlas = texture
-            self.textureData = texture.build(from: filesystem, using: palette)
-            self.scriptContext = try UnitScript.Context(script, model)
-        }
-        
-    }
+    var viewportSize = CGSize()
+    var aspectRatio: Float = 1
+    var sceneSize: (width: Float, height: Float) = (0,0)
     
-    struct ViewState {
-        var viewportSize = CGSize()
-        var aspectRatio: Float = 1
-        var sceneSize: (width: Float, height: Float) = (0,0)
-        
-        var drawMode = DrawMode.solid
-        var textured = true
-        var lighted = false
-        
-        var rotateZ: GLfloat = 160
-        var rotateX: GLfloat = 0
-        var rotateY: GLfloat = 0
-        
-        var isMoving = false
-        var speed: Double = 0
-        var movement: Double = 0
-    }
+    static let gridSize = 16
+    
+    var drawMode = DrawMode.solid
+    var textured = true
+    var lighted = false
+    
+    var rotateZ: GLfloat = 160
+    var rotateX: GLfloat = 0
+    var rotateY: GLfloat = 0
+    
+    var model: UnitModel?
+    var modelInstance: UnitModel.Instance?
+    
+    var isMoving = false
+    var speed: Double = 0
+    var movement: Double = 0
     
     enum DrawMode: Int {
         case solid
@@ -273,36 +195,34 @@ extension UnitView {
     
 }
 
-protocol UnitViewRenderer {
-    
-    static var desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] { get }
-    
-    func initializeOpenglState()
-    func drawFrame(_ viewState: UnitView.ViewState, _ currentTime: Double, _ deltaTime: Double)
-    func updateForAnimations(_ model: UnitModel, _ modelInstance: UnitModel.Instance)
-    
-    func switchTo(_ unit: UnitView.UnitInstance)
-    
+protocol UnitViewLoader {
+    func load(_ info: UnitInfo,
+              _ model: UnitModel,
+              _ script: UnitScript,
+              _ texture: UnitTextureAtlas,
+              _ filesystem: FileSystem,
+              _ palette: Palette) throws
+    func clear()
+}
+protocol UnitViewStateProvider: AnyObject {
+    var viewState: UnitViewState { get }
+    func viewportChanged(to size: CGSize)
+    func mouseDragged(with event: NSEvent)
+    func keyDown(with event: NSEvent)
+    func updateAnimatingState(deltaTime: Double)
 }
 
-private extension UnitView {
+private struct DummyUnitViewLoader: UnitViewLoader {
     
-    class EmptyRenderer: UnitViewRenderer {
-        
-        static var desiredPixelFormatAttributes: [NSOpenGLPixelFormatAttribute] = []
-        
-        func initializeOpenglState() {
-        }
-        
-        func drawFrame(_ viewState: ViewState, _ currentTime: Double, _ deltaTime: Double) {
-        }
-        
-        func updateForAnimations(_ model: UnitModel, _ modelInstance: UnitModel.Instance) {
-        }
-        
-        func switchTo(_ unit: UnitView.UnitInstance) {
-        }
-    
+    func load(_ info: UnitInfo,
+              _ model: UnitModel,
+              _ script: UnitScript,
+              _ texture: UnitTextureAtlas,
+              _ filesystem: FileSystem,
+              _ palette: Palette) throws {
+        throw RuntimeError("No valid view available to load unit.")
     }
+    
+    func clear() {}
     
 }

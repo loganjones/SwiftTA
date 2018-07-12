@@ -12,12 +12,13 @@ import Cocoa
 class UnitBrowserViewController: NSViewController, ContentViewController {
     
     var shared = TaassetsSharedState.empty
-    fileprivate var units: [UnitInfo] = []
-    fileprivate var textures = ModelTexturePack()
+    private var units: [UnitInfo] = []
+    private var textures = ModelTexturePack()
     
-    fileprivate var tableView: NSTableView!
-    fileprivate var detailViewContainer: NSView!
-    fileprivate var detailViewController: UnitDetailViewController?
+    private var tableView: NSTableView!
+    private var detailViewContainer: NSView!
+    private let detailViewController = UnitDetailViewController()
+    private var isShowingDetail = false
     
     static let picSize: CGFloat = 64
     
@@ -121,20 +122,25 @@ extension UnitBrowserViewController: NSTableViewDelegate {
             else { return }
         let row = tableView.selectedRow
         if row >= 0 {
-            detailViewController?.view.removeFromSuperview()
             
-            let controller = UnitDetailViewController()
-            controller.view.frame = detailViewContainer.bounds
-            controller.view.autoresizingMask = [.width, .width]
-            detailViewContainer.addSubview(controller.view)
-            detailViewController = controller
-            controller.shared = UnitBrowserSharedState(filesystem: shared.filesystem, textures: textures, sides: shared.sides)
-            do { try controller.load(units[row]) }
+            if !isShowingDetail {
+                let controller = detailViewController
+                controller.view.frame = detailViewContainer.bounds
+                controller.view.autoresizingMask = [.width, .width]
+                addChildViewController(controller)
+                detailViewContainer.addSubview(controller.view)
+                isShowingDetail = true
+            }
+            
+            detailViewController.shared = UnitBrowserSharedState(filesystem: shared.filesystem, textures: textures, sides: shared.sides)
+            do { try detailViewController.load(units[row]) }
             catch { print("!!! Failed to load \(units[row].name): \(error)") }
         }
-        else {
-            detailViewController?.view.removeFromSuperview()
-            detailViewController = nil
+        else if isShowingDetail {
+            detailViewController.clear()
+            detailViewController.view.removeFromSuperview()
+            detailViewController.removeFromParentViewController()
+            isShowingDetail = false
         }
     }
     
@@ -225,18 +231,23 @@ extension UnitBrowserSharedState {
 class UnitDetailViewController: NSViewController {
     
     var shared = UnitBrowserSharedState.empty
+    let unitView = UnitViewController()
     
     func load(_ unit: UnitInfo) throws {
-        tempView.title = unit.object
+        unitTitle = unit.object
         let modelFile = try shared.filesystem.openFile(at: "objects3d/" + unit.object + ".3DO")
         let model = try UnitModel(contentsOf: modelFile)
         let scriptFile = try shared.filesystem.openFile(at: "scripts/" + unit.object + ".COB")
         let script = try UnitScript(contentsOf: scriptFile)
         let atlas = UnitTextureAtlas(for: model.textures, from: shared.textures)
         let palette = try Palette.texturePalette(for: unit, in: shared.sides, from: shared.filesystem)
-        try tempView.modelView.load(unit, model, script, atlas, shared.filesystem, palette)
+        try unitView.load(unit, model, script, atlas, shared.filesystem, palette)
         
         //try tempSaveAtlasToFile(atlas, palette)
+    }
+    
+    func clear() {
+        unitView.clear()
     }
     
     private func tempSaveAtlasToFile(_ atlas: UnitTextureAtlas, _ palette: Palette) throws {
@@ -265,65 +276,56 @@ class UnitDetailViewController: NSViewController {
         try fileData?.write(to: url2, options: .atomic)
     }
     
-    private var tempView: TempView { return view as! TempView }
-    
-    override func loadView() {
-        let bounds = NSRect(x: 0, y: 0, width: 480, height: 480)
-        let mainView = TempView(frame: bounds)
-        
-        self.view = mainView
+    var unitTitle: String {
+        get { return container.titleLabel.stringValue }
+        set(new) { container.titleLabel.stringValue = new }
     }
     
+    private var container: ContainerView {
+        return view as! ContainerView
+    }
     
-    private class TempView: NSView {
+    private class ContainerView: NSView {
         
-        private unowned let titleLabel: NSTextField
-        private unowned let sizeLabel: NSTextField
-        private unowned let sourceLabel: NSTextField
-        unowned let modelView: UnitView
+        unowned let titleLabel: NSTextField
+        let emptyContentView: NSView
+        
+        weak var contentView: NSView? {
+            didSet {
+                guard contentView != oldValue else { return }
+                oldValue?.removeFromSuperview()
+                if let contentView = contentView {
+                    addSubview(contentView)
+                    contentView.translatesAutoresizingMaskIntoConstraints = false
+                    addContentViewConstraints(contentView)
+                }
+                else {
+                    oldValue?.removeFromSuperview()
+                    addSubview(emptyContentView)
+                    addContentViewConstraints(emptyContentView)
+                }
+            }
+        }
         
         override init(frame frameRect: NSRect) {
             let titleLabel = NSTextField(labelWithString: "Title")
             titleLabel.font = NSFont.systemFont(ofSize: 18)
             titleLabel.textColor = NSColor.labelColor
-            let sizeLabel = NSTextField(labelWithString: "Empty")
-            sizeLabel.font = NSFont.systemFont(ofSize: 12)
-            sizeLabel.textColor = NSColor.secondaryLabelColor
-            let sourceLabel = NSTextField(labelWithString: "None")
-            sourceLabel.font = NSFont.systemFont(ofSize: 9)
-            sourceLabel.textColor = NSColor.secondaryLabelColor
-            let contentBox = UnitView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
+            let contentBox = NSView(frame: NSRect(x: 0, y: 0, width: 32, height: 32))
             
             self.titleLabel = titleLabel
-            self.sizeLabel = sizeLabel
-            self.sourceLabel = sourceLabel
-            self.modelView = contentBox
+            self.emptyContentView = contentBox
             super.init(frame: frameRect)
             
             addSubview(contentBox)
             addSubview(titleLabel)
-            addSubview(sizeLabel)
-            addSubview(sourceLabel)
             
             contentBox.translatesAutoresizingMaskIntoConstraints = false
             titleLabel.translatesAutoresizingMaskIntoConstraints = false
-            sizeLabel.translatesAutoresizingMaskIntoConstraints = false
-            sourceLabel.translatesAutoresizingMaskIntoConstraints = false
             
+            addContentViewConstraints(contentBox)
             NSLayoutConstraint.activate([
-                contentBox.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8),
-                contentBox.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8),
-                contentBox.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),
-                contentBox.heightAnchor.constraint(equalTo: self.heightAnchor, multiplier: 0.61803398875),
-                
                 titleLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-                titleLabel.topAnchor.constraint(equalTo: contentBox.bottomAnchor, constant: 8),
-                
-                sizeLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-                sizeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 0),
-                
-                sourceLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-                sourceLabel.topAnchor.constraint(equalTo: sizeLabel.bottomAnchor, constant: 0),
                 ])
         }
         
@@ -331,33 +333,24 @@ class UnitDetailViewController: NSViewController {
             fatalError("init(coder:) has not been implemented")
         }
         
-        var title: String {
-            get { return titleLabel.stringValue }
-            set(new) { titleLabel.stringValue = new }
+        private func addContentViewConstraints(_ contentBox: NSView) {
+            NSLayoutConstraint.activate([
+                contentBox.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8),
+                contentBox.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8),
+                contentBox.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),
+                contentBox.heightAnchor.constraint(equalTo: self.heightAnchor, multiplier: 0.61803398875),
+                titleLabel.topAnchor.constraint(equalTo: contentBox.bottomAnchor, constant: 8),
+                ])
         }
         
-        var size: Int {
-            get { return sizeValue }
-            set(new) { sizeValue = new }
-        }
+    }
+    
+    override func loadView() {
+        let container = ContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
+        self.view = container
         
-        var source: String {
-            get { return sourceLabel.stringValue }
-            set(new) { sourceLabel.stringValue = new }
-        }
-        
-        private var sizeValue: Int = 0 {
-            didSet {
-                sizeLabel.stringValue = sizeFormatter.string(fromByteCount: Int64(sizeValue))
-            }
-        }
-        
-        private let sizeFormatter: ByteCountFormatter = {
-            let formatter = ByteCountFormatter()
-            formatter.countStyle = .file
-            return formatter
-        }()
-        
+        addChildViewController(unitView)
+        container.contentView = unitView.view
     }
     
 }

@@ -203,6 +203,10 @@ extension FileSystem.File {
     func hasExtension(_ ext: String) -> Bool {
         return (name as NSString).pathExtension.caseInsensitiveCompare(ext) == .orderedSame
     }
+    func hasExtension(_ extensions: Set<String>) -> Bool {
+        let ext = (name as NSString).pathExtension
+        return extensions.contains(where: { ext.caseInsensitiveCompare($0) == .orderedSame })
+    }
     
     var baseName: String {
         return (name as NSString).deletingPathExtension
