@@ -425,8 +425,10 @@ extension GafFrameEncoding {
 
 extension TA_GAF_ENTRY {
     var name: String {
-        let p = UnsafeRawPointer([nameBuffer]).assumingMemoryBound(to: CChar.self)
-        return String(cString: p)
+        var t = nameBuffer
+        let buffer = UnsafeBufferPointer(start: &t, count: MemoryLayout.size(ofValue: t))
+        guard let raw = UnsafeRawPointer(buffer.baseAddress) else { return "" }
+        return String(cString: raw.assumingMemoryBound(to: CChar.self))
     }
 }
 
