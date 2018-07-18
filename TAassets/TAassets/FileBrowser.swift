@@ -181,8 +181,8 @@ private extension FileBrowserViewController {
                 view.load(script)
             }
             else if file.hasExtension("tnt") {
-                let view = bindContentView(as: TntView.self)
-                try view.load(contentsOf: fileHandle, from: shared.filesystem)
+                let controller = bindContentViewController(as: TntViewController.self)
+                try controller.load(contentsOf: fileHandle, from: shared.filesystem)
             }
             else if file.hasExtension(["fbi", "bos", "gui", "tdf", "ota"]) {
                 let data = fileHandle.readDataToEndOfFile()

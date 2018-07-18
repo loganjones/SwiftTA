@@ -44,6 +44,10 @@ extension String {
 // MARK:- Image Loading
 
 extension CGImage {
+
+    var size: Size2D {
+        return Size2D(width: width, height: height)
+    }
     
     static func createWith(imageIndices: Data, size: Size2D, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws -> CGImage {
         
