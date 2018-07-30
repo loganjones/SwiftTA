@@ -23,6 +23,7 @@ class CocoaMapView: CocoaTntView, MapViewLoader {
         let info = try MapInfo(contentsOf: otaFile, in: filesystem)
         let endOta = Date()
         
+        let tileCountString: String
         let beginTnt = Date()
         let tntFile = try filesystem.openFile(at: "maps/" + mapName + ".tnt")
         let map = try MapModel(contentsOf: tntFile)
@@ -30,8 +31,11 @@ class CocoaMapView: CocoaTntView, MapViewLoader {
         case .ta(let model):
             let palette = try Palette.standardTaPalette(from: filesystem)
             super.load(model, using: palette)
+            let tileCount = model.tileSet.count
+            tileCountString = "count:\(tileCount) pixels:\(tileCount * 16 * 16)"
         case .tak(let model):
             super.load(model, from: filesystem)
+            tileCountString = ""
         }
         let endTnt = Date()
         
@@ -51,6 +55,8 @@ class CocoaMapView: CocoaTntView, MapViewLoader {
             Features: \(endFeatures.timeIntervalSince(beginFeatures)) seconds
             """)
         print("Features: \(featureNames)")
+        print("Map Size: tiles:\(map.mapSize) pixels:\(map.resolution)")
+        print("Tiles: "+tileCountString)
     }
     
     override func clear() {

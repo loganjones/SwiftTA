@@ -146,6 +146,19 @@ func alignSizeForMetalBuffer(_ size: Int) -> Int {
     return (size & ~0xFF) + 0x100
 }
 
+func max2dTextureSize(for device: MTLDevice) -> Int {
+    #if os(macOS)
+    return 16384
+    #elseif os(iOS)
+    return 8192
+    #elseif os(tvOS)
+    guard device.supportsFeatureSet(.tvOS_GPUFamily2_v1) else { return 8192 }
+    return 16384
+    #else
+    return 256
+    #endif
+}
+
 
 // MARK:- Convenience Types
 

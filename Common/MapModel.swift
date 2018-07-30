@@ -148,7 +148,7 @@ struct TaMapModel: MapModelType {
 
 extension TaMapModel {
     
-    func tileColumns(in rect: NSRect) -> CountableClosedRange<Int> {
+    func tileColumns(in rect: NSRect) -> ClosedRange<Int> {
         let tileWidth = tileSet.tileSize.width
         let start = Int(floor(rect.minX)) / tileWidth
         var end = Int(ceil(rect.maxX)) / tileWidth
@@ -156,7 +156,7 @@ extension TaMapModel {
         return max(start,0)...min(end, tileIndexMap.size.width-1)
     }
     
-    func tileRows(in rect: NSRect) -> CountableClosedRange<Int> {
+    func tileRows(in rect: NSRect) -> ClosedRange<Int> {
         let tileheight = tileSet.tileSize.height
         let start = Int(floor(rect.minY)) / tileheight
         var end = Int(ceil(rect.maxY)) / tileheight
@@ -250,7 +250,9 @@ extension TaMapModel {
         var indices: Data
         var size: Size2D
         
-        func eachIndex(inColumns columns: CountableClosedRange<Int>, rows: CountableClosedRange<Int>, visit: (_ index: Int, _ column: Int, _ row: Int) -> ()) {
+        func eachIndex<R>(inColumns columns: R, rows: R, visit: (_ index: Int, _ column: Int, _ row: Int) -> ())
+            where R: Sequence, R.Element == Int
+        {
             indices.withUnsafeBytes() { (buffer: UnsafePointer<UInt8>) in
                 let p = UnsafeRawPointer(buffer).bindMemoryBuffer(to: UInt16.self, capacity: size.area)
                 for row in rows {

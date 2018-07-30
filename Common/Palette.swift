@@ -104,6 +104,16 @@ extension Palette {
     
 }
 
+// MARK:- Unsafe Memory Access
+
+extension Palette {
+    
+    func withUnsafeBufferPointer<R>(body: (_ colors: UnsafeBufferPointer<Palette.Color>) throws -> R ) rethrows -> R {
+        return try colors.withUnsafeBufferPointer(body)
+    }
+    
+}
+
 // MARK:- Image Mapping
 
 extension Palette {

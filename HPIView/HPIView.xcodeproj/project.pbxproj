@@ -47,6 +47,8 @@
 		F0C74B7120D0744000F52B01 /* ModelViewRenderer+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C74B7020D0744000F52B01 /* ModelViewRenderer+Metal.swift */; };
 		F0C74B7420D07CFC00F52B01 /* ModelViewRenderer+MetalShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0C74B7220D07CFA00F52B01 /* ModelViewRenderer+MetalShaders.metal */; };
 		F0CD87CD20FFB9470012B1C8 /* TntView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CD87CC20FFB9470012B1C8 /* TntView.swift */; };
+		F0CD87D120FFE7B30012B1C8 /* TntView+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CD87D020FFE7B30012B1C8 /* TntView+Metal.swift */; };
+		F0CD87D420FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0CD87D220FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal */; };
 		F0D23B92207402CD00C0A245 /* Palette+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B91207402CC00C0A245 /* Palette+Files.swift */; };
 		F0D23B932074034400C0A245 /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */; };
 		F0D23B952074036800C0A245 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B942074036700C0A245 /* TdfParser.swift */; };
@@ -115,6 +117,9 @@
 		F0C74B7220D07CFA00F52B01 /* ModelViewRenderer+MetalShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = "ModelViewRenderer+MetalShaders.metal"; sourceTree = "<group>"; };
 		F0C74B7320D07CFB00F52B01 /* ModelViewRenderer+MetalShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ModelViewRenderer+MetalShaderTypes.h"; sourceTree = "<group>"; };
 		F0CD87CC20FFB9470012B1C8 /* TntView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TntView.swift; sourceTree = "<group>"; };
+		F0CD87D020FFE7B30012B1C8 /* TntView+Metal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TntView+Metal.swift"; sourceTree = "<group>"; };
+		F0CD87D220FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = "TntViewRenderer+MetalShaders.metal"; sourceTree = "<group>"; };
+		F0CD87D320FFF9430012B1C8 /* TntViewRenderer+MetalShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TntViewRenderer+MetalShaderTypes.h"; sourceTree = "<group>"; };
 		F0D23B91207402CC00C0A245 /* Palette+Files.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Palette+Files.swift"; sourceTree = "<group>"; };
 		F0D23B942074036700C0A245 /* TdfParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
 		F0D23B962074038600C0A245 /* SideData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideData.swift; sourceTree = "<group>"; };
@@ -177,6 +182,9 @@
 				F0AEB0E12098FB580087B36B /* QuickLookView.swift */,
 				F0CD87CC20FFB9470012B1C8 /* TntView.swift */,
 				F0D9A49B2059F6D90081DC15 /* TntView+Cocoa.swift */,
+				F0CD87D020FFE7B30012B1C8 /* TntView+Metal.swift */,
+				F0CD87D220FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal */,
+				F0CD87D320FFF9430012B1C8 /* TntViewRenderer+MetalShaderTypes.h */,
 				B50F6A541D87A54B0016C15B /* Assets.xcassets */,
 				B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */,
 				B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */,
@@ -326,6 +334,7 @@
 				F0D23B972074038600C0A245 /* SideData.swift in Sources */,
 				F0C74B7120D0744000F52B01 /* ModelViewRenderer+Metal.swift in Sources */,
 				B51FF3701EEC966E009B509A /* FileReadHandle.swift in Sources */,
+				F0CD87D420FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal in Sources */,
 				F015C7A020AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift in Sources */,
 				B51FF36E1EEC6711009B509A /* Filesystem.swift in Sources */,
 				F0CD87CD20FFB9470012B1C8 /* TntView.swift in Sources */,
@@ -343,6 +352,7 @@
 				B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */,
 				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,
 				F08A641120EE86CD001E5982 /* ModelView.swift in Sources */,
+				F0CD87D120FFE7B30012B1C8 /* TntView+Metal.swift in Sources */,
 				F0AAC55620AB83F700D62553 /* Utility+GLKit.swift in Sources */,
 				B57C32B520702B4700B24C99 /* PaletteView.swift in Sources */,
 				F0D9A49A20588A810081DC15 /* MapModel.swift in Sources */,

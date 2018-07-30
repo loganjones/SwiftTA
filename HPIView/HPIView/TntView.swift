@@ -16,6 +16,10 @@ class TntViewController: NSViewController {
         let deafultFrame = NSRect(x: 0, y: 0, width: 640, height: 480)
         
         if false { /* Nothing to see here */ }
+        else if let metal = MetalTntView(tntViewFrame: deafultFrame) {
+            view = metal
+            tntView = metal
+        }
         else {
             let cocoa = CocoaTntView(frame: deafultFrame)
             view = cocoa

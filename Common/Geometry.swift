@@ -29,6 +29,9 @@ extension Size2D {
         width = tuple.0
         height = tuple.1
     }
+    func map(apply: (Int) -> Int) -> Size2D {
+        return Size2D(width: apply(width), height: apply(height))
+    }
 }
 
 extension Size2D {
@@ -72,9 +75,43 @@ extension Point2D {
 }
 
 extension Point2D {
+    
+    func index(rowStride: Int) -> Int {
+        return (rowStride * y) + x
+    }
+    
+}
+
+extension Point2D {
+    
+    static func + (lhs: Point2D, rhs: Size2D) -> Point2D {
+        return Point2D(x: lhs.x + rhs.width, y: lhs.y + rhs.height)
+    }
+    
     static func - (lhs: Point2D, rhs: Point2D) -> Point2D {
         return Point2D(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
     }
+    
+    static func / (size: Point2D, divisor: Int) -> Point2D {
+        return Point2D(x: size.x / divisor, y: size.y / divisor)
+    }
+    static func /= (size: inout Point2D, divisor: Int) {
+        size.x /= divisor
+        size.y /= divisor
+    }
+    
+    static func * (size: Point2D, multiplier: Int) -> Point2D {
+        return Point2D(x: size.x * multiplier, y: size.y * multiplier)
+    }
+    static func *= (size: inout Point2D, multiplier: Int) {
+        size.x *= multiplier
+        size.y *= multiplier
+    }
+    
+    static func * (size: Point2D, multiplier: Size2D) -> Point2D {
+        return Point2D(x: size.x * multiplier.width, y: size.y * multiplier.height)
+    }
+    
 }
 
 // MARK:- Vertex & Vector
