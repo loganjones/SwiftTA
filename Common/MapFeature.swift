@@ -46,17 +46,17 @@ extension MapFeatureInfo {
     
     typealias FeatureInfoCollection = [String: MapFeatureInfo]
     
-    
-    static func collectFeatures(named featureNames: Set<String>, strartingWith planet: String, from filesystem: FileSystem) -> FeatureInfoCollection {
+    static func collectFeatures(named featureNames: Set<String>, strartingWith planet: String?, from filesystem: FileSystem) -> FeatureInfoCollection {
         
         guard let featuresDirectory = filesystem.root[directory: "features"] else { return [:] }
         
         var features: FeatureInfoCollection = [:]
+        var alreadyLoaded = ""
         
-        let planetDirectoryName = directoryName(forPlanet: planet)
-        if !planetDirectoryName.isEmpty, let planetDirectory = featuresDirectory[directory: planetDirectoryName] {
+        if let planetDirectoryName = directoryName(forPlanet: planet), let planetDirectory = featuresDirectory[directory: planetDirectoryName] {
             let planetFeatures = collectFeatures(named: featureNames, in: planetDirectory, of: filesystem)
             features = planetFeatures
+            alreadyLoaded = planetDirectoryName
         }
         
         if features.count >= featureNames.count {
@@ -73,7 +73,7 @@ extension MapFeatureInfo {
         }
         
         for directory in featuresDirectory.items.compactMap({ $0.asDirectory() }) {
-            guard !FileSystem.compareNames(directory.name, planetDirectoryName) else { continue }
+            guard !FileSystem.compareNames(directory.name, alreadyLoaded) else { continue }
             guard !FileSystem.compareNames(directory.name, "All Worlds") else { continue }
             
             let moreFeatures = collectFeatures(named: featureNames, in: directory, of: filesystem)
@@ -141,6 +141,47 @@ private extension MapFeatureInfo {
             return "water"
         default:
             return planet
+        }
+    }
+    
+    static func directoryName(forPlanet planet: String?) -> String? {
+        guard let p = planet, !p.isEmpty else { return nil }
+        return directoryName(forPlanet: p) as String
+    }
+    
+}
+
+extension MapFeatureInfo {
+    
+    typealias MapFeaturesGafCollator = (_ name: String, _ info: MapFeatureInfo, _ item: GafItem, _ gafHandle: FileSystem.FileHandle, _ gafListing: GafListing) -> ()
+    
+    static func collateFeatureGafItems(_ featureInfo: FeatureInfoCollection, from filesystem: FileSystem, collator: MapFeaturesGafCollator) {
+        
+        let byGaf = Dictionary(grouping: featureInfo, by: { a in a.value.gafFilename ?? "" })
+        
+        for (gafName, featuresInGaf) in byGaf {
+            
+            guard let gaf = try? filesystem.openFile(at: "anims/" + gafName + ".gaf"),
+                let listing = try? GafListing(withContentsOf: gaf)
+                else { continue }
+            
+            for (name, info) in featuresInGaf {
+                guard let itemName = info.primaryGafItemName, let item = listing[itemName] else { continue }
+                collator(name, info, item, gaf, listing)
+            }
+        }
+    }
+        
+    static func loadFeaturePalettes(_ featureInfo: MapFeatureInfo.FeatureInfoCollection, from filesystem: FileSystem) -> [String: Palette] {
+        return featureInfo.reduce(into: [String: Palette]()) { (palettes, info) in
+            let world = info.value.world ?? ""
+            guard palettes[world] == nil else { return }
+            if let palette = try? Palette.featurePalette(forWorld: world, from: filesystem) {
+                palettes[world] = palette
+            }
+            else if let palette = try? Palette.featurePaletteForTa(from: filesystem) {
+                palettes[world] = palette
+            }
         }
     }
     

@@ -197,3 +197,54 @@ struct RuntimeError: Error, CustomStringConvertible {
     }
     
 }
+
+// MARK:- Next Power of Two
+
+extension UInt32 {
+    var nextPowerOfTwo: UInt32 {
+        var uiNum = self
+        uiNum -= 1
+        uiNum |= uiNum >> 16
+        uiNum |= uiNum >> 8
+        uiNum |= uiNum >> 4
+        uiNum |= uiNum >> 2
+        uiNum |= uiNum >> 1
+        return uiNum + 1
+    }
+}
+
+extension UInt64 {
+    var nextPowerOfTwo: UInt64 {
+        var uiNum = self
+        uiNum -= 1
+        uiNum |= uiNum >> 32
+        uiNum |= uiNum >> 16
+        uiNum |= uiNum >> 8
+        uiNum |= uiNum >> 4
+        uiNum |= uiNum >> 2
+        uiNum |= uiNum >> 1
+        return uiNum + 1
+    }
+}
+
+// MARK:- Integer Partitioning
+
+extension Int {
+    
+    func partitions(by divisor: Int) -> [Int] {
+        guard divisor < self else { return [self] }
+        
+        let count = self.partitionCount(by: divisor)
+        var array = [Int](repeating: divisor, count: count)
+        
+        let leftOver = (divisor * count) - self
+        if (leftOver > 0) { array[count-1] = leftOver }
+        
+        return array
+    }
+    
+    func partitionCount(by divisor: Int) -> Int {
+        return (self + divisor - 1) / divisor
+    }
+    
+}

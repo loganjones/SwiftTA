@@ -346,8 +346,8 @@ extension HpiBrowserViewController {
                 view.load(script)
             }
             else if file.hasExtension("tnt") {
-                let view = bindContentView(as: TntView.self)
-                try view.load(contentsOf: fileHandle, using: mainPalette)
+                let controller = bindContentViewController(as: TntViewController.self)
+                try controller.load(contentsOf: fileHandle, using: mainPalette)
             }
             else if file.hasExtension(["fbi", "bos", "gui", "tdf", "ota"]) {
                 let data = fileHandle.readDataToEndOfFile()

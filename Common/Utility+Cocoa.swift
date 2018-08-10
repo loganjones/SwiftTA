@@ -44,6 +44,10 @@ extension String {
 // MARK:- Image Loading
 
 extension CGImage {
+
+    var size: Size2D {
+        return Size2D(width: width, height: height)
+    }
     
     static func createWith(imageIndices: Data, size: Size2D, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws -> CGImage {
         
@@ -198,15 +202,41 @@ extension NSImage {
 
 // MARK:- Misc Conversions
 
+extension NSPoint {
+    
+    init(_ point: Point2D) {
+        self.init(x: point.x, y: point.y)
+    }
+    
+    func makeRect(size: CGSize) -> CGRect {
+        return CGRect(origin: self, size: size)
+    }
+    func makeRect(size: Size2D) -> CGRect {
+        return CGRect(origin: self, size: CGSize(size))
+    }
+    
+}
+
 extension NSSize {
     
     init(_ size: Size2D) {
         self.init(width: size.width, height: size.height)
     }
     
+    func makeRect(origin: CGPoint) -> CGRect {
+        return CGRect(origin: origin, size: self)
+    }
+    func makeRect(origin: Point2D) -> CGRect {
+        return CGRect(origin: CGPoint(origin), size: self)
+    }
+    
 }
 
 extension NSRect {
+    
+    init(origin: Point2D, size: Size2D) {
+        self.init(x: origin.x, y: origin.y, width: size.width, height: size.height)
+    }
     
     init(x: Int, y: Int, size: Size2D) {
         self.init(x: x, y: y, width: size.width, height: size.height)
@@ -214,6 +244,10 @@ extension NSRect {
     
     init(size: Size2D) {
         self.init(x: 0, y: 0, width: size.width, height: size.height)
+    }
+    
+    init(_ rect: Rect2D) {
+        self.init(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
     }
     
 }

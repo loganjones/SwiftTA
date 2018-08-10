@@ -179,6 +179,7 @@ private extension TaMapModel {
     
     init<File>(_ mapSize: Size2D, reading tntFile: File) throws where File: FileReadHandle {
         self.mapSize = mapSize
+        let tileSize = Size2D(width: 32, height: 32)
         
         let header = try tntFile.readValue(ofType: TA_TNT_EXT_HEADER.self)
         seaLevel = Int(header.seaLevel)
@@ -186,14 +187,13 @@ private extension TaMapModel {
         tntFile.seek(toFileOffset: header.offsetToTileIndexArray)
         let tileIndexCount = mapSize / 2
         let tileIndexData = try tntFile.readData(verifyingLength: tileIndexCount.area * MemoryLayout<UInt16>.size)
-        tileIndexMap = TileIndexMap(indices: tileIndexData, size: tileIndexCount)
+        tileIndexMap = TileIndexMap(indices: tileIndexData, size: tileIndexCount, tileSize: tileSize)
         
         tntFile.seek(toFileOffset: header.offsetToMapInfoArray)
         let entries = try tntFile.readArray(ofType: TA_TNT_MAP_ENTRY.self, count: mapSize.area)
         heightMap = entries.map { Int($0.elevation) }
         
         tntFile.seek(toFileOffset: header.offsetToTileArray)
-        let tileSize = Size2D(width: 32, height: 32)
         let tiles = try tntFile.readData(verifyingLength: Int(header.numberOfTiles) * tileSize.area)
         tileSet = TileSet(tiles: tiles, count: Int(header.numberOfTiles), tileSize: tileSize)
         
@@ -249,17 +249,26 @@ extension TaMapModel {
     struct TileIndexMap {
         var indices: Data
         var size: Size2D
+        let tileSize: Size2D
         
-        func eachIndex(inColumns columns: CountableClosedRange<Int>, rows: CountableClosedRange<Int>, visit: (_ index: Int, _ column: Int, _ row: Int) -> ()) {
+        func eachIndex<R>(inColumns columns: R, rows: R, visit: (_ index: Int, _ column: Int, _ row: Int) -> ())
+            where R: Sequence, R.Element == Int
+        {
             indices.withUnsafeBytes() { (buffer: UnsafePointer<UInt8>) in
                 let p = UnsafeRawPointer(buffer).bindMemoryBuffer(to: UInt16.self, capacity: size.area)
                 for row in rows {
+                    if row >= size.height { break }
                     for column in columns {
+                        if column >= size.width { break }
                         let index = p[(row * size.width) + column]
                         visit(Int(index), column, row)
                     }
                 }
             }
+        }
+        
+        func eachIndex(in rect: Rect2D, visit: (_ index: Int, _ column: Int, _ row: Int) -> ()) {
+            eachIndex(inColumns: rect.widthRange, rows: rect.heightRange, visit: visit)
         }
         
     }
@@ -342,7 +351,7 @@ private extension TakMapModel {
         let tileColumns = try tntFile.readArray(ofType: UInt8.self, count: tileIndexCount.area)
         tntFile.seek(toFileOffset: header.offsetToRowIndexArray)
         let tileRows = try tntFile.readArray(ofType: UInt8.self, count: tileIndexCount.area)
-        tileIndexMap = TileIndexMap(names: tileNames, columns: tileColumns, rows: tileRows, size: tileIndexCount)
+        tileIndexMap = TileIndexMap(names: tileNames, columns: tileColumns, rows: tileRows, size: tileIndexCount, tileSize: tileSize)
 
         tntFile.seek(toFileOffset: header.offsetToLargeMiniMap)
         largeMinimap = try MinimapImage.readFrom(file: tntFile)
@@ -360,6 +369,7 @@ extension TakMapModel {
         var columns: [UInt8]
         var rows: [UInt8]
         var size: Size2D
+        let tileSize: Size2D
     }
     
 }
@@ -370,13 +380,21 @@ extension TakMapModel.TileIndexMap {
         return names.reduce(into: Set<UInt32>()) { $0.insert($1) }
     }
     
-    func eachTile(inColumns mapColumns: CountableClosedRange<Int>, rows mapRows: CountableClosedRange<Int>, visit: (_ imageName: UInt32, _ imageColumn: Int, _ imageRow: Int, _ mapColumn: Int, _ mapRow: Int) -> ()) {
+    func eachTile<R>(inColumns mapColumns: R, rows mapRows: R, visit: (_ imageName: UInt32, _ imageColumn: Int, _ imageRow: Int, _ mapColumn: Int, _ mapRow: Int) -> ())
+        where R: Sequence, R.Element == Int
+    {
         for mapRow in mapRows {
+            if mapRow >= size.height { break }
             for mapColumn in mapColumns {
+                if mapColumn >= size.width { break }
                 let mapIndex = (mapRow * size.width) + mapColumn
                 visit(names[mapIndex], Int(columns[mapIndex]), Int(rows[mapIndex]), mapColumn, mapRow)
             }
         }
+    }
+    
+    func eachTile(in rect: Rect2D, visit: (_ imageName: UInt32, _ imageColumn: Int, _ imageRow: Int, _ mapColumn: Int, _ mapRow: Int) -> ()) {
+        eachTile(inColumns: rect.widthRange, rows: rect.heightRange, visit: visit)
     }
     
 }
