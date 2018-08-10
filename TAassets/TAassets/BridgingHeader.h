@@ -14,5 +14,7 @@
 #include "ta_TNT.h"
 #include "zlib.h"
 
+#import "MapViewRenderer+MetalShaderTypes.h"
 #import "ModelViewRenderer+MetalShaderTypes.h"
+#import "TntViewRenderer+MetalShaderTypes.h"
 #import "UnitViewRenderer+MetalShaderTypes.h"

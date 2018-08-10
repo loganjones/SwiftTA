@@ -55,12 +55,14 @@ typedef struct
 } TileFragmentIn;
 
 vertex TileFragmentIn mapTileVertexShader(MetalTntViewRenderer_MapTileVertex in [[stage_in]],
+                                          constant int *slice [[buffer(MetalTntViewRenderer_BufferIndexVertexTextureSlice)]],
+                                          uint vid [[vertex_id]],
                                           constant MetalTntViewRenderer_MapUniforms & uniforms [[ buffer(MetalTntViewRenderer_BufferIndexUniforms) ]])
 {
     TileFragmentIn out;
     out.position = uniforms.mvpMatrix * float4(in.position, 1.0);
     out.texCoord = in.texCoord;
-    out.slice = in.slice;
+    out.slice = slice[vid];
     return out;
 }
 

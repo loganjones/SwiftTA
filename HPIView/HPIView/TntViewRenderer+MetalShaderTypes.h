@@ -27,6 +27,7 @@ typedef NS_ENUM(NSInteger, MetalTntViewRenderer_BufferIndex)
 {
     MetalTntViewRenderer_BufferIndexVertices     = 0,
     MetalTntViewRenderer_BufferIndexUniforms     = 1,
+    MetalTntViewRenderer_BufferIndexVertexTextureSlice  = 2,
 };
 
 typedef NS_ENUM(NSInteger, MetalTntViewRenderer_MapQuadVertexAttribute)
@@ -39,7 +40,7 @@ typedef NS_ENUM(NSInteger, MetalTntViewRenderer_MapTileVertexAttribute)
 {
     MetalTntViewRenderer_MapTileVertexAttributePosition = 0,
     MetalTntViewRenderer_MapTileVertexAttributeTexcoord = 1,
-    MetalTntViewRenderer_MapTileVertexAttributeSlice = 2,
+//    MetalTntViewRenderer_MapTileVertexAttributeSlice = 2,
 };
 
 typedef NS_ENUM(NSInteger, MetalTntViewRenderer_TextureIndex)
@@ -59,7 +60,7 @@ typedef struct
 {
     vector_float3 position ATTR(MetalTntViewRenderer_MapTileVertexAttributePosition);
     vector_float2 texCoord ATTR(MetalTntViewRenderer_MapTileVertexAttributeTexcoord);
-    int slice ATTR(MetalTntViewRenderer_MapTileVertexAttributeSlice);
+//    int slice ATTR(MetalTntViewRenderer_MapTileVertexAttributeSlice);
 } MetalTntViewRenderer_MapTileVertex;
 
 typedef struct

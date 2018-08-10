@@ -16,6 +16,10 @@ class MapViewController: NSViewController {
         let deafultFrame = NSRect(x: 0, y: 0, width: 640, height: 480)
         
         if false { /* Nothing to see here */ }
+        else if let metal = MetalMapView(tntViewFrame: deafultFrame) {
+            view = metal
+            mapView = metal
+        }
         else {
             let cocoa = CocoaMapView(frame: deafultFrame)
             view = cocoa

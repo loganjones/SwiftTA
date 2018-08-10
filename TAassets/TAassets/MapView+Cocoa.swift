@@ -50,9 +50,9 @@ class CocoaMapView: CocoaTntView, MapViewLoader {
         
         print("""
             Map load time: \(endMap.timeIntervalSince(beginMap)) seconds
-            OTA: \(endOta.timeIntervalSince(beginOta)) seconds
-            TNT: \(endTnt.timeIntervalSince(beginTnt)) seconds
-            Features: \(endFeatures.timeIntervalSince(beginFeatures)) seconds
+              OTA: \(endOta.timeIntervalSince(beginOta)) seconds
+              TNT: \(endTnt.timeIntervalSince(beginTnt)) seconds
+              Features: \(endFeatures.timeIntervalSince(beginFeatures)) seconds
             """)
         print("Features: \(featureNames)")
         print("Map Size: tiles:\(map.mapSize) pixels:\(map.resolution)")

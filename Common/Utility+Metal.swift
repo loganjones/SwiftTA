@@ -41,12 +41,24 @@ extension vector_float3 {
 
 extension vector_float2 {
     
+    init(_ p: Point2D) {
+        self.init(Float(p.x), Float(p.y))
+    }
+    
     init(_ v: Vector2) {
         self.init(Float(v.x), Float(v.y))
     }
     
     init(_ v: Vertex2) {
         self.init(Float(v.x), Float(v.y))
+    }
+    
+    init(_ p: CGPoint) {
+        self.init(Float(p.x), Float(p.y))
+    }
+    
+    init(_ s: CGSize) {
+        self.init(Float(s.width), Float(s.height))
     }
     
     static var zero: vector_float2 { return vector_float2(0) }
@@ -91,6 +103,12 @@ extension matrix_float4x4 {
                                         vector_float4(0, 1, 0, 0),
                                         vector_float4(0, 0, 1, 0),
                                         vector_float4(translationX, translationY, translationZ, 1)))
+    }
+    static func translation(_ v: vector_float3) -> matrix_float4x4 {
+        return translation(v.x, v.y, v.z)
+    }
+    static func translation(xy v: vector_float2, z translationZ: Float = 0) -> matrix_float4x4 {
+        return translation(v.x, v.y, translationZ)
     }
     
     static func translate(_ m: matrix_float4x4, _ v: vector_float3) -> matrix_float4x4 {
@@ -146,21 +164,117 @@ func alignSizeForMetalBuffer(_ size: Int) -> Int {
     return (size & ~0xFF) + 0x100
 }
 
-func max2dTextureSize(for device: MTLDevice) -> Int {
-    #if os(macOS)
-    return 16384
-    #elseif os(iOS)
-    return 8192
-    #elseif os(tvOS)
-    guard device.supportsFeatureSet(.tvOS_GPUFamily2_v1) else { return 8192 }
-    return 16384
-    #else
-    return 256
-    #endif
+
+// MARK:- MTLDevice Extensions
+
+extension MTLDevice {
+    
+    var maximum2dTextureSize: Int {
+        #if os(macOS)
+        return 16384
+        #elseif os(iOS)
+        return 8192
+        #elseif os(tvOS)
+        guard self.supportsFeatureSet(.tvOS_GPUFamily2_v1) else { return 8192 }
+        return 16384
+        #else
+        return 256
+        #endif
+    }
+    
+    func makeRenderPipelineState(named pipelineName: String = "RenderPipeline", library: MTLLibrary, view: MTKView, vertexDescriptor: MTLVertexDescriptor, vertexFunctionName: String, fragmentFunctionName: String, blendingEnabled: Bool = false) throws -> MTLRenderPipelineState {
+        
+        guard let vertexFunction = library.makeFunction(name: vertexFunctionName) else { throw MTLDeviceInitializationError.functionNotFound(vertexFunctionName) }
+        guard let fragmentFunction = library.makeFunction(name: fragmentFunctionName) else { throw MTLDeviceInitializationError.functionNotFound(fragmentFunctionName) }
+        
+        let pipelineDescriptor = MTLRenderPipelineDescriptor()
+        pipelineDescriptor.label = pipelineName
+        pipelineDescriptor.sampleCount = view.sampleCount
+        pipelineDescriptor.vertexFunction = vertexFunction
+        pipelineDescriptor.fragmentFunction = fragmentFunction
+        pipelineDescriptor.vertexDescriptor = vertexDescriptor
+        
+        pipelineDescriptor.colorAttachments[0].pixelFormat = view.colorPixelFormat
+        pipelineDescriptor.depthAttachmentPixelFormat = view.depthStencilPixelFormat
+        pipelineDescriptor.stencilAttachmentPixelFormat = view.depthStencilPixelFormat
+        
+        if blendingEnabled, let renderbufferAttachment = pipelineDescriptor.colorAttachments[0] {
+            renderbufferAttachment.isBlendingEnabled = true
+            renderbufferAttachment.rgbBlendOperation = .add
+            renderbufferAttachment.alphaBlendOperation = .add
+            renderbufferAttachment.sourceRGBBlendFactor = .sourceAlpha
+            renderbufferAttachment.sourceAlphaBlendFactor = .sourceAlpha
+            renderbufferAttachment.destinationRGBBlendFactor = .oneMinusSourceAlpha
+            renderbufferAttachment.destinationAlphaBlendFactor = .oneMinusSourceAlpha
+        }
+        
+        return try self.makeRenderPipelineState(descriptor: pipelineDescriptor)
+    }
+    
+}
+
+enum MTLDeviceInitializationError: Swift.Error {
+    case noDefaultShaderLibrary
+    case functionNotFound(String)
+    case badDepthState
+}
+
+
+// MARK:- Convenience Extensions
+
+extension MTLOrigin {
+    
+    init(xy: Point2D, z: Int = 0) {
+        self.init(x: xy.x, y: xy.y, z: z)
+    }
+    
+    static var zero: MTLOrigin { return MTLOrigin(x: 0, y: 0, z: 0) }
+    
+}
+
+extension MTLSize {
+    
+    init(_ size: Size2D, depth: Int = 1) {
+        self.init(width: size.width, height: size.height, depth: depth)
+    }
+    
+}
+
+extension MTLRenderCommandEncoder {
+    
+    func setVertexBuffer<Index: RawRepresentable>(_ buffer: MTLBuffer?, offset: Int, index: Index) where Index.RawValue == Int {
+        self.setVertexBuffer(buffer, offset: offset, index: index.rawValue)
+    }
+    func setFragmentBuffer<Index: RawRepresentable>(_ buffer: MTLBuffer?, offset: Int, index: Index) where Index.RawValue == Int {
+        self.setFragmentBuffer(buffer, offset: offset, index: index.rawValue)
+    }
+    func setFragmentTexture<Index: RawRepresentable>(_ texture: MTLTexture?, index: Index) where Index.RawValue == Int {
+        self.setFragmentTexture(texture, index: index.rawValue)
+    }
+    
+}
+
+extension CGRect {
+    
+    init(origin: vector_float2, size: vector_float2) {
+        self.init(x: CGFloat(origin.x), y: CGFloat(origin.y), width: CGFloat(size.x), height: CGFloat(size.y))
+    }
+    
 }
 
 
 // MARK:- Convenience Types
+
+struct MetalHost {
+    var view: MTKView
+    var device: MTLDevice
+    var library: MTLLibrary
+}
+extension MetalHost {
+    func makeRenderPipelineState(named pipelineName: String = "RenderPipeline", vertexDescriptor: MTLVertexDescriptor, vertexFunctionName: String, fragmentFunctionName: String, blendingEnabled: Bool = false) throws -> MTLRenderPipelineState {
+        return try device.makeRenderPipelineState(named: pipelineName, library: library, view: view, vertexDescriptor: vertexDescriptor, vertexFunctionName: vertexFunctionName, fragmentFunctionName: fragmentFunctionName, blendingEnabled: blendingEnabled)
+    }
+}
 
 struct MetalVertexDescriptorConfigurator<VertexAttribute, BufferIndex>
     where VertexAttribute: RawRepresentable, BufferIndex: RawRepresentable, VertexAttribute.RawValue == Int, BufferIndex.RawValue == Int
@@ -191,4 +305,71 @@ struct MetalVertexDescriptorConfigurator<VertexAttribute, BufferIndex>
         layout.stepFunction = stepFunction
     }
     
+}
+
+struct MetalRingBuffer {
+    var buffer: MTLBuffer
+    var length: Int
+    var count: Int
+    var offset: Int = 0
+    var index: Int = 0
+}
+
+extension MetalRingBuffer {
+    
+    init?(length: Int, count: Int, options: MTLResourceOptions = [], device: MTLDevice) {
+        let alignedLength = alignSizeForMetalBuffer(length)
+        guard let buffer = device.makeBuffer(length: alignedLength * count, options: options) else { return nil }
+        self.buffer = buffer
+        self.length = alignedLength
+        self.count = count
+    }
+    init?(alignedLength length: Int, count: Int, options: MTLResourceOptions = [], device: MTLDevice) {
+        guard let buffer = device.makeBuffer(length: length * count, options: options) else { return nil }
+        self.buffer = buffer
+        self.length = length
+        self.count = count
+    }
+    
+    @discardableResult mutating func next() -> MetalRingBuffer {
+        index = (index + 1) % count
+        offset = length * index
+        return self
+    }
+    
+    var contents: UnsafeMutableRawPointer {
+        return buffer.contents() + offset
+    }
+    
+}
+extension MTLDevice {
+    func makeRingBuffer(length: Int, count: Int, options: MTLResourceOptions = []) -> MetalRingBuffer? {
+        return MetalRingBuffer(length: length, count: count, options: options, device: self)
+    }
+    func makeRingBuffer(alignedLength length: Int, count: Int, options: MTLResourceOptions = []) -> MetalRingBuffer? {
+        return MetalRingBuffer(alignedLength: length, count: count, options: options, device: self)
+    }
+}
+extension MTLRenderCommandEncoder {
+    
+    func setVertexBuffer(_ buffer: MetalRingBuffer, index: Int) {
+        self.setVertexBuffer(buffer.buffer, offset: buffer.offset, index: index)
+    }
+    func setFragmentBuffer(_ buffer: MetalRingBuffer, index: Int) {
+        self.setFragmentBuffer(buffer.buffer, offset: buffer.offset, index: index)
+    }
+    func setVertexBuffer<Index: RawRepresentable>(_ buffer: MetalRingBuffer, index: Index) where Index.RawValue == Int {
+        self.setVertexBuffer(buffer.buffer, offset: buffer.offset, index: index.rawValue)
+    }
+    func setFragmentBuffer<Index: RawRepresentable>(_ buffer: MetalRingBuffer, index: Index) where Index.RawValue == Int {
+        self.setFragmentBuffer(buffer.buffer, offset: buffer.offset, index: index.rawValue)
+    }
+    
+    func drawIndexedPrimitives(type primitiveType: MTLPrimitiveType, indexCount: Int, indexType: MTLIndexType, indexBuffer: MetalRingBuffer) {
+        self.drawIndexedPrimitives(type: primitiveType, indexCount: indexCount, indexType: indexType, indexBuffer: indexBuffer.buffer, indexBufferOffset: indexBuffer.offset)
+    }
+    
+}
+extension MTLTexture {
+    var size: Size2D { return Size2D(width, height) }
 }

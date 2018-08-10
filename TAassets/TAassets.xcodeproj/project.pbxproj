@@ -51,6 +51,13 @@
 		F015C79620ADFFFF00873642 /* UnitViewRenderer+OpenglCore33.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79520ADFFFF00873642 /* UnitViewRenderer+OpenglCore33.swift */; };
 		F015C79820AE261400873642 /* UnitViewRenderer+OpenglLegacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79720AE261400873642 /* UnitViewRenderer+OpenglLegacy.swift */; };
 		F021E3A02062F93A00D3BD39 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F021E39F2062F93A00D3BD39 /* TdfParser.swift */; };
+		F02C2F40211A1013003CDCC1 /* TntView+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02C2F3A211A1012003CDCC1 /* TntView+Metal.swift */; };
+		F02C2F41211A1013003CDCC1 /* TntViewRenderer+MetalShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F02C2F3B211A1012003CDCC1 /* TntViewRenderer+MetalShaders.metal */; };
+		F02C2F42211A1013003CDCC1 /* TntViewRenderer+MetalSingleQuad.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02C2F3C211A1012003CDCC1 /* TntViewRenderer+MetalSingleQuad.swift */; };
+		F02C2F43211A1013003CDCC1 /* TntViewRenderer+MetalStaticGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02C2F3D211A1013003CDCC1 /* TntViewRenderer+MetalStaticGrid.swift */; };
+		F02C2F44211A1013003CDCC1 /* TntViewRenderer+MetalDynamicTiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02C2F3F211A1013003CDCC1 /* TntViewRenderer+MetalDynamicTiles.swift */; };
+		F02C2F46211A2704003CDCC1 /* MapView+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02C2F45211A2704003CDCC1 /* MapView+Metal.swift */; };
+		F02C2F49211A5BDA003CDCC1 /* MapViewRenderer+MetalShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F02C2F47211A5BD8003CDCC1 /* MapViewRenderer+MetalShaders.metal */; };
 		F04B28BD2065B503003A1ACC /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BC2065B503003A1ACC /* MapFeature.swift */; };
 		F04B28BF2065B70F003A1ACC /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B28BE2065B70F003A1ACC /* MapView.swift */; };
 		F07B5CC720F671FF00491322 /* UnitView+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07B5CC620F671FF00491322 /* UnitView+Metal.swift */; };
@@ -142,6 +149,15 @@
 		F015C79520ADFFFF00873642 /* UnitViewRenderer+OpenglCore33.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitViewRenderer+OpenglCore33.swift"; sourceTree = "<group>"; };
 		F015C79720AE261400873642 /* UnitViewRenderer+OpenglLegacy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitViewRenderer+OpenglLegacy.swift"; sourceTree = "<group>"; };
 		F021E39F2062F93A00D3BD39 /* TdfParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
+		F02C2F3A211A1012003CDCC1 /* TntView+Metal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "TntView+Metal.swift"; path = "../../HPIView/HPIView/TntView+Metal.swift"; sourceTree = "<group>"; };
+		F02C2F3B211A1012003CDCC1 /* TntViewRenderer+MetalShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = "TntViewRenderer+MetalShaders.metal"; path = "../../HPIView/HPIView/TntViewRenderer+MetalShaders.metal"; sourceTree = "<group>"; };
+		F02C2F3C211A1012003CDCC1 /* TntViewRenderer+MetalSingleQuad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "TntViewRenderer+MetalSingleQuad.swift"; path = "../../HPIView/HPIView/TntViewRenderer+MetalSingleQuad.swift"; sourceTree = "<group>"; };
+		F02C2F3D211A1013003CDCC1 /* TntViewRenderer+MetalStaticGrid.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "TntViewRenderer+MetalStaticGrid.swift"; path = "../../HPIView/HPIView/TntViewRenderer+MetalStaticGrid.swift"; sourceTree = "<group>"; };
+		F02C2F3E211A1013003CDCC1 /* TntViewRenderer+MetalShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "TntViewRenderer+MetalShaderTypes.h"; path = "../../HPIView/HPIView/TntViewRenderer+MetalShaderTypes.h"; sourceTree = "<group>"; };
+		F02C2F3F211A1013003CDCC1 /* TntViewRenderer+MetalDynamicTiles.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "TntViewRenderer+MetalDynamicTiles.swift"; path = "../../HPIView/HPIView/TntViewRenderer+MetalDynamicTiles.swift"; sourceTree = "<group>"; };
+		F02C2F45211A2704003CDCC1 /* MapView+Metal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MapView+Metal.swift"; sourceTree = "<group>"; };
+		F02C2F47211A5BD8003CDCC1 /* MapViewRenderer+MetalShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = "MapViewRenderer+MetalShaders.metal"; sourceTree = "<group>"; };
+		F02C2F48211A5BD9003CDCC1 /* MapViewRenderer+MetalShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MapViewRenderer+MetalShaderTypes.h"; sourceTree = "<group>"; };
 		F04B28BC2065B503003A1ACC /* MapFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
 		F04B28BE2065B70F003A1ACC /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		F07B5CC620F671FF00491322 /* UnitView+Metal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitView+Metal.swift"; sourceTree = "<group>"; };
@@ -225,6 +241,9 @@
 				B5E26F371ED9F0ED006C329B /* GafView.swift */,
 				F04B28BE2065B70F003A1ACC /* MapView.swift */,
 				F0CD87CA20FFB5D60012B1C8 /* MapView+Cocoa.swift */,
+				F02C2F45211A2704003CDCC1 /* MapView+Metal.swift */,
+				F02C2F47211A5BD8003CDCC1 /* MapViewRenderer+MetalShaders.metal */,
+				F02C2F48211A5BD9003CDCC1 /* MapViewRenderer+MetalShaderTypes.h */,
 				B5C5568E1E3437EF001BEFAB /* ModelView.swift */,
 				F08A641420EEAA47001E5982 /* ModelView+Metal.swift */,
 				F08A641720EEAA47001E5982 /* ModelView+Opengl.swift */,
@@ -236,6 +255,12 @@
 				B57C32B620702B9700B24C99 /* PaletteView.swift */,
 				F0CD87CE20FFBC7C0012B1C8 /* TntView.swift */,
 				B5E26F4D1EE3BFB4006C329B /* TntView+Cocoa.swift */,
+				F02C2F3A211A1012003CDCC1 /* TntView+Metal.swift */,
+				F02C2F3F211A1013003CDCC1 /* TntViewRenderer+MetalDynamicTiles.swift */,
+				F02C2F3B211A1012003CDCC1 /* TntViewRenderer+MetalShaders.metal */,
+				F02C2F3E211A1013003CDCC1 /* TntViewRenderer+MetalShaderTypes.h */,
+				F02C2F3C211A1012003CDCC1 /* TntViewRenderer+MetalSingleQuad.swift */,
+				F02C2F3D211A1013003CDCC1 /* TntViewRenderer+MetalStaticGrid.swift */,
 				F08A641F20EEC2D5001E5982 /* UnitView.swift */,
 				F07B5CC620F671FF00491322 /* UnitView+Metal.swift */,
 				B5E26F431EE3745F006C329B /* UnitView+Opengl.swift */,
@@ -451,6 +476,7 @@
 				B5D432FA1F0995CC005B468E /* QuickLookView.swift in Sources */,
 				F0D23B902072C97200C0A245 /* Palette+Files.swift in Sources */,
 				F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */,
+				F02C2F44211A1013003CDCC1 /* TntViewRenderer+MetalDynamicTiles.swift in Sources */,
 				F04B28BF2065B70F003A1ACC /* MapView.swift in Sources */,
 				B5C5564A1E2C86A2001BEFAB /* AppDelegate.swift in Sources */,
 				B5E26F0F1ED9EB05006C329B /* Utility.swift in Sources */,
@@ -458,13 +484,16 @@
 				F021E3A02062F93A00D3BD39 /* TdfParser.swift in Sources */,
 				B5F89FF320AA6DED0082943E /* Utility+GLKit.swift in Sources */,
 				B5E26F381ED9F0ED006C329B /* GafView.swift in Sources */,
+				F02C2F46211A2704003CDCC1 /* MapView+Metal.swift in Sources */,
 				B5E26F091ED9EB05006C329B /* UnitData.swift in Sources */,
 				B5E26F401EE37211006C329B /* UnitModel+Instance.swift in Sources */,
 				F07B5CCE20F7FA3700491322 /* Utility+Metal.swift in Sources */,
+				F02C2F43211A1013003CDCC1 /* TntViewRenderer+MetalStaticGrid.swift in Sources */,
 				F04B28BD2065B503003A1ACC /* MapFeature.swift in Sources */,
 				B52A67471EC3F35900698DEF /* CobView.swift in Sources */,
 				B5C5564E1E2C86A2001BEFAB /* TaassetsDocument.swift in Sources */,
 				F09272362051E214007C51EC /* UnitScript+CobDecompile.swift in Sources */,
+				F02C2F49211A5BDA003CDCC1 /* MapViewRenderer+MetalShaders.metal in Sources */,
 				B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */,
 				B5C5568F1E3437EF001BEFAB /* ModelView.swift in Sources */,
 				B5C556821E2F1747001BEFAB /* FinderView.swift in Sources */,
@@ -476,12 +505,15 @@
 				F08A641B20EEAA47001E5982 /* ModelViewRenderer+Metal.swift in Sources */,
 				B51FF3721EECA1F3009B509A /* FileReadHandle.swift in Sources */,
 				B5E26F0B1ED9EB05006C329B /* UnitModel.swift in Sources */,
+				F02C2F41211A1013003CDCC1 /* TntViewRenderer+MetalShaders.metal in Sources */,
 				F015C79620ADFFFF00873642 /* UnitViewRenderer+OpenglCore33.swift in Sources */,
 				F08A641E20EEAA47001E5982 /* ModelViewRenderer+OpenglCore33.swift in Sources */,
 				B5E26F3E1EDB4A02006C329B /* UnitTextureAtlas.swift in Sources */,
 				F0CD87CF20FFBC7D0012B1C8 /* TntView.swift in Sources */,
+				F02C2F40211A1013003CDCC1 /* TntView+Metal.swift in Sources */,
 				F07B5CC720F671FF00491322 /* UnitView+Metal.swift in Sources */,
 				B5E26F031ED9EB05006C329B /* gaf.swift in Sources */,
+				F02C2F42211A1013003CDCC1 /* TntViewRenderer+MetalSingleQuad.swift in Sources */,
 				B57C32B720702B9700B24C99 /* PaletteView.swift in Sources */,
 				B5E26F071ED9EB05006C329B /* pcx.swift in Sources */,
 				F07B5CCC20F67A3B00491322 /* UnitViewRenderer+MetalShaders.metal in Sources */,
