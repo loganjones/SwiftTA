@@ -16,12 +16,12 @@ class GameViewController: UIViewController {
     private let scrollView: UIScrollView
     
     required init(_ state: GameState) {
-        let defaultFrameRect = CGRect(x: 0, y: 0, width: 640, height: 480)
-        let initialViewState = GameViewState(viewport: defaultFrameRect)
+        let initialViewState = GameViewState(viewport: viewport(ofSize: Size2D(640, 480), centeredOn: state.startPosition, in: state.map))
         
         self.state = state
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!
         
+        let defaultFrameRect = CGRect(size: initialViewState.viewport.size)
         scrollView = UIScrollView(frame: defaultFrameRect)
         
         super.init(nibName: nil, bundle: nil)
@@ -40,6 +40,7 @@ class GameViewController: UIViewController {
         gameView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         
         scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        scrollView.contentOffset = renderer.viewState.viewport.origin * 2
         scrollView.contentSize = CGSize(state.map.resolution * 2)
         scrollView.delegate = self
         
@@ -59,6 +60,11 @@ extension GameViewController: UIScrollViewDelegate {
 
 // TEMP
 extension CGPoint {
+    
+    static func * (point: CGPoint, mult: Int) -> CGPoint {
+        let df = CGFloat(mult)
+        return CGPoint(x: point.x * df, y: point.y * df)
+    }
     
     static func / (point: CGPoint, divisor: Int) -> CGPoint {
         let df = CGFloat(divisor)

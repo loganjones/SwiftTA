@@ -102,7 +102,7 @@ class MetalMapView: NSView, MapViewLoader, MTKViewDelegate {
         let endTnt = Date()
         
         let beginFeatures = Date()
-        try? featureRenderer.loadFeatures(containedIn: map, startingWith: info.properties["planet"], from: filesystem)
+        try? featureRenderer.loadFeatures(containedIn: map, startingWith: info.planet, from: filesystem)
         let endFeatures = Date()
         
         let endMap = Date()
@@ -356,7 +356,7 @@ extension MetalMapFeatureRenderer {
     
     func loadMapFeatures(_ map: MapModel, planet: String?, from filesystem: FileSystem) -> (features: [Feature], shadows: [Feature]) {
         
-        let featureInfo = MapFeatureInfo.collectFeatures(named: Set(map.features), strartingWith: planet, from: filesystem)
+        let featureInfo = MapFeatureInfo.collectFeatures(Set(map.features), planet: planet, filesystem: filesystem)
         let palettes = MapFeatureInfo.loadFeaturePalettes(featureInfo, from: filesystem)
         let occurrences = groupFeatureOccurrences(map)
         

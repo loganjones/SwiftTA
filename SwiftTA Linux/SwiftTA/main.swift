@@ -75,12 +75,11 @@ func glfwGetGameContext(for window: OpaquePointer?) -> GameBox {
 
 
 /* new window size or exposure */
-func reshape(window: OpaquePointer?, to viewportSize: (width: Int32, height: Int32))
+func reshape(window: OpaquePointer?, to viewportSize: Size2D)
 {
     let game = glfwGetGameContext(for: window)
     
-    game.renderer.viewState.viewport.size = CGSize(width: CGFloat(viewportSize.width),
-                                                   height: CGFloat(viewportSize.height))
+    game.renderer.viewState.viewport.size = CGSize(viewportSize)
     
     glViewport(0, 0, GLsizei(viewportSize.width), GLsizei(viewportSize.height))
 }
@@ -131,10 +130,10 @@ func main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
     
-    let initialWindowSize: (width: Int32, height: Int32) = (640, 480)
+    let initialWindowSize = Size2D(640, 480)
     guard let window = glfwCreateWindow(
-        initialWindowSize.width,
-        initialWindowSize.height,
+        Int32(initialWindowSize.width),
+        Int32(initialWindowSize.height),
         "SwiftTA", nil, nil)
         else {
             glfwTerminate()
@@ -153,8 +152,8 @@ func main() {
             .appendingPathComponent("Total Annihilation", isDirectory: true)
         print("Total Annihilation directory: \(taDir)")
         
-        let gameState = try GameState.loadStuff(from: taDir, mapName: "Coast to Coast")
-        let initialViewState = GameViewState(viewport: CGRect(x: 0, y: 0, width: CGFloat(initialWindowSize.width), height: CGFloat(initialWindowSize.height)))
+        let gameState = try GameState(loadFrom: taDir, mapName: "Coast to Coast")
+        let initialViewState = GameViewState(viewport: viewport(ofSize: initialWindowSize, centeredOn: gameState.startPosition, in: gameState.map))
         
         guard let renderer = OpenglCore3Renderer(loadedState: gameState, viewState: initialViewState)
             else {
@@ -177,7 +176,7 @@ func main() {
     }
     glfwSetWindowSizeCallback(window) {
         (win, width, height) in
-        reshape(window: win, to: (width, height))
+        reshape(window: win, to: Size2D(Int(width), Int(height)))
     }
     
     reshape(window: window, to: initialWindowSize)

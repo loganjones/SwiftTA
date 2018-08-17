@@ -13,27 +13,49 @@ class GameState {
     
     let filesystem: FileSystem
     let map: MapModel
+    let mapInfo: MapInfo
+    let features: [String: MapFeatureInfo]
+    let units: [String: UnitInfo]
     
-    init(_ filesystem: FileSystem, _ map: MapModel) {
-        self.filesystem = filesystem
-        self.map = map
+    let startPosition: Point2D
+    
+    convenience init(loadFrom taDir: URL, mapName: String) throws {
+        try self.init(loadFrom: try FileSystem(mergingHpisIn: taDir), mapName: mapName)
     }
     
-}
-
-extension GameState {
-    
-    static func loadStuff(from taDir: URL, mapName: String) throws -> GameState {
+    init(loadFrom filesystem: FileSystem, mapName: String) throws {
+        self.filesystem = filesystem
+        let beginGame = Date()
         
-        print("Loading TA file heirarchy...", terminator: "")
-        let filesystem = try FileSystem(mergingHpisIn: taDir)
-        print(" done.")
+        let beginMap = Date()
+        guard let otaFile = filesystem.root[filePath: "maps/" + mapName + ".ota"]
+            else { throw FileSystem.Directory.ResolveError.notFound }
+        mapInfo = try MapInfo(contentsOf: otaFile, in: filesystem)
         
-        print("Loading map...", terminator: "")
-        let map = try MapModel(contentsOf: filesystem.openFile(at: "maps/\(mapName).tnt"))
-        print(" done.")
+        map = try MapModel(contentsOf: filesystem.openFile(at: "maps/\(mapName).tnt"))
+        let endMap = Date()
         
-        return GameState(filesystem, map)
+        let beginUnits = Date()
+        units = UnitInfo.collectUnits(from: filesystem)
+        let endUnits = Date()
+        
+        let beginFeatures = Date()
+        features = MapFeatureInfo.collectFeatures(
+            Set(map.features), planet: mapInfo.planet,
+            unitCorpses: units.values.reduce(into: Set()) { $0.insert($1.corpse.lowercased()) },
+            filesystem: filesystem)
+        let endFeatures = Date()
+        
+        startPosition = mapInfo.schema.first?.startPositions.first ?? Point2D(32, 32)
+        
+        let endGame = Date()
+        
+        print("""
+            Game assets load time: \(endGame.timeIntervalSince(beginGame)) seconds
+              Map(\(map.mapSize)): \(endMap.timeIntervalSince(beginMap)) seconds
+              Units(\(units.count)): \(endUnits.timeIntervalSince(beginUnits)) seconds
+              Features(\(features.count)): \(endFeatures.timeIntervalSince(beginFeatures)) seconds
+            """)
     }
     
 }

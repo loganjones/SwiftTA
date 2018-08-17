@@ -17,13 +17,13 @@ class GameViewController: NSViewController {
     private let emptyView: NSView
     
     required init(_ state: GameState) {
-        let defaultFrameRect = NSRect(x: 0, y: 0, width: 640, height: 480)
-        let initialViewState = GameViewState(viewport: defaultFrameRect)
+        let initialViewState = GameViewState(viewport: viewport(ofSize: Size2D(640, 480), centeredOn: state.startPosition, in: state.map))
         
         self.state = state
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!
         //self.renderer = OpenglCore3Renderer(loadedState: state, viewState: initialViewState)!
         
+        let defaultFrameRect = CGRect(size: initialViewState.viewport.size)
         scrollView = NSScrollView(frame: defaultFrameRect)
         emptyView = Dummy(frame: defaultFrameRect)
         
@@ -61,6 +61,7 @@ class GameViewController: NSViewController {
         view.addSubview(gameView)
         view.addSubview(scrollView)
         scrollView.documentView = emptyView
+        scrollView.contentView.bounds = renderer.viewState.viewport
         scrollView.contentView.postsBoundsChangedNotifications = true
         NotificationCenter.default.addObserver(self, selector: #selector(contentBoundsDidChange), name: NSView.boundsDidChangeNotification, object: scrollView.contentView)
         NotificationCenter.default.addObserver(self, selector: #selector(viewFrameDidChange), name: NSView.frameDidChangeNotification, object: view)

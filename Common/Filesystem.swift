@@ -302,6 +302,12 @@ extension FileSystem.Directory {
         return item.asFile()
     }
     
+    func files(withExtension ext: String) -> [FileSystem.File] {
+        return items
+            .compactMap { $0.asFile() }
+            .filter { $0.hasExtension(ext) }
+    }
+    
 }
 
 // MARK:- FileHandle

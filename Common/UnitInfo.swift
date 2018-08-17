@@ -12,6 +12,7 @@ struct UnitInfo {
     var name: String = ""
     var side: String = ""
     var object: String = ""
+    var corpse: String = ""
     
     var title: String = ""
     var description: String = ""
@@ -70,6 +71,7 @@ extension UnitInfo {
         description = try info.requiredStringProperty("description")
         categories = Set(try info.requiredStringProperty("category").components(separatedBy: " "))
         tedClass = try info.requiredStringProperty("tedclass")
+        corpse = try info.requiredStringProperty("corpse")
         
         let footprintX = try info.requiredStringProperty("footprintx")
         let footprintZ = try info.requiredStringProperty("footprintz")
@@ -119,5 +121,24 @@ extension UnitInfo {
     var isBuilder: Bool { return capabilities.contains(.builder) }
     var canFly: Bool { return capabilities.contains(.flying) }
     var canHover: Bool { return capabilities.contains(.hover) }
+    
+}
+
+// MARK: Load Units
+
+extension UnitInfo {
+    
+    typealias UnitInfoCollection = [String: UnitInfo]
+    
+    static func collectUnits(from filesystem: FileSystem) -> UnitInfoCollection {
+        
+        guard let unitsDirectory = filesystem.root[directory: "units"] else { return [:] }
+        
+        let units = unitsDirectory.files(withExtension: "fbi")
+            .compactMap { try? filesystem.openFile($0) }
+            .compactMap { try? UnitInfo(contentsOf: $0) }
+        
+        return units.reduce(into: [:]) { $0[$1.name.lowercased()] = $1 }
+    }
     
 }

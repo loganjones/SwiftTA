@@ -41,7 +41,7 @@ class CocoaMapView: CocoaTntView, MapViewLoader {
         
         let beginFeatures = Date()
         let featureNames = Set(map.features)
-        let features = CocoaMapView.loadMapFeatures(featureNames, planet: info.properties["planet"] ?? "", from: filesystem)
+        let features = CocoaMapView.loadMapFeatures(featureNames, planet: info.planet, from: filesystem)
         let featureInstances = CocoaMapView.indexFeatureLocations(map, features)
         let endFeatures = Date()
         
@@ -99,9 +99,9 @@ private extension CocoaMapView {
         var shadowRect: CGRect?
     }
     
-    static func loadMapFeatures(_ featureNames: Set<String>, planet: String, from filesystem: FileSystem) -> [String: Feature] {
+    static func loadMapFeatures(_ featureNames: Set<String>, planet: String?, from filesystem: FileSystem) -> [String: Feature] {
         
-        let featureInfo = MapFeatureInfo.collectFeatures(named: featureNames, strartingWith: planet, from: filesystem)
+        let featureInfo = MapFeatureInfo.collectFeatures(featureNames, planet: planet, filesystem: filesystem)
         let palettes = loadFeaturePalettes(featureInfo, from: filesystem)
         
         var features: [String: Feature] = [:]

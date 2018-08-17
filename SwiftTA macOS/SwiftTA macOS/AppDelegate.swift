@@ -40,7 +40,7 @@ class MainWindowController: NSWindowController {
                 }
                 let taDir = try URL(resolvingAliasFileAt: documents.appendingPathComponent("Total Annihilation", isDirectory: true))
                 
-                let state = try GameState.loadStuff(from: taDir, mapName: "Coast to Coast")
+                let state = try GameState(loadFrom: taDir, mapName: "Coast to Coast")
                 DispatchQueue.main.async {
                     self.proceedWithLoaded(state)
                 }
