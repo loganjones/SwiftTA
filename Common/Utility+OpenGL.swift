@@ -6,8 +6,13 @@
 //  Copyright © 2016 Logan Jones. All rights reserved.
 //
 
+#if canImport(Cocoa)
 import Cocoa
 import OpenGL.GL
+#elseif canImport(Cgl)
+import Foundation
+import Cgl
+#endif
 
 
 func glVertex(_ v: Vertex3) {

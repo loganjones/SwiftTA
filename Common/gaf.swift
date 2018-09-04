@@ -7,6 +7,9 @@
 //
 
 import Foundation
+#if canImport(Ctypes)
+import Ctypes
+#endif
 
 enum GafFrameEncoding: UInt8 {
     /// The data at `offsetToFrameData` is a raw collection of `width` x `height` bytes.

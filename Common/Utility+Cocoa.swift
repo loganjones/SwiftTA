@@ -10,6 +10,8 @@
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
+#else
+import Foundation
 #endif
 
 // MARK:- Text File Loading
@@ -47,6 +49,7 @@ extension String {
 
 // MARK:- Image Loading
 
+#if canImport(CoreGraphics)
 extension CGImage {
 
     var size: Size2D {
@@ -176,6 +179,7 @@ extension CGImage {
     }
     
 }
+#endif
 
 #if canImport(AppKit)
 extension NSImage {

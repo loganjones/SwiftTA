@@ -7,9 +7,14 @@
 //
 
 import Foundation
+#if canImport(Ctypes)
+import Ctypes
+#endif
 
 // TEMP
+#if canImport(CoreGraphics)
 import CoreGraphics
+#endif
 
 
 enum MapModel {

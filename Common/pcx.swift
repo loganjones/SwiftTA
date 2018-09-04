@@ -7,6 +7,9 @@
 //
 
 import Foundation
+#if canImport(Ctypes)
+import Ctypes
+#endif
 
 enum Pcx { }
 
