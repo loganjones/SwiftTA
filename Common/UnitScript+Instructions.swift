@@ -642,9 +642,8 @@ private func perform(modification: (_StackValue) -> _StackValue, in execution: S
  
  */
 private func taRandom(min: _StackValue, max: _StackValue) -> _StackValue {
-    let spread = UInt32(max - min)
-    let random = arc4random_uniform(spread)
-    return min + _StackValue(random)
+    guard min < max else { return min }
+    return _StackValue.random(in: min...max)
 }
 
 /**
