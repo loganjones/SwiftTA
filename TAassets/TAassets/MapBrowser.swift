@@ -103,7 +103,7 @@ extension MapBrowserViewController: NSTableViewDelegate {
                 let controller = detailViewController
                 controller.view.frame = detailViewContainer.bounds
                 controller.view.autoresizingMask = [.width, .width]
-                addChildViewController(controller)
+                addChild(controller)
                 detailViewContainer.addSubview(controller.view)
                 isShowingDetail = true
             }
@@ -114,7 +114,7 @@ extension MapBrowserViewController: NSTableViewDelegate {
         else if isShowingDetail {
             detailViewController.clear()
             detailViewController.view.removeFromSuperview()
-            detailViewController.removeFromParentViewController()
+            detailViewController.removeFromParent()
             isShowingDetail = false
         }
     }
@@ -236,7 +236,7 @@ class MapDetailViewController: NSViewController {
         let container = ContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
         self.view = container
         
-        addChildViewController(mapView)
+        addChild(mapView)
         container.contentView = mapView.view
     }
     

@@ -81,7 +81,7 @@ extension BasicMetalUnitViewRenderer: MetalUnitViewRenderer {
         }
         
         if let model = model {
-            let pieceMats = uniformBuffer.contents() + (modelUniformOffset + MemoryLayout<UnitMetalRenderer_ModelUniforms>.size - (MemoryLayout<matrix_float4x4>.size * 40))
+            let pieceMats = uniformBuffer.contents() + (modelUniformOffset + (MemoryLayout<UnitMetalRenderer_ModelUniforms>.offset(of: \UnitMetalRenderer_ModelUniforms.pieces) ?? 0))
             let count = model.transformations.count
             model.transformations.withUnsafeBytes() {
                 pieceMats.copyMemory(from: $0.baseAddress!, byteCount: MemoryLayout<matrix_float4x4>.stride * count)
@@ -201,18 +201,13 @@ private extension BasicMetalUnitViewRenderer {
     
     class func buildModelVertexDescriptor() -> MTLVertexDescriptor {
         let configurator = MetalVertexDescriptorConfigurator<UnitMetalRenderer_ModelVertexAttribute, UnitMetalRenderer_BufferIndex>()
-        var offset = 0
+        typealias Vertex = UnitMetalRenderer_ModelVertex
         
-        configurator.setAttribute(.position, format: .float3, offset: offset, bufferIndex: .modelVertices)
-        offset += MemoryLayout<vector_float3>.stride
-        configurator.setAttribute(.normal, format: .float3, offset: offset, bufferIndex: .modelVertices)
-        offset += MemoryLayout<vector_float3>.stride
-        configurator.setAttribute(.texcoord, format: .float2, offset: offset, bufferIndex: .modelVertices)
-        offset += MemoryLayout<vector_float2>.stride
-        configurator.setAttribute(.pieceIndex, format: .int, offset: offset, bufferIndex: .modelVertices)
-        offset += MemoryLayout<Int32>.stride
-        
-        configurator.setLayout(.modelVertices, stride: MemoryLayout<UnitMetalRenderer_ModelVertex>.stride, stepRate: 1, stepFunction: .perVertex)
+        configurator.setAttribute(.position, format: .float3, keyPath: \Vertex.position, bufferIndex: .modelVertices)
+        configurator.setAttribute(.normal, format: .float3, keyPath: \Vertex.normal, bufferIndex: .modelVertices)
+        configurator.setAttribute(.texcoord, format: .float2, keyPath: \Vertex.texCoord, bufferIndex: .modelVertices)
+        configurator.setAttribute(.pieceIndex, format: .int, keyPath: \Vertex.pieceIndex, bufferIndex: .modelVertices)
+        configurator.setLayout(.modelVertices, stride: MemoryLayout<Vertex>.stride, stepRate: 1, stepFunction: .perVertex)
         
         return configurator.vertexDescriptor
     }

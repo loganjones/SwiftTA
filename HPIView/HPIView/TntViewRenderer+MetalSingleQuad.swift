@@ -162,8 +162,8 @@ extension SingleTextureMetalTntViewRenderer {
     class func buildVertexDescriptor() -> MTLVertexDescriptor {
         let configurator = MetalVertexDescriptorConfigurator<VertexAttributes, BufferIndex>()
         
-        configurator.setAttribute(.position, format: .float3, offset: 0, bufferIndex: .vertices)
-        configurator.setAttribute(.texcoord, format: .float2, offset: MemoryLayout<vector_float3>.stride, bufferIndex: .vertices)
+        configurator.setAttribute(.position, format: .float3, keyPath: \Vertex.position, bufferIndex: .vertices)
+        configurator.setAttribute(.texcoord, format: .float2, keyPath: \Vertex.texCoord, bufferIndex: .vertices)
         configurator.setLayout(.vertices, stride: MemoryLayout<Vertex>.stride, stepRate: 1, stepFunction: .perVertex)
         
         return configurator.vertexDescriptor

@@ -167,16 +167,12 @@ private extension BasicMetalModelViewRenderer {
     
     class func buildModelVertexDescriptor() -> MTLVertexDescriptor {
         let configurator = MetalVertexDescriptorConfigurator<ModelMetalRenderer_ModelVertexAttribute, ModelMetalRenderer_BufferIndex>()
-        var offset = 0
-
-        configurator.setAttribute(.position, format: .float3, offset: offset, bufferIndex: .modelVertices)
-        offset += MemoryLayout<vector_float3>.stride
-        configurator.setAttribute(.normal, format: .float3, offset: offset, bufferIndex: .modelVertices)
-        offset += MemoryLayout<vector_float3>.stride
-        configurator.setAttribute(.texcoord, format: .float2, offset: offset, bufferIndex: .modelVertices)
-        offset += MemoryLayout<vector_float2>.stride
-
-        configurator.setLayout(.modelVertices, stride: MemoryLayout<ModelMetalRenderer_ModelVertex>.stride, stepRate: 1, stepFunction: .perVertex)
+        typealias Vertex = ModelMetalRenderer_ModelVertex
+        
+        configurator.setAttribute(.position, format: .float3, keyPath: \Vertex.position, bufferIndex: .modelVertices)
+        configurator.setAttribute(.normal, format: .float3, keyPath: \Vertex.normal, bufferIndex: .modelVertices)
+        configurator.setAttribute(.texcoord, format: .float2, keyPath: \Vertex.texCoord, bufferIndex: .modelVertices)
+        configurator.setLayout(.modelVertices, stride: MemoryLayout<Vertex>.stride, stepRate: 1, stepFunction: .perVertex)
         
         return configurator.vertexDescriptor
     }

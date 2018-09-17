@@ -11,6 +11,13 @@ import MetalKit
 import simd
 
 
+private typealias BufferIndex = MetalTntViewRenderer_BufferIndex
+private typealias TextureIndex = MetalTntViewRenderer_TextureIndex
+private typealias Uniforms = MetalTntViewRenderer_MapUniforms
+private typealias Vertex = MetalTntViewRenderer_MapTileVertex
+private typealias VertexAttributes = MetalTntViewRenderer_MapTileVertexAttribute
+
+
 class StaticTextureSetMetalTntViewRenderer: MetalTntRenderer {
     
     let textureTileSize = 2048
@@ -35,7 +42,7 @@ class StaticTextureSetMetalTntViewRenderer: MetalTntRenderer {
     required init(_ device: MTLDevice) {
         self.device = device
         commandQueue = device.makeCommandQueue()!
-        let alignedTileUniformsSize = alignSizeForMetalBuffer(MemoryLayout<MetalTntViewRenderer_MapUniforms>.size)
+        let alignedTileUniformsSize = alignSizeForMetalBuffer(MemoryLayout<Uniforms>.size)
         uniformBuffer = device.makeBuffer(length: alignedTileUniformsSize, options:[.storageModeShared])!
     }
     
@@ -81,12 +88,12 @@ extension StaticTextureSetMetalTntViewRenderer {
     }
     
     class func buildVertexDescriptor() -> MTLVertexDescriptor {
-        let configurator = MetalVertexDescriptorConfigurator<MetalTntViewRenderer_MapTileVertexAttribute, MetalTntViewRenderer_BufferIndex>()
+        let configurator = MetalVertexDescriptorConfigurator<VertexAttributes, BufferIndex>()
         
-        configurator.setAttribute(.position, format: .float3, offset: 0, bufferIndex: .vertices)
-        configurator.setAttribute(.texcoord, format: .float2, offset: MemoryLayout<vector_float3>.stride, bufferIndex: .vertices)
-//        configurator.setAttribute(.slice, format: .int, offset: MemoryLayout<vector_float3>.stride + MemoryLayout<vector_float2>.stride, bufferIndex: .vertices)
-        configurator.setLayout(.vertices, stride: MemoryLayout<MetalTntViewRenderer_MapTileVertex>.stride, stepRate: 1, stepFunction: .perVertex)
+        configurator.setAttribute(.position, format: .float3, keyPath: \Vertex.position, bufferIndex: .vertices)
+        configurator.setAttribute(.texcoord, format: .float2, keyPath: \Vertex.texCoord, bufferIndex: .vertices)
+//        configurator.setAttribute(.slice, format: .int, keyPath: \Vertex.slice, bufferIndex: .vertices)
+        configurator.setLayout(.vertices, stride: MemoryLayout<Vertex>.stride, stepRate: 1, stepFunction: .perVertex)
         
         return configurator.vertexDescriptor
     }
@@ -100,7 +107,7 @@ extension StaticTextureSetMetalTntViewRenderer {
         let viewMatrix = matrix_float4x4.translation(-viewportPosition.x, -viewportPosition.y, 0)
         let projectionMatrix = matrix_float4x4.ortho(0, viewportSize.x, viewportSize.y, 0, -1024, 256)
         
-        let uniforms = UnsafeMutableRawPointer(uniformBuffer.contents()).bindMemory(to:MetalTntViewRenderer_MapUniforms.self, capacity:1)
+        let uniforms = uniformBuffer.contents().bindMemory(to: Uniforms.self, capacity: 1)
         uniforms.pointee.mvpMatrix = projectionMatrix * viewMatrix * modelMatrix
     }
     
@@ -109,10 +116,10 @@ extension StaticTextureSetMetalTntViewRenderer {
         
         renderEncoder.setRenderPipelineState(pipelineState)
         renderEncoder.setDepthStencilState(depthState)
-        renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: MetalTntViewRenderer_BufferIndex.uniforms.rawValue)
-        renderEncoder.setFragmentBuffer(uniformBuffer, offset: 0, index: MetalTntViewRenderer_BufferIndex.uniforms.rawValue)
-        renderEncoder.setVertexBuffer(map.vertices, offset: 0, index: MetalTntViewRenderer_BufferIndex.vertices.rawValue)
-        renderEncoder.setFragmentTexture(map.texture, index: MetalTntViewRenderer_TextureIndex.color.rawValue)
+        renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: BufferIndex.uniforms)
+        renderEncoder.setFragmentBuffer(uniformBuffer, offset: 0, index: BufferIndex.uniforms)
+        renderEncoder.setVertexBuffer(map.vertices, offset: 0, index: BufferIndex.vertices)
+        renderEncoder.setFragmentTexture(map.texture, index: TextureIndex.color)
         renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: map.vertexCount)
     }
     
@@ -173,7 +180,7 @@ extension StaticTextureSetMetalTntViewRenderer {
     func makeGeometry(tiles tileCount: Size2D) throws -> (MTLBuffer, MTLBuffer, Int) {
         
         let vertexCount = tileCount.area * 6
-        let alignedVerticesSize = alignSizeForMetalBuffer(MemoryLayout<MetalTntViewRenderer_MapTileVertex>.stride * vertexCount)
+        let alignedVerticesSize = alignSizeForMetalBuffer(MemoryLayout<Vertex>.stride * vertexCount)
         guard let vertexBuffer = device.makeBuffer(length: alignedVerticesSize, options:[.storageModeShared]) else {
             throw GeometryError.badBufferAttributes
         }
@@ -182,7 +189,7 @@ extension StaticTextureSetMetalTntViewRenderer {
             throw GeometryError.badBufferAttributes
         }
         
-        let v = vertexBuffer.contents().bindMemory(to: MetalTntViewRenderer_MapTileVertex.self, capacity: vertexCount)
+        let v = vertexBuffer.contents().bindMemory(to: Vertex.self, capacity: vertexCount)
         let vs = sliceBuffer.contents().bindMemory(to: Int32.self, capacity: vertexCount)
         var i = 0
         var s: Int32 = 0

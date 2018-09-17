@@ -15,8 +15,8 @@ class TaassetsDocument: NSDocument {
 
     override func makeWindowControllers() {
         // Returns the Storyboard that contains your Document window.
-        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
-        let windowController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Document Window Controller")) as! NSWindowController
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)
+        let windowController = storyboard.instantiateController(withIdentifier: "Document Window Controller") as! NSWindowController
         let viewController = windowController.contentViewController as! TaassetsViewController
         viewController.shared = TaassetsSharedState(filesystem: filesystem, sides: sides)
         self.addWindowController(windowController)

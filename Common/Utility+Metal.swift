@@ -293,6 +293,13 @@ struct MetalVertexDescriptorConfigurator<VertexAttribute, BufferIndex>
         attr.bufferIndex = bufferIndex.rawValue
     }
     
+    func setAttribute<V>(_ va: VertexAttribute, format: MTLVertexFormat, keyPath: PartialKeyPath<V>, bufferIndex: BufferIndex) {
+        guard let attr = vertexDescriptor.attributes[va.rawValue] else { return }
+        attr.format = format
+        attr.offset = MemoryLayout<V>.offset(of: keyPath) ?? 0
+        attr.bufferIndex = bufferIndex.rawValue
+    }
+    
     func setLayout(_ bi: BufferIndex, with configure: (MTLVertexBufferLayoutDescriptor) -> ()) {
         guard let layout = vertexDescriptor.layouts[bi.rawValue] else { return }
         configure(layout)

@@ -127,7 +127,7 @@ extension UnitBrowserViewController: NSTableViewDelegate {
                 let controller = detailViewController
                 controller.view.frame = detailViewContainer.bounds
                 controller.view.autoresizingMask = [.width, .width]
-                addChildViewController(controller)
+                addChild(controller)
                 detailViewContainer.addSubview(controller.view)
                 isShowingDetail = true
             }
@@ -139,7 +139,7 @@ extension UnitBrowserViewController: NSTableViewDelegate {
         else if isShowingDetail {
             detailViewController.clear()
             detailViewController.view.removeFromSuperview()
-            detailViewController.removeFromParentViewController()
+            detailViewController.removeFromParent()
             isShowingDetail = false
         }
     }
@@ -349,7 +349,7 @@ class UnitDetailViewController: NSViewController {
         let container = ContainerView(frame: NSRect(x: 0, y: 0, width: 256, height: 256))
         self.view = container
         
-        addChildViewController(unitView)
+        addChild(unitView)
         container.contentView = unitView.view
     }
     
