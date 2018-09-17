@@ -11,7 +11,8 @@
 		B5CAAF0A20B26BB2003B17D7 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF0920B26BB2003B17D7 /* GameViewController.swift */; };
 		B5CAAF0C20B26BB3003B17D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0B20B26BB3003B17D7 /* Assets.xcassets */; };
 		B5CAAF0F20B26BB3003B17D7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0D20B26BB3003B17D7 /* Main.storyboard */; };
-		F0A9DE2320B48C23007E71C1 /* OpenGLViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2220B48C23007E71C1 /* OpenGLViewController.swift */; };
+		F02CAF43214C52CE0084F454 /* OpenglCore3Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02CAF42214C52CE0084F454 /* OpenglCore3Renderer.swift */; };
+		F02CAF45214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02CAF44214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift */; };
 		F0A9DE2620B49B50007E71C1 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F0A9DE2520B49B50007E71C1 /* OpenGL.framework */; };
 		F0A9DE4B20B4C7B6007E71C1 /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2820B4C7B6007E71C1 /* Geometry.swift */; };
 		F0A9DE4C20B4C7B6007E71C1 /* ModelTexturePack.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE2920B4C7B6007E71C1 /* ModelTexturePack.swift */; };
@@ -58,7 +59,8 @@
 		B5CAAF0E20B26BB3003B17D7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B5CAAF1020B26BB3003B17D7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B5CAAF1120B26BB3003B17D7 /* SwiftTA_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftTA_macOS.entitlements; sourceTree = "<group>"; };
-		F0A9DE2220B48C23007E71C1 /* OpenGLViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGLViewController.swift; sourceTree = "<group>"; };
+		F02CAF42214C52CE0084F454 /* OpenglCore3Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenglCore3Renderer.swift; sourceTree = "<group>"; };
+		F02CAF44214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenglCore3OneTextureTntDrawable.swift; sourceTree = "<group>"; };
 		F0A9DE2520B49B50007E71C1 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		F0A9DE2820B4C7B6007E71C1 /* Geometry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
 		F0A9DE2920B4C7B6007E71C1 /* ModelTexturePack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelTexturePack.swift; sourceTree = "<group>"; };
@@ -141,7 +143,6 @@
 			children = (
 				B5CAAF0720B26BB2003B17D7 /* AppDelegate.swift */,
 				B5CAAF0920B26BB2003B17D7 /* GameViewController.swift */,
-				F0A9DE2220B48C23007E71C1 /* OpenGLViewController.swift */,
 				F0A9DE6720B4CA48007E71C1 /* BridgingHeader.h */,
 				B5CAAF0B20B26BB3003B17D7 /* Assets.xcassets */,
 				B5CAAF0D20B26BB3003B17D7 /* Main.storyboard */,
@@ -178,6 +179,8 @@
 				F0F5409821237D1200221A9C /* MetalTntShaders.metal */,
 				F0F5409921237D1300221A9C /* MetalTntShaderTypes.h */,
 				F0A9DE2920B4C7B6007E71C1 /* ModelTexturePack.swift */,
+				F02CAF44214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift */,
+				F02CAF42214C52CE0084F454 /* OpenglCore3Renderer.swift */,
 				F0A9DE2D20B4C7B6007E71C1 /* Palette.swift */,
 				F0A9DE3B20B4C7B6007E71C1 /* Palette+Files.swift */,
 				F0A9DE4120B4C7B6007E71C1 /* pcx.h */,
@@ -294,6 +297,7 @@
 				F0A9DE4D20B4C7B6007E71C1 /* MapInfo.swift in Sources */,
 				B5CAAF0A20B26BB2003B17D7 /* GameViewController.swift in Sources */,
 				F0A9DE5120B4C7B7007E71C1 /* gaf.swift in Sources */,
+				F02CAF43214C52CE0084F454 /* OpenglCore3Renderer.swift in Sources */,
 				F0A9DE5720B4C7B7007E71C1 /* UnitInfo.swift in Sources */,
 				F0A9DE6420B4C7B7007E71C1 /* UnitScript+VM.swift in Sources */,
 				F0A9DE5620B4C7B7007E71C1 /* Utility+GLKit.swift in Sources */,
@@ -306,7 +310,6 @@
 				F0A9DE5B20B4C7B7007E71C1 /* UnitModel+Instance.swift in Sources */,
 				F0A9DE5920B4C7B7007E71C1 /* Palette+Files.swift in Sources */,
 				F0A9DE6520B4C7B7007E71C1 /* MapModel.swift in Sources */,
-				F0A9DE2320B48C23007E71C1 /* OpenGLViewController.swift in Sources */,
 				B5CAAF0820B26BB2003B17D7 /* AppDelegate.swift in Sources */,
 				F0F5409E21237D1400221A9C /* MetalTiledTntDrawable.swift in Sources */,
 				F0A9DE4F20B4C7B6007E71C1 /* pcx.swift in Sources */,
@@ -314,6 +317,7 @@
 				F0A9DE5C20B4C7B7007E71C1 /* UnitScript.swift in Sources */,
 				F0F540A021237D2400221A9C /* GameRenderer.swift in Sources */,
 				F0F540A82123880C00221A9C /* MetalOneTextureTntDrawable.swift in Sources */,
+				F02CAF45214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift in Sources */,
 				F0A9DE5E20B4C7B7007E71C1 /* Utility+OpenGL.swift in Sources */,
 				F0A9DE5420B4C7B7007E71C1 /* UnitScript+CobDecompile.swift in Sources */,
 				F0A9DE6020B4C7B7007E71C1 /* Utility+Cocoa.swift in Sources */,

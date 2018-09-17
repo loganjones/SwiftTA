@@ -27,6 +27,10 @@ func glBufferData<T>(_ target: GLenum, _ data: [T], _ usage: GLenum) {
     var d = data
     glBufferData(target, MemoryLayout<T>.stride * data.count, &d, usage)
 }
+func glBufferSubData<T>(_ target: GLenum, _ offset: Int, _ data: [T]) {
+    var d = data
+    glBufferSubData(target, offset, MemoryLayout<T>.stride * data.count, &d)
+}
 
 // MARK:- Shader Utility
 

@@ -52,7 +52,7 @@ class MetalOneTextureTntDrawable: MetalTntDrawable {
         }
         
         let beginConversion = Date()
-        let tileBuffer = map.convertTiles(using: palette)
+        let tileBuffer = map.convertTilesBGRA(using: palette)
         defer { tileBuffer.deallocate() }
         let endConversion = Date()
         
@@ -186,29 +186,4 @@ private func clamp(viewport: CGRect, to size: CGSize) -> (position: vector_float
     else { offsetY = 0; positionY = Float(viewport.minY) }
     
     return (vector_float2(positionX, positionY), vector_float2(offsetX, offsetY))
-}
-
-private extension TaMapModel {
-    
-    func convertTiles(using palette: Palette) -> UnsafeBufferPointer<UInt8> {
-        
-        let tntTileSize = tileSet.tileSize
-        let tileBuffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: tileSet.count * tntTileSize.area * 4)
-        
-        tileSet.tiles.withUnsafeBytes() {
-            (sourceTiles: UnsafePointer<UInt8>) in
-            let sourceCount = tntTileSize.area * tileSet.count
-            for sourceIndex in 0..<sourceCount {
-                let destinationIndex = sourceIndex * 4
-                let colorIndex = Int(sourceTiles[sourceIndex])
-                tileBuffer[destinationIndex+0] = palette[colorIndex].blue
-                tileBuffer[destinationIndex+1] = palette[colorIndex].green
-                tileBuffer[destinationIndex+2] = palette[colorIndex].red
-                tileBuffer[destinationIndex+3] = 255
-            }
-        }
-        
-        return UnsafeBufferPointer(tileBuffer)
-    }
-    
 }

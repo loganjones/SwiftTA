@@ -21,6 +21,19 @@ extension GLKVector3 {
     
 }
 
+func ×(lhs: GLKVector3, rhs: GLKVector3) -> GLKVector3 {
+    return GLKVector3CrossProduct(lhs, rhs)
+}
+func *(lhs: GLKMatrix4, rhs: GLKVector3) -> GLKVector3 {
+    return GLKMatrix4MultiplyVector3(lhs, rhs)
+}
+func *(lhs: GLKMatrix4, rhs: GLKVector4) -> GLKVector4 {
+    return GLKMatrix4MultiplyVector4(lhs, rhs)
+}
+func *(lhs: GLKMatrix4, rhs: GLKMatrix4) -> GLKMatrix4 {
+    return GLKMatrix4Multiply(lhs, rhs)
+}
+
 func glUniformGLKVector3(_ location: GLint, _ value: GLKVector3) {
     var shadow = value
     glUniform3fv(location, 1, &shadow.__Anonymous_field0.x)

@@ -238,6 +238,13 @@ extension CGSize {
     
 }
 
+extension Vector2 {
+    init(_ size: CGSize) {
+        x = Double(size.width)
+        y = Double(size.height)
+    }
+}
+
 extension CGRect {
     
     init(origin: Point2D, size: Size2D) {
