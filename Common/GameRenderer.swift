@@ -20,7 +20,7 @@ struct GameViewState {
     var viewport = CGRect.zero
 }
 
-protocol GameRenderer: AnyObject {
+protocol GameRenderer: class {
     
     var viewState: GameViewState { get set }
     init?(loadedState: GameState, viewState: GameViewState)
@@ -29,6 +29,8 @@ protocol GameRenderer: AnyObject {
     var view: NSView { get }
     #elseif canImport(UIKit)
     var view: UIView { get }
+    #else
+    func drawFrame()
     #endif
     
 }

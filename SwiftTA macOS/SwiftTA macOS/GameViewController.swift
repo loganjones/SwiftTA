@@ -22,6 +22,7 @@ class GameViewController: NSViewController {
         
         self.state = state
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!
+        //self.renderer = OpenglCore3Renderer(loadedState: state, viewState: initialViewState)!
         
         scrollView = NSScrollView(frame: defaultFrameRect)
         emptyView = Dummy(frame: defaultFrameRect)

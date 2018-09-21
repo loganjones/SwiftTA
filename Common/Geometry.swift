@@ -236,6 +236,37 @@ struct Vector2 {
     var y: Double
 }
 
+extension Vertex3 {
+    init(_ x: Double, _ y: Double, _ z: Double) {
+        self.x = x
+        self.y = y
+        self.z = z
+    }
+}
+extension Vector3 {
+    init(_ x: Double, _ y: Double, _ z: Double) {
+        self.x = x
+        self.y = y
+        self.z = z
+    }
+}
+extension Vertex2 {
+    init(_ x: Double, _ y: Double) {
+        self.x = x
+        self.y = y
+    }
+}
+extension Vector2 {
+    init(_ x: Double, _ y: Double) {
+        self.x = x
+        self.y = y
+    }
+    init(_ size: Size2D) {
+        self.x = Double(size.width)
+        self.y = Double(size.height)
+    }
+}
+
 extension Vertex3: CustomStringConvertible {
     var description: String {
         return "(\(x), \(y), \(z))"
