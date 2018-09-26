@@ -17,7 +17,7 @@ class GameViewController: NSViewController {
     private let emptyView: NSView
     
     required init(_ state: GameState) {
-        let initialViewState = GameViewState(viewport: viewport(ofSize: Size2D(640, 480), centeredOn: state.startPosition, in: state.map))
+        let initialViewState = GameViewState(viewport: viewport(ofSize: Size2D(1024, 768), centeredOn: state.startPosition, in: state.map))
         
         self.state = state
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!

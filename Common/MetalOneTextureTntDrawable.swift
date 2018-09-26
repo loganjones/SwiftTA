@@ -11,8 +11,6 @@ import MetalKit
 import simd
 
 
-private let maxBuffersInFlight = 3
-
 private typealias BufferIndex = MetalTntViewRenderer_BufferIndex
 private typealias TextureIndex = MetalTntViewRenderer_TextureIndex
 private typealias Uniforms = MetalTntViewRenderer_MapUniforms
@@ -24,7 +22,6 @@ class MetalOneTextureTntDrawable: MetalTntDrawable {
     
     let device: MTLDevice
     
-    private let inFlightSemaphore = DispatchSemaphore(value: maxBuffersInFlight)
     private var pipelineState: MTLRenderPipelineState!
     private var depthState: MTLDepthStencilState!
     
@@ -32,7 +29,7 @@ class MetalOneTextureTntDrawable: MetalTntDrawable {
     private var quadBuffer: MetalRingBuffer
     private var texture: MTLTexture?
     
-    required init(_ device: MTLDevice) {
+    required init(_ device: MTLDevice, _ maxBuffersInFlight: Int) {
         self.device = device
         
         uniformBuffer = device.makeRingBuffer(length: MemoryLayout<Uniforms>.size, count: maxBuffersInFlight, options: [.storageModeShared])!
@@ -95,10 +92,6 @@ extension MetalOneTextureTntDrawable {
     
     func configure(for metal: MetalHost) throws {
         
-        metal.view.depthStencilPixelFormat = MTLPixelFormat.depth32Float_stencil8
-        metal.view.colorPixelFormat = MTLPixelFormat.bgra8Unorm_srgb
-        metal.view.sampleCount = 1
-        
         let vertexDescriptor = MetalOneTextureTntDrawable.buildVertexDescriptor()
         
         pipelineState = try metal.makeRenderPipelineState(
@@ -118,10 +111,6 @@ extension MetalOneTextureTntDrawable {
     
     func setupNextFrame(_ viewState: GameViewState, _ commandBuffer: MTLCommandBuffer) {
         guard let texture = texture else { return }
-        
-        _ = inFlightSemaphore.wait(timeout: DispatchTime.distantFuture)
-        let semaphore = inFlightSemaphore
-        commandBuffer.addCompletedHandler { _ in semaphore.signal() }
         
         let texteureSize = vector_float2(texture.size2D)
         let viewportSize = vector_float2(viewState.viewport.size)

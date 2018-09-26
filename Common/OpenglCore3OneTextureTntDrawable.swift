@@ -69,8 +69,9 @@ class OpenglCore3OneTextureTntDrawable: OpenglCore3TntDrawable {
         glEnable(GLenum(GL_BLEND))
         glTexEnvf(GLenum(GL_TEXTURE_ENV), GLenum(GL_TEXTURE_ENV_MODE), GLfloat(GL_MODULATE))
         
-        glActiveTexture(GLenum(GL_TEXTURE0));
-        glBindTexture(GLenum(GL_TEXTURE_2D), texture.id);
+        glUseProgram(program.id)
+        glActiveTexture(GLenum(GL_TEXTURE0))
+        glBindTexture(GLenum(GL_TEXTURE_2D), texture.id)
         quad.draw()
     }
     

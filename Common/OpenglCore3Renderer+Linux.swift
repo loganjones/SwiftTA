@@ -14,6 +14,7 @@ class OpenglCore3Renderer: GameRenderer {
     
     var viewState: GameViewState
     private var tnt: OpenglCore3TntDrawable?
+    private var features: OpenglCore3FeatureDrawable?
     
     required init?(loadedState: GameState, viewState: GameViewState) {
         self.viewState = viewState
@@ -34,6 +35,7 @@ class OpenglCore3Renderer: GameRenderer {
             }
             
             self.tnt = tnt
+            features = try OpenglCore3FeatureDrawable(loaded.features, containedIn: loaded.map, filesystem: loaded.filesystem)
         }
         catch {
             print("Failed to load map: \(error)")
@@ -44,10 +46,12 @@ class OpenglCore3Renderer: GameRenderer {
     func drawFrame() {
         
         tnt?.setupNextFrame(viewState)
+        features?.setupNextFrame(viewState)
         
         glClearColor(1, 0, 1, 1)
         glClear(GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT))
         tnt?.drawFrame()
+        features?.drawFrame()
     }
     
 }

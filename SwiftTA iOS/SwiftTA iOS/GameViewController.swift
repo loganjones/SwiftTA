@@ -8,12 +8,14 @@
 
 import UIKit
 
+
 class GameViewController: UIViewController {
     
     let state: GameState
     let renderer: GameRenderer
     
     private let scrollView: UIScrollView
+    private let dummy: UIView
     
     required init(_ state: GameState) {
         let initialViewState = GameViewState(viewport: viewport(ofSize: Size2D(640, 480), centeredOn: state.startPosition, in: state.map))
@@ -23,6 +25,7 @@ class GameViewController: UIViewController {
         
         let defaultFrameRect = CGRect(size: initialViewState.viewport.size)
         scrollView = UIScrollView(frame: defaultFrameRect)
+        dummy = UIView(frame: defaultFrameRect)
         
         super.init(nibName: nil, bundle: nil)
     }
@@ -39,13 +42,24 @@ class GameViewController: UIViewController {
         gameView.frame = frameRect
         gameView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         
+        let scale: CGFloat = 1
         scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        scrollView.contentOffset = renderer.viewState.viewport.origin * 2
-        scrollView.contentSize = CGSize(state.map.resolution * 2)
+        scrollView.contentOffset = renderer.viewState.viewport.origin * scale
+        scrollView.contentSize = CGSize(state.map.resolution) * scale
+        scrollView.minimumZoomScale = 0.5
+        scrollView.maximumZoomScale = 2
+        scrollView.zoomScale = scale
         scrollView.delegate = self
+        
+        dummy.frame.size = CGSize(state.map.resolution) * scale
+        scrollView.addSubview(dummy)
         
         view.addSubview(gameView)
         view.addSubview(scrollView)
+    }
+    
+    fileprivate func updateRendererViewport() {
+        renderer.viewState.viewport = CGRect(origin: scrollView.contentOffset / scrollView.zoomScale, size: scrollView.bounds.size / scrollView.zoomScale)
     }
     
 }
@@ -53,7 +67,15 @@ class GameViewController: UIViewController {
 extension GameViewController: UIScrollViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        renderer.viewState.viewport = CGRect(origin: scrollView.contentOffset / 2, size: scrollView.bounds.size / 2)
+        updateRendererViewport()
+    }
+    
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return dummy
+    }
+    
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        updateRendererViewport()
     }
     
 }
@@ -63,6 +85,10 @@ extension CGPoint {
     
     static func * (point: CGPoint, mult: Int) -> CGPoint {
         let df = CGFloat(mult)
+        return CGPoint(x: point.x * df, y: point.y * df)
+    }
+    static func * (point: CGPoint, mult: CGFloat) -> CGPoint {
+        let df = mult
         return CGPoint(x: point.x * df, y: point.y * df)
     }
     
@@ -86,6 +112,15 @@ extension CGPoint {
     
 }
 extension CGSize {
+    
+    static func * (size: CGSize, mult: Int) -> CGSize {
+        let df = CGFloat(mult)
+        return CGSize(width: size.width * df, height: size.height * df)
+    }
+    static func * (size: CGSize, mult: CGFloat) -> CGSize {
+        let df = mult
+        return CGSize(width: size.width * df, height: size.height * df)
+    }
     
     static func / (size: CGSize, divisor: Int) -> CGSize {
         let df = CGFloat(divisor)

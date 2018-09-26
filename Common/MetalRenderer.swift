@@ -9,9 +9,12 @@
 import MetalKit
 
 typealias MTKViewDelegateRequirementForNSObjectProtocol = NSObject
+private let maxBuffersInFlight = 3
 
 
 class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer {
+    
+    private let inFlightSemaphore = DispatchSemaphore(value: maxBuffersInFlight)
     
     var viewState: GameViewState
     let device: MTLDevice
@@ -19,6 +22,7 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
     private let commandQueue: MTLCommandQueue
     
     private let tnt: MetalTntDrawable
+    private let features: MetalFeatureDrawable
     
     required init?(loadedState loaded: GameState, viewState: GameViewState = GameViewState()) {
         
@@ -35,21 +39,19 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
         self.metalView = MTKView(frame: CGRect(size: viewState.viewport.size), device: metalDevice)
         self.commandQueue = metalCommandQueue
         
-        if loaded.map.resolution.max > metalDevice.maximum2dTextureSize {
-            print("Using tiled tnt renderer")
-            tnt = MetalTiledTntDrawable(metalDevice)
-        }
-        else {
-            print("Using simple tnt renderer")
-            tnt = MetalOneTextureTntDrawable(metalDevice)
-        }
+        tnt = MetalRenderer.determineTntDrawable(loaded.map, metalDevice)
+        features = MetalFeatureDrawable(metalDevice, maxBuffersInFlight)
         
         super.init()
         
         metalView.delegate = self
+        metalView.depthStencilPixelFormat = MTLPixelFormat.depth32Float_stencil8
+        metalView.colorPixelFormat = MTLPixelFormat.bgra8Unorm_srgb
+        metalView.sampleCount = 1
         
         do {
-            try tnt.configure(for: MetalHost(view: metalView, device: device, library: library))
+            let host = MetalHost(view: metalView, device: device, library: library)
+            try tnt.configure(for: host)
             switch loaded.map {
             case .ta(let map):
                 let palette = try Palette.standardTaPalette(from: loaded.filesystem)
@@ -57,6 +59,9 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
             case .tak(let map):
                 try tnt.load(map, from: loaded.filesystem)
             }
+            
+            try features.configure(for: host)
+            features.load(loaded.features, containedIn: loaded.map, filesystem: loaded.filesystem)
         }
         catch {
             print("Failed to load map: \(error)")
@@ -70,6 +75,25 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
     #elseif canImport(UIKit)
     var view: UIView { return metalView }
     #endif
+    
+    private static func determineTntDrawable(_ map: MapModel, _ metalDevice: MTLDevice) -> MetalTntDrawable {
+        
+        enum PreferredTnt { case simple, tiled }
+        let tntStyle: PreferredTnt
+        
+        if case .tak = map { tntStyle = .tiled }
+        else if map.resolution.max > metalDevice.maximum2dTextureSize { tntStyle = .tiled }
+        else { tntStyle = .simple }
+        
+        switch tntStyle {
+        case .tiled:
+            print("Using tiled tnt renderer")
+            return MetalTiledTntDrawable(metalDevice, maxBuffersInFlight)
+        case .simple:
+            print("Using simple tnt renderer")
+            return MetalOneTextureTntDrawable(metalDevice, maxBuffersInFlight)
+        }
+    }
     
 }
 
@@ -85,7 +109,12 @@ extension MetalRenderer: MTKViewDelegate {
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
         defer { commandBuffer.commit() }
         
+        _ = inFlightSemaphore.wait(timeout: DispatchTime.distantFuture)
+        let semaphore = inFlightSemaphore
+        commandBuffer.addCompletedHandler { _ in semaphore.signal() }
+        
         tnt.setupNextFrame(viewState, commandBuffer)
+        features.setupNextFrame(viewState, commandBuffer)
         
         guard let renderPassDescriptor = view.currentRenderPassDescriptor else { return }
         renderPassDescriptor.colorAttachments[0].loadAction = .clear
@@ -93,13 +122,17 @@ extension MetalRenderer: MTKViewDelegate {
         
         guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else { return }
         renderEncoder.label = "Map Render Encoder"
-        renderEncoder.pushDebugGroup("Draw Map")
         renderEncoder.setCullMode(.back)
         renderEncoder.setFrontFacing(.counterClockwise)
         
+        renderEncoder.pushDebugGroup("Draw Map")
         tnt.drawFrame(with: renderEncoder)
-        
         renderEncoder.popDebugGroup()
+        
+        renderEncoder.pushDebugGroup("Draw Features")
+        features.drawFrame(with: renderEncoder)
+        renderEncoder.popDebugGroup()
+        
         renderEncoder.endEncoding()
         
         if let drawable = view.currentDrawable {

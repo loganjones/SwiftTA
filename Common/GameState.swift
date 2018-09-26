@@ -59,3 +59,9 @@ class GameState {
     }
     
 }
+
+struct FeatureInstance {
+    var feature: String
+    var position: Vertex3
+    var screenRect: Rect2D
+}

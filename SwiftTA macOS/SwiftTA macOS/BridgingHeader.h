@@ -15,3 +15,4 @@
 #include "zlib.h"
 
 #import "MetalTntShaderTypes.h"
+#import "MetalFeatureShaderTypes.h"

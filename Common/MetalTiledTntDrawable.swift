@@ -14,7 +14,6 @@ import simd
 private let screenTileSize = 512
 private let maximumDisplaySize = Size2D(width: 4096, height: 4096)
 private let maximumGridSize = maximumDisplaySize / screenTileSize
-private let maxBuffersInFlight = 3
 
 private typealias BufferIndex = MetalTntViewRenderer_BufferIndex
 private typealias TextureIndex = MetalTntViewRenderer_TextureIndex
@@ -27,7 +26,6 @@ class MetalTiledTntDrawable: MetalTntDrawable {
     
     let device: MTLDevice
     
-    private let inFlightSemaphore = DispatchSemaphore(value: maxBuffersInFlight)
     private var pipelineState: MTLRenderPipelineState!
     private var depthState: MTLDepthStencilState!
     
@@ -65,7 +63,7 @@ class MetalTiledTntDrawable: MetalTntDrawable {
         var images: [UInt32: MTLTexture]
     }
     
-    required init(_ device: MTLDevice) {
+    required init(_ device: MTLDevice, _ maxBuffersInFlight: Int) {
         self.device = device
         
         uniformBuffer = device.makeRingBuffer(length: MemoryLayout<Uniforms>.size, count: maxBuffersInFlight, options: [.storageModeShared])!
@@ -103,10 +101,6 @@ extension MetalTiledTntDrawable {
     
     func configure(for metal: MetalHost) throws {
         
-        metal.view.depthStencilPixelFormat = MTLPixelFormat.depth32Float_stencil8
-        metal.view.colorPixelFormat = MTLPixelFormat.bgra8Unorm_srgb
-        metal.view.sampleCount = 1
-        
         let vertexDescriptor = MetalTiledTntDrawable.buildVertexDescriptor()
         
         pipelineState = try metal.makeRenderPipelineState(
@@ -136,10 +130,6 @@ extension MetalTiledTntDrawable {
     
     func setupNextFrame(_ viewState: GameViewState, _ commandBuffer: MTLCommandBuffer) {
         guard let map = mapResources else { return }
-        
-        _ = inFlightSemaphore.wait(timeout: DispatchTime.distantFuture)
-        let semaphore = inFlightSemaphore
-        commandBuffer.addCompletedHandler { _ in semaphore.signal() }
         
         let visibleTileGrid = computeTileGrid(for: viewState.viewport, boundedBy: map.gridBounds)
         

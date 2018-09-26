@@ -130,7 +130,7 @@ func main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
     
-    let initialWindowSize = Size2D(640, 480)
+    let initialWindowSize = Size2D(1024, 768)
     guard let window = glfwCreateWindow(
         Int32(initialWindowSize.width),
         Int32(initialWindowSize.height),
@@ -150,9 +150,21 @@ func main() {
         let taDir = fm.homeDirectoryForCurrentUser
             .appendingPathComponent("Documents", isDirectory: true)
             .appendingPathComponent("Total Annihilation", isDirectory: true)
+//            .appendingPathComponent("Total Annihilation Kingdoms", isDirectory: true)
         print("Total Annihilation directory: \(taDir)")
         
         let gameState = try GameState(loadFrom: taDir, mapName: "Coast to Coast")
+//                let gameState = try GameState(loadFrom: taDir, mapName: "Dark Side")
+//                let gameState = try GameState(loadFrom: taDir, mapName: "Great Divide")
+//                let gameState = try GameState(loadFrom: taDir, mapName: "King of the Hill")
+//                let gameState = try GameState(loadFrom: taDir, mapName: "Ring Atoll")
+//                let gameState = try GameState(loadFrom: taDir, mapName: "Two Continents")
+        
+//                let gameState = try GameState(loadFrom: taDir, mapName: "Athri Cay")
+//                let gameState = try GameState(loadFrom: taDir, mapName: "Black Heart Jungle")
+//                let gameState = try GameState(loadFrom: taDir, mapName: "The Old Riverbed")
+//                let gameState = try GameState(loadFrom: taDir, mapName: "Two Castles")
+
         let initialViewState = GameViewState(viewport: viewport(ofSize: initialWindowSize, centeredOn: gameState.startPosition, in: gameState.map))
         
         guard let renderer = OpenglCore3Renderer(loadedState: gameState, viewState: initialViewState)

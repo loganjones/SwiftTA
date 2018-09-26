@@ -13,7 +13,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         startLoading()
         return true
     }
@@ -24,9 +24,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
                     throw RuntimeError("No Documents directory?!")
                 }
-                let taDir = try URL(resolvingAliasFileAt: documents.appendingPathComponent("Total Annihilation", isDirectory: true))
                 
+                let taDir = try URL(resolvingAliasFileAt: documents.appendingPathComponent("Total Annihilation", isDirectory: true))
                 let state = try GameState(loadFrom: taDir, mapName: "Coast to Coast")
+//                let state = try GameState(loadFrom: taDir, mapName: "Dark Side")
+//                let state = try GameState(loadFrom: taDir, mapName: "Great Divide")
+//                let state = try GameState(loadFrom: taDir, mapName: "King of the Hill")
+//                let state = try GameState(loadFrom: taDir, mapName: "Ring Atoll")
+//                let state = try GameState(loadFrom: taDir, mapName: "Two Continents")
+
+//                let taDir = try URL(resolvingAliasFileAt: documents.appendingPathComponent("Total Annihilation Kingdoms", isDirectory: true))
+//                let state = try GameState(loadFrom: taDir, mapName: "Athri Cay")
+//                let state = try GameState(loadFrom: taDir, mapName: "Black Heart Jungle")
+//                let state = try GameState(loadFrom: taDir, mapName: "The Old Riverbed")
+//                let state = try GameState(loadFrom: taDir, mapName: "Two Castles")
+                
                 DispatchQueue.main.async {
                     self.proceedWithLoaded(state)
                 }
