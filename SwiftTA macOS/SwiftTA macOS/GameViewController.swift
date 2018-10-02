@@ -8,10 +8,11 @@
 
 import Cocoa
 
+
 class GameViewController: NSViewController {
     
     let state: GameState
-    let renderer: GameRenderer
+    let renderer: GameRenderer & GameViewProvider
     
     private let scrollView: NSScrollView
     private let emptyView: NSView

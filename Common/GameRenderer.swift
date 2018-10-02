@@ -8,32 +8,34 @@
 
 import Foundation
 
-// TEMP?
-#if canImport(AppKit)
-import AppKit
-#elseif canImport(UIKit)
-import UIKit
-#endif
-
 
 struct GameViewState {
     var viewport = CGRect.zero
 }
 
 protocol GameRenderer: class {
-    
     var viewState: GameViewState { get set }
     init?(loadedState: GameState, viewState: GameViewState)
-    
-    #if canImport(AppKit)
-    var view: NSView { get }
-    #elseif canImport(UIKit)
-    var view: UIView { get }
-    #else
-    func drawFrame()
-    #endif
-    
 }
+
+protocol RunLoopGameRenderer: GameRenderer {
+    func drawFrame()
+}
+
+#if canImport(AppKit)
+import AppKit
+protocol GameViewProvider {
+    var view: NSView { get }
+}
+
+#elseif canImport(UIKit)
+import UIKit
+protocol GameViewProvider {
+    var view: UIView { get }
+}
+
+#endif
+
 
 func viewport(ofSize size: Size2D, centeredOn start: Point2D, in map: MapModel) -> CGRect {
     

@@ -12,7 +12,7 @@ typealias MTKViewDelegateRequirementForNSObjectProtocol = NSObject
 private let maxBuffersInFlight = 3
 
 
-class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer {
+class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer, GameViewProvider {
     
     private let inFlightSemaphore = DispatchSemaphore(value: maxBuffersInFlight)
     

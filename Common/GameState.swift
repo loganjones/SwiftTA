@@ -58,10 +58,34 @@ class GameState {
             """)
     }
     
-}
+    /**
+     Temporary convenience initializer that loads a simple sandbox game on a predetermined map.
+     The game's file tree is assumed to exist in a subdirectory/alias/link (either "Total Annihilation" or "Total Annihilation Kingdoms") of the supplied directory.
+     */
+    convenience init(testLoadFromDocumentsDirectory documentsDirectory: URL) throws {
+        
+        let taDirectoryName = "Total Annihilation"
+        let mapName = "Coast to Coast"
+//        let mapName = "Dark Side"
+//        let mapName = "Great Divide"
+//        let mapName = "King of the Hill"
+//        let mapName = "Ring Atoll"
+//        let mapName = "Two Continents"
 
-struct FeatureInstance {
-    var feature: String
-    var position: Vertex3
-    var screenRect: Rect2D
+//        let taDirectoryName = "Total Annihilation Kingdoms"
+//        let mapName = "Athri Cay"
+//        let mapName = "Black Heart Jungle"
+//        let mapName = "The Old Riverbed"
+//        let mapName = "Two Castles"
+        
+        #if os(macOS) || os(iOS)
+        let taDir = try URL(resolvingAliasFileAt: documentsDirectory.appendingPathComponent(taDirectoryName, isDirectory: true))
+        #else
+        let taDir = documentsDirectory.appendingPathComponent(taDirectoryName, isDirectory: true)
+        #endif
+        
+        print("Total Annihilation directory: \(taDir)")
+        try self.init(loadFrom: try FileSystem(mergingHpisIn: taDir), mapName: mapName)
+    }
+    
 }

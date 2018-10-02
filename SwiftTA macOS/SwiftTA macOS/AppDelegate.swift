@@ -39,19 +39,7 @@ class MainWindowController: NSWindowController {
                     throw RuntimeError("No Documents directory?!")
                 }
                 
-                let taDir = try URL(resolvingAliasFileAt: documents.appendingPathComponent("Total Annihilation", isDirectory: true))
-                let state = try GameState(loadFrom: taDir, mapName: "Coast to Coast")
-//                let state = try GameState(loadFrom: taDir, mapName: "Dark Side")
-//                let state = try GameState(loadFrom: taDir, mapName: "Great Divide")
-//                let state = try GameState(loadFrom: taDir, mapName: "King of the Hill")
-//                let state = try GameState(loadFrom: taDir, mapName: "Ring Atoll")
-//                let state = try GameState(loadFrom: taDir, mapName: "Two Continents")
-                
-//                let taDir = try URL(resolvingAliasFileAt: documents.appendingPathComponent("Total Annihilation Kingdoms", isDirectory: true))
-//                let state = try GameState(loadFrom: taDir, mapName: "Athri Cay")
-//                let state = try GameState(loadFrom: taDir, mapName: "Black Heart Jungle")
-//                let state = try GameState(loadFrom: taDir, mapName: "The Old Riverbed")
-//                let state = try GameState(loadFrom: taDir, mapName: "Two Castles")
+                let state = try GameState(testLoadFromDocumentsDirectory: documents)
                 
                 DispatchQueue.main.async {
                     self.proceedWithLoaded(state)

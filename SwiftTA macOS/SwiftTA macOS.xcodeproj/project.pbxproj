@@ -11,7 +11,7 @@
 		B5CAAF0A20B26BB2003B17D7 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF0920B26BB2003B17D7 /* GameViewController.swift */; };
 		B5CAAF0C20B26BB3003B17D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0B20B26BB3003B17D7 /* Assets.xcassets */; };
 		B5CAAF0F20B26BB3003B17D7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0D20B26BB3003B17D7 /* Main.storyboard */; };
-		F02CAF43214C52CE0084F454 /* OpenglCore3Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02CAF42214C52CE0084F454 /* OpenglCore3Renderer.swift */; };
+		F02CAF43214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02CAF42214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift */; };
 		F02CAF45214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02CAF44214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift */; };
 		F07131F7215AF1B900952E13 /* MetalFeatureDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07131F6215AF1B900952E13 /* MetalFeatureDrawable.swift */; };
 		F07131FA215C019900952E13 /* MetalFeatureShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F07131F8215C019700952E13 /* MetalFeatureShaders.metal */; };
@@ -45,6 +45,7 @@
 		F0A9DE6520B4C7B7007E71C1 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4920B4C7B6007E71C1 /* MapModel.swift */; };
 		F0A9DE6620B4C7B7007E71C1 /* UnitObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A9DE4A20B4C7B6007E71C1 /* UnitObject.swift */; };
 		F0F2AA4C2162B82300103B46 /* OpenglCore3FeatureDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F2AA4B2162B82300103B46 /* OpenglCore3FeatureDrawable.swift */; };
+		F0F2AA4D2162DCCF00103B46 /* OpenglCore3Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00C4EE5215455A800D8246C /* OpenglCore3Renderer.swift */; };
 		F0F5408D21223B4600221A9C /* Utility+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5408C21223B4600221A9C /* Utility+Metal.swift */; };
 		F0F5409C21237D1400221A9C /* MetalTntShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409821237D1200221A9C /* MetalTntShaders.metal */; };
 		F0F5409D21237D1400221A9C /* MetalRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409A21237D1300221A9C /* MetalRenderer.swift */; };
@@ -62,8 +63,8 @@
 		B5CAAF0E20B26BB3003B17D7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B5CAAF1020B26BB3003B17D7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B5CAAF1120B26BB3003B17D7 /* SwiftTA_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftTA_macOS.entitlements; sourceTree = "<group>"; };
-		F00C4EE5215455A800D8246C /* OpenglCore3Renderer+Linux.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OpenglCore3Renderer+Linux.swift"; sourceTree = "<group>"; };
-		F02CAF42214C52CE0084F454 /* OpenglCore3Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenglCore3Renderer.swift; sourceTree = "<group>"; };
+		F00C4EE5215455A800D8246C /* OpenglCore3Renderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenglCore3Renderer.swift; sourceTree = "<group>"; };
+		F02CAF42214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OpenglCore3Renderer+Cocoa.swift"; sourceTree = "<group>"; };
 		F02CAF44214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenglCore3OneTextureTntDrawable.swift; sourceTree = "<group>"; };
 		F07131F6215AF1B900952E13 /* MetalFeatureDrawable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalFeatureDrawable.swift; sourceTree = "<group>"; };
 		F07131F8215C019700952E13 /* MetalFeatureShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalFeatureShaders.metal; sourceTree = "<group>"; };
@@ -192,8 +193,8 @@
 				F0A9DE2920B4C7B6007E71C1 /* ModelTexturePack.swift */,
 				F0F2AA4B2162B82300103B46 /* OpenglCore3FeatureDrawable.swift */,
 				F02CAF44214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift */,
-				F02CAF42214C52CE0084F454 /* OpenglCore3Renderer.swift */,
-				F00C4EE5215455A800D8246C /* OpenglCore3Renderer+Linux.swift */,
+				F00C4EE5215455A800D8246C /* OpenglCore3Renderer.swift */,
+				F02CAF42214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift */,
 				F0A9DE2D20B4C7B6007E71C1 /* Palette.swift */,
 				F0A9DE3B20B4C7B6007E71C1 /* Palette+Files.swift */,
 				F0A9DE4120B4C7B6007E71C1 /* pcx.h */,
@@ -310,8 +311,9 @@
 				F0A9DE5A20B4C7B7007E71C1 /* UnitScript+Instructions.swift in Sources */,
 				F0A9DE4D20B4C7B6007E71C1 /* MapInfo.swift in Sources */,
 				B5CAAF0A20B26BB2003B17D7 /* GameViewController.swift in Sources */,
+				F0F2AA4D2162DCCF00103B46 /* OpenglCore3Renderer.swift in Sources */,
 				F0A9DE5120B4C7B7007E71C1 /* gaf.swift in Sources */,
-				F02CAF43214C52CE0084F454 /* OpenglCore3Renderer.swift in Sources */,
+				F02CAF43214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift in Sources */,
 				F0A9DE5720B4C7B7007E71C1 /* UnitInfo.swift in Sources */,
 				F0A9DE6420B4C7B7007E71C1 /* UnitScript+VM.swift in Sources */,
 				F0A9DE5620B4C7B7007E71C1 /* Utility+GLKit.swift in Sources */,

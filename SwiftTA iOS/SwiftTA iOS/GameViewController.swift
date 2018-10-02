@@ -12,7 +12,7 @@ import UIKit
 class GameViewController: UIViewController {
     
     let state: GameState
-    let renderer: GameRenderer
+    let renderer: GameRenderer & GameViewProvider
     
     private let scrollView: UIScrollView
     private let dummy: UIView
