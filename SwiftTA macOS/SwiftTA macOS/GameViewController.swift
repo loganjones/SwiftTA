@@ -11,24 +11,25 @@ import Cocoa
 
 class GameViewController: NSViewController {
     
-    let state: GameState
+    let game: GameManager
     let renderer: GameRenderer & GameViewProvider
     
     private let scrollView: NSScrollView
     private let emptyView: NSView
     
     required init(_ state: GameState) {
-        let initialViewState = GameViewState(viewport: viewport(ofSize: Size2D(1024, 768), centeredOn: state.startPosition, in: state.map))
+        let initialViewState = state.generateInitialViewState(viewportSize: Size2D(1024, 768))
         
-        self.state = state
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!
-        //self.renderer = OpenglCore3Renderer(loadedState: state, viewState: initialViewState)!
+        //self.renderer = OpenglCore3CocoaRenderer(loadedState: state, viewState: initialViewState)!
+        self.game = GameManager(state: state, renderer: renderer)
         
         let defaultFrameRect = CGRect(size: initialViewState.viewport.size)
         scrollView = NSScrollView(frame: defaultFrameRect)
         emptyView = Dummy(frame: defaultFrameRect)
         
         super.init(nibName: nil, bundle: nil)
+        game.start()
     }
     
     required init?(coder: NSCoder) {
@@ -57,7 +58,7 @@ class GameViewController: NSViewController {
         scrollView.autoresizingMask = [.width, .height]
         
         emptyView.alphaValue = 0
-        emptyView.frame = NSRect(size: state.map.resolution)
+        emptyView.frame = NSRect(size: game.loadedState.map.resolution)
         
         view.addSubview(gameView)
         view.addSubview(scrollView)

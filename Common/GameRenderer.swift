@@ -11,6 +11,7 @@ import Foundation
 
 struct GameViewState {
     var viewport = CGRect.zero
+    var objects: [GameViewObject] = []
 }
 
 protocol GameRenderer: class {
@@ -36,6 +37,24 @@ protocol GameViewProvider {
 
 #endif
 
+enum GameViewObject {
+    case unit(GameViewUnit)
+}
+
+struct GameViewUnit {
+    var type: UnitTypeId
+    var position: Vertex3
+    var orientation: Vector3
+    var pose: UnitModel.Instance
+}
+extension GameViewUnit {
+    init(_ unit: UnitInstance) {
+        type = unit.type
+        position = unit.worldPosition
+        orientation = unit.orientation
+        pose = unit.modelInstance
+    }
+}
 
 func viewport(ofSize size: Size2D, centeredOn start: Point2D, in map: MapModel) -> CGRect {
     

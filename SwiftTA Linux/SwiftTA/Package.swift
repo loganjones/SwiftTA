@@ -18,6 +18,7 @@ let package = Package(
                 "../../Common/MetalOneTextureTntDrawable.swift",
                 "../../Common/MetalRenderer.swift",
                 "../../Common/MetalTiledTntDrawable.swift",
+                "../../Common/MetalUnitDrawable.swift",
                 "../../Common/OpenglCore3Renderer+Cocoa.swift",
                 "../../Common/Utility+Metal.swift",
                 "../../Common/UnitScript+CobDecompile.swift",

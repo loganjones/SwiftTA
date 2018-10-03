@@ -248,3 +248,42 @@ extension Int {
     }
     
 }
+
+// MARK:- Thin Value Wrappers
+
+/**
+ String-backed 'identifier' values. This is a convenience protocol meant for thin structs that wrap a simple string value.
+ Equality checking is made using only the hash value.
+ 
+ See `UnitTypeId` and `FeatureTypeId` for examples.
+ */
+protocol StringlyIdentifier: ExpressibleByStringLiteral, Hashable, CustomStringConvertible {
+    var name: String { get }
+    init(named: String)
+}
+extension StringlyIdentifier {
+    init(stringLiteral value: String) {
+        self.init(named: value)
+    }
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.hashValue == rhs.hashValue
+    }
+    var description: String { return name }
+}
+
+// MARK:- Misc
+
+extension FloatingPoint {
+    func clamped(to range: ClosedRange<Self>) -> Self {
+        return self > range.lowerBound
+            ? (self < range.upperBound ? self : range.upperBound)
+            : range.lowerBound
+    }
+}
+
+func getCurrentTime() -> Double {
+    var tv = timeval()
+    var tz = timezone()
+    gettimeofday(&tv, &tz)
+    return Double(tv.tv_sec) + (Double(tv.tv_usec) / 1000000.0)
+}

@@ -54,7 +54,7 @@ protocol MapModelType {
     var seaLevel: Int { get }
     var heightMap: [Int] { get }
     
-    var features: [String] { get }
+    var features: [FeatureTypeId] { get }
     var featureMap: [Int?] { get }
     
     var minimap: MinimapImage { get }
@@ -109,7 +109,7 @@ extension MapModel: MapModelType {
         }
     }
     
-    var features: [String] {
+    var features: [FeatureTypeId] {
         switch self {
         case .ta(let model): return model.features
         case .tak(let model): return model.features
@@ -150,7 +150,7 @@ struct TaMapModel: MapModelType {
     var seaLevel: Int
     var heightMap: [Int]
     var featureMap: [Int?]
-    var features: [String]
+    var features: [FeatureTypeId]
     
     var minimap: MinimapImage
     
@@ -208,7 +208,7 @@ private extension TaMapModel {
         tileSet = TileSet(tiles: tiles, count: Int(header.numberOfTiles), tileSize: tileSize)
         
         tntFile.seek(toFileOffset: header.offsetToFeatureEntryArray)
-        features = try tntFile.readArray(ofType: TA_TNT_FEATURE_ENTRY.self, count: Int(header.numberOfFeatures)).map { $0.nameString.lowercased() }
+        features = try tntFile.readArray(ofType: TA_TNT_FEATURE_ENTRY.self, count: Int(header.numberOfFeatures)).map { FeatureTypeId(named: $0.nameString) }
         
         let featureIndexRange = 0..<features.count
         featureMap = entries.map {
@@ -318,7 +318,7 @@ struct TakMapModel: MapModelType {
     var seaLevel: Int
     var heightMap: [Int]
     var featureMap: [Int?]
-    var features: [String]
+    var features: [FeatureTypeId]
     
     var tileIndexMap: TileIndexMap
     
@@ -369,7 +369,7 @@ private extension TakMapModel {
         heightMap = try tntFile.readArray(ofType: UInt8.self, count: mapSize.area).map { Int($0) }
         
         tntFile.seek(toFileOffset: header.offsetToFeatureEntryArray)
-        features = try tntFile.readArray(ofType: TA_TNT_FEATURE_ENTRY.self, count: Int(header.numberOfFeatures)).map { $0.nameString.lowercased() }
+        features = try tntFile.readArray(ofType: TA_TNT_FEATURE_ENTRY.self, count: Int(header.numberOfFeatures)).map { FeatureTypeId(named: $0.nameString) }
         
         let featureIndexRange = 0..<features.count
         tntFile.seek(toFileOffset: header.offsetToFeatureSpotArray)

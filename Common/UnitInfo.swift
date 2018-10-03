@@ -12,7 +12,7 @@ struct UnitInfo {
     var name: String = ""
     var side: String = ""
     var object: String = ""
-    var corpse: String = ""
+    var corpse: String?
     
     var title: String = ""
     var description: String = ""
@@ -71,7 +71,7 @@ extension UnitInfo {
         description = try info.requiredStringProperty("description")
         categories = Set(try info.requiredStringProperty("category").components(separatedBy: " "))
         tedClass = try info.requiredStringProperty("tedclass")
-        corpse = try info.requiredStringProperty("corpse")
+        corpse = info["corpse"]
         
         let footprintX = try info.requiredStringProperty("footprintx")
         let footprintZ = try info.requiredStringProperty("footprintz")
@@ -128,17 +128,29 @@ extension UnitInfo {
 
 extension UnitInfo {
     
-    typealias UnitInfoCollection = [String: UnitInfo]
-    
-    static func collectUnits(from filesystem: FileSystem) -> UnitInfoCollection {
+    static func collectUnits(from filesystem: FileSystem) -> [UnitInfo] {
         
-        guard let unitsDirectory = filesystem.root[directory: "units"] else { return [:] }
+        guard let unitsDirectory = filesystem.root[directory: "units"] else { return [] }
         
         let units = unitsDirectory.files(withExtension: "fbi")
             .compactMap { try? filesystem.openFile($0) }
             .compactMap { try? UnitInfo(contentsOf: $0) }
         
-        return units.reduce(into: [:]) { $0[$1.name.lowercased()] = $1 }
+        return units
+    }
+    
+    static func collectUnits(from filesystem: FileSystem, onlyAllowing allowedUnits: [String]) -> [UnitInfo] {
+        
+        guard let unitsDirectory = filesystem.root[directory: "units"] else { return [] }
+        
+        let allowed = Set(allowedUnits.map { $0.lowercased() })
+        
+        let units = unitsDirectory.files(withExtension: "fbi")
+            .filter { allowed.contains($0.baseName.lowercased()) }
+            .compactMap { try? filesystem.openFile($0) }
+            .compactMap { try? UnitInfo(contentsOf: $0) }
+        
+        return units
     }
     
 }

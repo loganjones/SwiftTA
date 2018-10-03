@@ -12,9 +12,11 @@ import Cglfw
 
 class GameBox {
     var renderer: RunLoopGameRenderer
+    var manager: GameManager
     
-    init(_ renderer: RunLoopGameRenderer) {
+    init(_ renderer: RunLoopGameRenderer, _ manager: GameManager) {
         self.renderer = renderer
+        self.manager = manager
     }
 }
 
@@ -50,16 +52,6 @@ struct FrameRate {
         return dt
     }
     
-}
-
-
-/* return current time (in seconds) */
-func current_time() -> Double
-{
-    var tv = timeval()
-    var tz = timezone()
-    gettimeofday(&tv, &tz)
-    return Double(tv.tv_sec) + (Double(tv.tv_usec) / 1000000.0)
 }
 
 func glfwSetGameContext(_ game: GameBox, for window: OpaquePointer?) {
@@ -148,7 +140,7 @@ func main() {
         let documents = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Documents", isDirectory: true)
         let gameState = try GameState(testLoadFromDocumentsDirectory: documents)
 
-        let initialViewState = GameViewState(viewport: viewport(ofSize: initialWindowSize, centeredOn: gameState.startPosition, in: gameState.map))
+        let initialViewState = gameState.generateInitialViewState(viewportSize: initialWindowSize)
         
         guard let renderer = OpenglCore3Renderer(loadedState: gameState, viewState: initialViewState)
             else {
@@ -156,7 +148,9 @@ func main() {
         }
         renderer.load(state: gameState)
         
-        game = GameBox(renderer)
+        let manager = GameManager(state: gameState, renderer: renderer)
+        
+        game = GameBox(renderer, manager)
     }
     catch {
         print("Failed to load GameState: \(error)")
@@ -178,9 +172,10 @@ func main() {
     reshape(window: window, to: initialWindowSize)
     var frameRate = FrameRate()
     
+    game.manager.start()
     while glfwWindowShouldClose(window) == 0 {
         
-        let dt = frameRate.sample(current_time())
+        let dt = frameRate.sample(getCurrentTime())
         
         game.renderer.drawFrame()
         
@@ -188,6 +183,7 @@ func main() {
         glfwPollEvents()
     }
     
+    game.manager.stop()
     glfwDestroyWindow(window)
     glfwTerminate()
     exit(EXIT_SUCCESS)

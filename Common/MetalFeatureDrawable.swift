@@ -58,7 +58,7 @@ class MetalFeatureDrawable {
         self.depthState = depthState
     }
     
-    func load(_ features: [String: MapFeatureInfo], containedIn map: MapModel, filesystem: FileSystem) {
+    func load(_ features: MapFeatureInfo.FeatureInfoCollection, containedIn map: MapModel, filesystem: FileSystem) {
         let loaded = loadFeatures(features, andInstancesFrom: map, filesystem: filesystem)
         self.features = loaded.features
         self.shadows = loaded.shadows

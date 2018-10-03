@@ -249,8 +249,14 @@ extension MTLRenderCommandEncoder {
     func setVertexBuffer<Index: RawRepresentable>(_ buffer: MTLBuffer?, offset: Int, index: Index) where Index.RawValue == Int {
         self.setVertexBuffer(buffer, offset: offset, index: index.rawValue)
     }
+    func setVertexBytes<Index: RawRepresentable>(_ bytes: UnsafeRawPointer, length: Int, index: Index) where Index.RawValue == Int {
+        self.setVertexBytes(bytes, length: length, index: index.rawValue)
+    }
     func setFragmentBuffer<Index: RawRepresentable>(_ buffer: MTLBuffer?, offset: Int, index: Index) where Index.RawValue == Int {
         self.setFragmentBuffer(buffer, offset: offset, index: index.rawValue)
+    }
+    func setFragmentBytes<Index: RawRepresentable>(_ bytes: UnsafeRawPointer, length: Int, index: Index) where Index.RawValue == Int {
+        self.setFragmentBytes(bytes, length: length, index: index.rawValue)
     }
     func setFragmentTexture<Index: RawRepresentable>(_ texture: MTLTexture?, index: Index) where Index.RawValue == Int {
         self.setFragmentTexture(texture, index: index.rawValue)

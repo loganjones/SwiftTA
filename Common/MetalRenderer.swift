@@ -23,8 +23,11 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
     
     private let tnt: MetalTntDrawable
     private let features: MetalFeatureDrawable
+    private let units: MetalUnitDrawable
     
     required init?(loadedState loaded: GameState, viewState: GameViewState = GameViewState()) {
+        
+        let beginRenderer = Date()
         
         guard let metalDevice = MTLCreateSystemDefaultDevice(),
             let metalCommandQueue = metalDevice.makeCommandQueue(),
@@ -41,6 +44,7 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
         
         tnt = MetalRenderer.determineTntDrawable(loaded.map, metalDevice)
         features = MetalFeatureDrawable(metalDevice, maxBuffersInFlight)
+        units = MetalUnitDrawable(metalDevice, maxBuffersInFlight)
         
         super.init()
         
@@ -51,6 +55,8 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
         
         do {
             let host = MetalHost(view: metalView, device: device, library: library)
+            
+            let beginMap = Date()
             try tnt.configure(for: host)
             switch loaded.map {
             case .ta(let map):
@@ -59,12 +65,28 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
             case .tak(let map):
                 try tnt.load(map, from: loaded.filesystem)
             }
+            let endMap = Date()
             
+            let beginFeatures = Date()
             try features.configure(for: host)
             features.load(loaded.features, containedIn: loaded.map, filesystem: loaded.filesystem)
+            let endFeatures = Date()
+            
+            let beginUnits = Date()
+            try units.configure(for: host)
+            units.load(loaded.units, sides: loaded.sides, filesystem: loaded.filesystem)
+            let endUnits = Date()
+            
+            let endRenderer = Date()
+            print("""
+                Render assets load time: \(endRenderer.timeIntervalSince(beginRenderer)) seconds
+                  Map(\(loaded.map.mapSize)): \(endMap.timeIntervalSince(beginMap)) seconds
+                  Units(\(loaded.units.count)): \(endUnits.timeIntervalSince(beginUnits)) seconds
+                  Features(\(loaded.features.count)): \(endFeatures.timeIntervalSince(beginFeatures)) seconds
+                """)
         }
         catch {
-            print("Failed to load map: \(error)")
+            print("Failed to load render assets: \(error)")
             return nil
         }
         
@@ -115,6 +137,7 @@ extension MetalRenderer: MTKViewDelegate {
         
         tnt.setupNextFrame(viewState, commandBuffer)
         features.setupNextFrame(viewState, commandBuffer)
+        let ufs = units.setupNextFrame(viewState, commandBuffer)
         
         guard let renderPassDescriptor = view.currentRenderPassDescriptor else { return }
         renderPassDescriptor.colorAttachments[0].loadAction = .clear
@@ -131,6 +154,10 @@ extension MetalRenderer: MTKViewDelegate {
         
         renderEncoder.pushDebugGroup("Draw Features")
         features.drawFrame(with: renderEncoder)
+        renderEncoder.popDebugGroup()
+        
+        renderEncoder.pushDebugGroup("Draw Units")
+        units.drawFrame(ufs, with: renderEncoder)
         renderEncoder.popDebugGroup()
         
         renderEncoder.endEncoding()

@@ -34,6 +34,7 @@
 		B509FB152122719B005FC902 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF82122719B005FC902 /* MapModel.swift */; };
 		B509FB162122719B005FC902 /* Utility+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF92122719B005FC902 /* Utility+Metal.swift */; };
 		B509FB172122719B005FC902 /* UnitObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAFA2122719B005FC902 /* UnitObject.swift */; };
+		B5494259216C432D00D830E8 /* GameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5494258216C432D00D830E8 /* GameManager.swift */; };
 		B5CAAF2420B26C76003B17D7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF2320B26C76003B17D7 /* AppDelegate.swift */; };
 		B5CAAF2620B26C76003B17D7 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF2520B26C76003B17D7 /* GameViewController.swift */; };
 		B5CAAF2920B26C76003B17D7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF2720B26C76003B17D7 /* Main.storyboard */; };
@@ -41,6 +42,8 @@
 		B5CAAF2E20B26C76003B17D7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF2C20B26C76003B17D7 /* LaunchScreen.storyboard */; };
 		F07131FE215C082100952E13 /* MetalFeatureShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F07131FB215C082000952E13 /* MetalFeatureShaders.metal */; };
 		F07131FF215C082100952E13 /* MetalFeatureDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07131FD215C082000952E13 /* MetalFeatureDrawable.swift */; };
+		F0F2AA552165432500103B46 /* MetalUnitShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0F2AA532165432400103B46 /* MetalUnitShaders.metal */; };
+		F0F2AA572165433200103B46 /* MetalUnitDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F2AA562165433200103B46 /* MetalUnitDrawable.swift */; };
 		F0F5408E2123577B00221A9C /* Utility+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF32122719B005FC902 /* Utility+Cocoa.swift */; };
 		F0F5409321237B1700221A9C /* MetalTntShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0F5408F21237B1700221A9C /* MetalTntShaders.metal */; };
 		F0F5409421237B1700221A9C /* MetalRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409121237B1700221A9C /* MetalRenderer.swift */; };
@@ -48,6 +51,8 @@
 		F0F5409721237B6200221A9C /* GameRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409621237B6200221A9C /* GameRenderer.swift */; };
 		F0F540A4212381F700221A9C /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F540A3212381F700221A9C /* GameState.swift */; };
 		F0F540A62123837500221A9C /* MetalOneTextureTntDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F540A52123837500221A9C /* MetalOneTextureTntDrawable.swift */; };
+		F0FC643E216D36A9008728D9 /* MapFeatureTypeId.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FC643D216D36A8008728D9 /* MapFeatureTypeId.swift */; };
+		F0FC6440216D36B6008728D9 /* UnitTypeId.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FC643F216D36B6008728D9 /* UnitTypeId.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -88,6 +93,7 @@
 		B509FAF92122719B005FC902 /* Utility+Metal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Metal.swift"; sourceTree = "<group>"; };
 		B509FAFA2122719B005FC902 /* UnitObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitObject.swift; sourceTree = "<group>"; };
 		B509FB182122721A005FC902 /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
+		B5494258216C432D00D830E8 /* GameManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameManager.swift; sourceTree = "<group>"; };
 		B5CAAF2020B26C76003B17D7 /* SwiftTA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftTA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5CAAF2320B26C76003B17D7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B5CAAF2520B26C76003B17D7 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
@@ -98,6 +104,9 @@
 		F07131FB215C082000952E13 /* MetalFeatureShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalFeatureShaders.metal; sourceTree = "<group>"; };
 		F07131FC215C082000952E13 /* MetalFeatureShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalFeatureShaderTypes.h; sourceTree = "<group>"; };
 		F07131FD215C082000952E13 /* MetalFeatureDrawable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalFeatureDrawable.swift; sourceTree = "<group>"; };
+		F0F2AA532165432400103B46 /* MetalUnitShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalUnitShaders.metal; sourceTree = "<group>"; };
+		F0F2AA542165432500103B46 /* MetalUnitShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalUnitShaderTypes.h; sourceTree = "<group>"; };
+		F0F2AA562165433200103B46 /* MetalUnitDrawable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalUnitDrawable.swift; sourceTree = "<group>"; };
 		F0F5408F21237B1700221A9C /* MetalTntShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalTntShaders.metal; sourceTree = "<group>"; };
 		F0F5409021237B1700221A9C /* MetalTntShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalTntShaderTypes.h; sourceTree = "<group>"; };
 		F0F5409121237B1700221A9C /* MetalRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalRenderer.swift; sourceTree = "<group>"; };
@@ -105,6 +114,8 @@
 		F0F5409621237B6200221A9C /* GameRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameRenderer.swift; sourceTree = "<group>"; };
 		F0F540A3212381F700221A9C /* GameState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 		F0F540A52123837500221A9C /* MetalOneTextureTntDrawable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalOneTextureTntDrawable.swift; sourceTree = "<group>"; };
+		F0FC643D216D36A8008728D9 /* MapFeatureTypeId.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapFeatureTypeId.swift; sourceTree = "<group>"; };
+		F0FC643F216D36B6008728D9 /* UnitTypeId.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTypeId.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,11 +135,13 @@
 				B509FAF62122719B005FC902 /* FileReadHandle.swift */,
 				B509FAE92122719B005FC902 /* Filesystem.swift */,
 				B509FADE2122719B005FC902 /* gaf.swift */,
+				B5494258216C432D00D830E8 /* GameManager.swift */,
 				F0F5409621237B6200221A9C /* GameRenderer.swift */,
 				F0F540A3212381F700221A9C /* GameState.swift */,
 				B509FAD72122719B005FC902 /* Geometry.swift */,
 				B509FAF52122719B005FC902 /* hpi.swift */,
 				B509FAE12122719B005FC902 /* MapFeature.swift */,
+				F0FC643D216D36A8008728D9 /* MapFeatureTypeId.swift */,
 				B509FAD92122719B005FC902 /* MapInfo.swift */,
 				B509FAF82122719B005FC902 /* MapModel.swift */,
 				F07131FD215C082000952E13 /* MetalFeatureDrawable.swift */,
@@ -139,6 +152,9 @@
 				F0F5409221237B1700221A9C /* MetalTiledTntDrawable.swift */,
 				F0F5408F21237B1700221A9C /* MetalTntShaders.metal */,
 				F0F5409021237B1700221A9C /* MetalTntShaderTypes.h */,
+				F0F2AA562165433200103B46 /* MetalUnitDrawable.swift */,
+				F0F2AA532165432400103B46 /* MetalUnitShaders.metal */,
+				F0F2AA542165432500103B46 /* MetalUnitShaderTypes.h */,
 				B509FAD82122719B005FC902 /* ModelTexturePack.swift */,
 				B509FADC2122719B005FC902 /* Palette.swift */,
 				B509FAEA2122719B005FC902 /* Palette+Files.swift */,
@@ -162,6 +178,7 @@
 				B509FAEB2122719B005FC902 /* UnitScript+Instructions.swift */,
 				B509FAF72122719B005FC902 /* UnitScript+VM.swift */,
 				B509FAF42122719B005FC902 /* UnitTextureAtlas.swift */,
+				F0FC643F216D36B6008728D9 /* UnitTypeId.swift */,
 				B509FAF22122719B005FC902 /* Utility.swift */,
 				B509FAF32122719B005FC902 /* Utility+Cocoa.swift */,
 				B509FAE52122719B005FC902 /* Utility+GLKit.swift */,
@@ -277,13 +294,16 @@
 			files = (
 				B509FB082122719B005FC902 /* Filesystem.swift in Sources */,
 				B509FB132122719B005FC902 /* FileReadHandle.swift in Sources */,
+				F0FC643E216D36A9008728D9 /* MapFeatureTypeId.swift in Sources */,
 				B509FB0D2122719B005FC902 /* UnitModel.swift in Sources */,
 				B5CAAF2620B26C76003B17D7 /* GameViewController.swift in Sources */,
 				B509FB032122719B005FC902 /* UnitData.swift in Sources */,
 				B509FB0B2122719B005FC902 /* UnitModel+Instance.swift in Sources */,
 				F07131FF215C082100952E13 /* MetalFeatureDrawable.swift in Sources */,
 				B509FB052122719B005FC902 /* SideData.swift in Sources */,
+				F0FC6440216D36B6008728D9 /* UnitTypeId.swift in Sources */,
 				F0F540A62123837500221A9C /* MetalOneTextureTntDrawable.swift in Sources */,
+				F0F2AA552165432500103B46 /* MetalUnitShaders.metal in Sources */,
 				F0F540A4212381F700221A9C /* GameState.swift in Sources */,
 				B509FB072122719B005FC902 /* UnitInfo.swift in Sources */,
 				B509FB022122719B005FC902 /* MapFeature.swift in Sources */,
@@ -307,12 +327,14 @@
 				B509FB162122719B005FC902 /* Utility+Metal.swift in Sources */,
 				B509FB0F2122719B005FC902 /* Utility.swift in Sources */,
 				B509FAFC2122719B005FC902 /* ModelTexturePack.swift in Sources */,
+				B5494259216C432D00D830E8 /* GameManager.swift in Sources */,
 				B509FB092122719B005FC902 /* Palette+Files.swift in Sources */,
 				B509FB122122719B005FC902 /* hpi.swift in Sources */,
 				B5CAAF2420B26C76003B17D7 /* AppDelegate.swift in Sources */,
 				B509FAFD2122719B005FC902 /* MapInfo.swift in Sources */,
 				B509FAFE2122719B005FC902 /* TdfParser.swift in Sources */,
 				B509FB002122719B005FC902 /* Palette.swift in Sources */,
+				F0F2AA572165433200103B46 /* MetalUnitDrawable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

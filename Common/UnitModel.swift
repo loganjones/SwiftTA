@@ -75,6 +75,30 @@ struct UnitModel {
     
 }
 
+extension UnitModel {
+    struct PieceMap {
+        var pieces: [Piece]
+        var root: Array<Piece>.Index
+        struct Piece {
+            var parents: [Array<Piece>.Index]
+            var children: [Array<Piece>.Index]
+        }
+        init(_ model: UnitModel) {
+            root = model.root
+            var pieces = model.pieces.map { Piece(parents: [], children: $0.children) }
+            UnitModel.PieceMap.mapParents(of: model.root, in: &pieces)
+            self.pieces = pieces
+        }
+        static func mapParents(of pieceIndex: Array<Piece>.Index, in pieces: inout Array<Piece>, parents: [Array<Piece>.Index] = []) {
+            pieces[pieceIndex].parents = parents
+            let newParents = parents + [pieceIndex]
+            for childIndex in pieces[pieceIndex].children {
+                mapParents(of: childIndex, in: &pieces, parents: newParents)
+            }
+        }
+    }
+}
+
 private extension UnitModel {
     
     struct ModelData {

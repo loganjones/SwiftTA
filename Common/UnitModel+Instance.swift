@@ -139,11 +139,11 @@ extension UnitModel.Instance {
             
         case .show(let piece):
             pieces[piece].hidden = false
-            print("Anim: Show \(piece)")
+            //print("Anim: Show \(piece)")
             return nil
         case .hide(let piece):
             pieces[piece].hidden = true
-            print("Anim: Hide \(piece)")
+            //print("Anim: Hide \(piece)")
             return nil
             
         }

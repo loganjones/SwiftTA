@@ -20,6 +20,7 @@ class OpenglCore3Renderer: RunLoopGameRenderer {
     var viewState: GameViewState
     private var tnt: OpenglCore3TntDrawable?
     private var features: OpenglCore3FeatureDrawable?
+    private var units: OpenglCore3UnitDrawable?
     
     required init?(loadedState: GameState, viewState: GameViewState) {
         self.viewState = viewState
@@ -40,6 +41,7 @@ class OpenglCore3Renderer: RunLoopGameRenderer {
             
             self.tnt = tnt
             features = try OpenglCore3FeatureDrawable(loaded.features, containedIn: loaded.map, filesystem: loaded.filesystem)
+            units = try OpenglCore3UnitDrawable(loaded.units, sides: loaded.sides, filesystem: loaded.filesystem)
         }
         catch {
             print("Failed to load map: \(error)")
@@ -48,14 +50,17 @@ class OpenglCore3Renderer: RunLoopGameRenderer {
     }
     
     func drawFrame() {
+        guard let tnt = tnt, let features = features, let units = units else { return }
         
-        tnt?.setupNextFrame(viewState)
-        features?.setupNextFrame(viewState)
+        tnt.setupNextFrame(viewState)
+        features.setupNextFrame(viewState)
+        let ufs = units.setupNextFrame(viewState)
         
         glClearColor(1, 0, 1, 1)
         glClear(GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT))
-        tnt?.drawFrame()
-        features?.drawFrame()
+        tnt.drawFrame()
+        features.drawFrame()
+        units.drawFrame(ufs)
     }
     
 }

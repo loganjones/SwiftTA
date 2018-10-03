@@ -67,7 +67,7 @@ class CocoaMapView: CocoaTntView, MapViewLoader {
     func drawCocoaMapFeatures(_ rect: CGRect, _ context: CGContext) {
         guard let map = map else { return }
         for instance in map.featureInstances {
-            guard let feature = map.features[instance.featureName] else { continue }
+            guard let feature = map.features[instance.type] else { continue }
             if let shadowFrame = feature.shadow, let rect = instance.shadowRect {
                 context.draw(shadowFrame.image, in: rect)
             }
@@ -81,12 +81,12 @@ private extension CocoaMapView {
     
     struct MapData {
         var info: MapInfo
-        var features: [String: Feature] = [:]
+        var features: [FeatureTypeId: Feature] = [:]
         var featureInstances: [FeatureInstance] = []
     }
     
     struct Feature {
-        var name: String
+        var id: FeatureTypeId
         var info: MapFeatureInfo
         var frames: [Frame]
         var shadow: Frame?
@@ -94,17 +94,17 @@ private extension CocoaMapView {
     }
     
     struct FeatureInstance {
-        var featureName: String
+        var type: FeatureTypeId
         var rect: CGRect
         var shadowRect: CGRect?
     }
     
-    static func loadMapFeatures(_ featureNames: Set<String>, planet: String?, from filesystem: FileSystem) -> [String: Feature] {
+    static func loadMapFeatures(_ featureNames: Set<FeatureTypeId>, planet: String?, from filesystem: FileSystem) -> [FeatureTypeId: Feature] {
         
         let featureInfo = MapFeatureInfo.collectFeatures(featureNames, planet: planet, filesystem: filesystem)
         let palettes = loadFeaturePalettes(featureInfo, from: filesystem)
         
-        var features: [String: Feature] = [:]
+        var features: [FeatureTypeId: Feature] = [:]
         features.reserveCapacity(featureInfo.count)
         
         let byGaf = Dictionary(grouping: featureInfo, by: { a in a.value.gafFilename ?? "" })
@@ -116,7 +116,7 @@ private extension CocoaMapView {
                 let listing = try? GafListing(withContentsOf: gaf)
                 else { continue }
             
-            for (name, info) in featuresInGaf {
+            for (id, info) in featuresInGaf {
                 guard let itemName = info.primaryGafItemName, let item = listing[itemName] else { continue }
                 guard let gafFrames = try? item.extractFrames(from: gaf) else { continue }
                 guard let palette = palettes[info.world ?? ""] else { continue }
@@ -133,10 +133,10 @@ private extension CocoaMapView {
                     return Feature.Frame(image: image, offset: frame.offset)
                 }
                 
-                features[name] = Feature(name: name,
-                                         info: info,
-                                         frames: frames,
-                                         shadow: shadowFrame)
+                features[id] = Feature(id: id,
+                                       info: info,
+                                       frames: frames,
+                                       shadow: shadowFrame)
             }
             
         }
@@ -157,7 +157,7 @@ private extension CocoaMapView {
         }
     }
     
-    static func indexFeatureLocations(_ map: MapModel, _ features: [String: Feature]) -> [FeatureInstance] {
+    static func indexFeatureLocations(_ map: MapModel, _ features: [FeatureTypeId: Feature]) -> [FeatureInstance] {
         
         var instances: [FeatureInstance] = []
         
@@ -186,7 +186,7 @@ private extension CocoaMapView {
                        height: CGFloat($0.image.height))
             }
             
-            instances.append(FeatureInstance(featureName: feature.name, rect: rect, shadowRect: shadowRect))
+            instances.append(FeatureInstance(type: feature.id, rect: rect, shadowRect: shadowRect))
         }
         
         return instances

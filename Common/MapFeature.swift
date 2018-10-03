@@ -218,9 +218,9 @@ private extension MapFeatureInfo.Flammable.Properties {
 
 extension MapFeatureInfo {
     
-    typealias FeatureInfoCollection = [String: MapFeatureInfo]
+    typealias FeatureInfoCollection = [FeatureTypeId: MapFeatureInfo]
     
-    static func collectFeatures(_ mapFeatures: Set<String>, planet: String?, unitCorpses: Set<String> = Set(), filesystem: FileSystem) -> FeatureInfoCollection {
+    static func collectFeatures(_ mapFeatures: Set<FeatureTypeId>, planet: String?, unitCorpses: Set<FeatureTypeId> = Set(), filesystem: FileSystem) -> FeatureInfoCollection {
         
         guard let featuresDirectory = filesystem.root[directory: "features"] else { return [:] }
         
@@ -261,7 +261,7 @@ extension MapFeatureInfo {
     }
     
     @discardableResult
-    private static func collectFeatures(named toLoad: inout Set<String>, into loaded: inout FeatureInfoCollection, from directory: FileSystem.Directory, of filesystem: FileSystem) -> Int
+    private static func collectFeatures(named toLoad: inout Set<FeatureTypeId>, into loaded: inout FeatureInfoCollection, from directory: FileSystem.Directory, of filesystem: FileSystem) -> Int
     {
         let files = directory.files(withExtension: "tdf")
         var count = 0
@@ -275,18 +275,19 @@ extension MapFeatureInfo {
     }
     
     @discardableResult
-    private static func collectFeatures<File>(named toLoad: inout Set<String>, into loaded: inout FeatureInfoCollection, from tdf: File) -> Int
+    private static func collectFeatures<File>(named toLoad: inout Set<FeatureTypeId>, into loaded: inout FeatureInfoCollection, from tdf: File) -> Int
         where File: FileReadHandle
     {
         let parser = TdfParser(tdf)
         var count = 0
         
         while let featureName = parser.skipToNextObject()?.lowercased() {
-            if toLoad.contains(featureName) && loaded[featureName] == nil, let featureInfo = try? MapFeatureInfo(name: featureName, object: parser.extractObject()) {
-                loaded[featureName] = featureInfo
-                toLoad.remove(featureName)
-                for f in featureInfo.childFeatures where toLoad.contains(f) == false && loaded[f] == nil {
-                    toLoad.insert(f)
+            let featureId = FeatureTypeId(named: featureName)
+            if toLoad.contains(featureId) && loaded[featureId] == nil, let featureInfo = try? MapFeatureInfo(name: featureName, object: parser.extractObject()) {
+                loaded[featureId] = featureInfo
+                toLoad.remove(featureId)
+                for childId in featureInfo.childFeatures where toLoad.contains(childId) == false && loaded[childId] == nil {
+                    toLoad.insert(childId)
                 }
                 count += 1
             }
@@ -298,11 +299,11 @@ extension MapFeatureInfo {
         return count
     }
     
-    var childFeatures: Set<String> {
-        var additional = Set<String>()
-        if let f = destructible.properties?.resultingFeature { additional.insert(f) }
-        if let f = reclaimable.properties?.resultingFeature { additional.insert(f) }
-        if let f = flammable.properties?.resultingFeature { additional.insert(f) }
+    var childFeatures: Set<FeatureTypeId> {
+        var additional = Set<FeatureTypeId>()
+        if let f = destructible.properties?.resultingFeature { additional.insert(FeatureTypeId(named: f)) }
+        if let f = reclaimable.properties?.resultingFeature { additional.insert(FeatureTypeId(named: f)) }
+        if let f = flammable.properties?.resultingFeature { additional.insert(FeatureTypeId(named: f)) }
         return additional
     }
     
@@ -336,7 +337,7 @@ private extension MapFeatureInfo {
 
 extension MapFeatureInfo {
     
-    typealias MapFeaturesGafCollator = (_ name: String, _ info: MapFeatureInfo, _ item: GafItem, _ gafHandle: FileSystem.FileHandle, _ gafListing: GafListing) -> ()
+    typealias MapFeaturesGafCollator = (_ id: FeatureTypeId, _ info: MapFeatureInfo, _ item: GafItem, _ gafHandle: FileSystem.FileHandle, _ gafListing: GafListing) -> ()
     
     static func collateFeatureGafItems(_ featureInfo: FeatureInfoCollection, from filesystem: FileSystem, collator: MapFeaturesGafCollator) {
         
@@ -348,9 +349,9 @@ extension MapFeatureInfo {
                 let listing = try? GafListing(withContentsOf: gaf)
                 else { continue }
             
-            for (name, info) in featuresInGaf {
+            for (id, info) in featuresInGaf {
                 guard let itemName = info.primaryGafItemName, let item = listing[itemName] else { continue }
-                collator(name, info, item, gaf, listing)
+                collator(id, info, item, gaf, listing)
             }
         }
     }

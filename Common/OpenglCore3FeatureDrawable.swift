@@ -23,7 +23,7 @@ class OpenglCore3FeatureDrawable {
     private var features: [Feature] = []
     private var shadows: [Feature] = []
     
-    init(_ features: [String: MapFeatureInfo], containedIn map: MapModel, filesystem: FileSystem) throws {
+    init(_ features: [FeatureTypeId: MapFeatureInfo], containedIn map: MapModel, filesystem: FileSystem) throws {
         
         program = try makeProgram()
         
@@ -65,7 +65,7 @@ class OpenglCore3FeatureDrawable {
             switch type {
             case .static(let feature):
                 glBindTexture(GLenum(GL_TEXTURE_2D), feature.texture.id)
-                glBindVertexArray(feature.instancesVAO)
+                glBindVertexArray(feature.instancesVertexBuffer.vao)
                 glDrawArrays(GLenum(GL_TRIANGLES), 0, GLsizei(feature.instancesVertexCount))
             case .animated(_):
                 ()
@@ -76,7 +76,7 @@ class OpenglCore3FeatureDrawable {
             switch type {
             case .static(let feature):
                 glBindTexture(GLenum(GL_TEXTURE_2D), feature.texture.id)
-                glBindVertexArray(feature.instancesVAO)
+                glBindVertexArray(feature.instancesVertexBuffer.vao)
                 glDrawArrays(GLenum(GL_TRIANGLES), 0, GLsizei(feature.instancesVertexCount))
             case .animated(_):
                 ()
@@ -96,8 +96,7 @@ private extension OpenglCore3FeatureDrawable {
     struct StaticFeature {
         var texture: OpenglTextureResource
         var textureSize: Size2D
-        var instancesVAO: GLuint
-        var instancesVBO: [GLuint]
+        var instancesVertexBuffer: OpenglVertexBufferResource
         var instancesVertexCount: Int
     }
     
@@ -132,7 +131,7 @@ private extension OpenglCore3FeatureDrawable {
                 if let texture = try? makeTexture(for: gafFrames[0], using: palette),
                     let instances = buildInstances(of: (gafFrames[0].size, gafFrames[0].offset, info.footprint), from: occurrences, in: map)
                 {
-                    features.append(.static(StaticFeature(texture: texture, textureSize: gafFrames[0].size, instancesVAO: instances.0, instancesVBO: instances.1, instancesVertexCount: instances.2)))
+                    features.append(.static(StaticFeature(texture: texture, textureSize: gafFrames[0].size, instancesVertexBuffer: instances.0, instancesVertexCount: instances.1)))
                 }
                 
                 if let shadowName = info.shadowGafItemName,
@@ -141,7 +140,7 @@ private extension OpenglCore3FeatureDrawable {
                     let shadowTexture = try? makeTexture(for: shadowFrame, using: shadowPalette),
                     let shadowInstances = buildInstances(of: (shadowFrame.size, shadowFrame.offset, info.footprint), from: occurrences, in: map)
                 {
-                    shadows.append(.static(StaticFeature(texture: shadowTexture, textureSize: shadowFrame.size, instancesVAO: shadowInstances.0, instancesVBO: shadowInstances.1, instancesVertexCount: shadowInstances.2)))
+                    shadows.append(.static(StaticFeature(texture: shadowTexture, textureSize: shadowFrame.size, instancesVertexBuffer: shadowInstances.0, instancesVertexCount: shadowInstances.1)))
                 }
             }
             else {
@@ -149,7 +148,7 @@ private extension OpenglCore3FeatureDrawable {
                 print("TODO: Support animated map feature \(name) (\(gafFrames.count) frames)")
                 let texture = try! makeTexture(for: gafFrames[0], using: palette)
                 let instances = buildInstances(of: (gafFrames[0].size, gafFrames[0].offset, info.footprint), from: occurrences, in: map)!
-                features.append(.static(StaticFeature(texture: texture, textureSize: gafFrames[0].size, instancesVAO: instances.0, instancesVBO: instances.1, instancesVertexCount: instances.2)))
+                features.append(.static(StaticFeature(texture: texture, textureSize: gafFrames[0].size, instancesVertexBuffer: instances.0, instancesVertexCount: instances.1)))
             }
         }
         
@@ -208,7 +207,7 @@ private extension OpenglCore3FeatureDrawable {
         return featureOccurrences
     }
     
-    func buildInstances(of feature: (size: Size2D, offset: Point2D, footprint: Size2D), from occurrenceIndices: [Int], in map: MapModel) -> (GLuint, [GLuint], Int)? {
+    func buildInstances(of feature: (size: Size2D, offset: Point2D, footprint: Size2D), from occurrenceIndices: [Int], in map: MapModel) -> (OpenglVertexBufferResource, Int)? {
         
         let vertexCount = occurrenceIndices.count * 6
         var vertices = (position: [Vertex3](repeating: .zero, count: vertexCount), texCoord: [Vector2](repeating: .zero, count: vertexCount))
@@ -226,20 +225,22 @@ private extension OpenglCore3FeatureDrawable {
             index += 6
         }
         
-        var vao: GLuint = 0
-        glGenVertexArrays(1, &vao)
-        glBindVertexArray(vao)
+//        var vao: GLuint = 0
+//        glGenVertexArrays(1, &vao)
+//        glBindVertexArray(vao)
+//
+//        var vbo = [GLuint](repeating: 0, count: 2)
+//        glGenBuffers(GLsizei(vbo.count), &vbo)
+        let vertexBuffer = OpenglVertexBufferResource(bufferCount: 2)
+        glBindVertexArray(vertexBuffer.vao)
         
-        var vbo = [GLuint](repeating: 0, count: 2)
-        glGenBuffers(GLsizei(vbo.count), &vbo)
-        
-        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[0])
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vertexBuffer.vbo[0])
         glBufferData(GLenum(GL_ARRAY_BUFFER), vertices.position, GLenum(GL_STATIC_DRAW))
         let vertexAttrib: GLuint = 0
         glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
         glEnableVertexAttribArray(vertexAttrib)
         
-        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[1])
+        glBindBuffer(GLenum(GL_ARRAY_BUFFER), vertexBuffer.vbo[1])
         glBufferData(GLenum(GL_ARRAY_BUFFER), vertices.texCoord, GLenum(GL_STATIC_DRAW))
         let texAttrib: GLuint = 1
         glVertexAttribPointer(texAttrib, 2, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
@@ -248,7 +249,7 @@ private extension OpenglCore3FeatureDrawable {
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0)
         glBindVertexArray(0)
         
-        return (vao, vbo, vertexCount)
+        return (vertexBuffer, vertexCount)
     }
     
 }

@@ -82,6 +82,8 @@
 		F0D9A49E2059F9180081DC15 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49D2059F9180081DC15 /* Palette.swift */; };
 		F0D9A4A42059FBD00081DC15 /* Utility+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A4A32059FBD00081DC15 /* Utility+Cocoa.swift */; };
 		F0D9A4A62059FEE60081DC15 /* Utility+OpenGL.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A4A52059FEE60081DC15 /* Utility+OpenGL.swift */; };
+		F0FC6436216D3544008728D9 /* MapFeatureTypeId.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FC6435216D3544008728D9 /* MapFeatureTypeId.swift */; };
+		F0FC6438216D3550008728D9 /* UnitTypeId.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FC6437216D3550008728D9 /* UnitTypeId.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -186,6 +188,8 @@
 		F0D9A49D2059F9180081DC15 /* Palette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Palette.swift; sourceTree = "<group>"; };
 		F0D9A4A32059FBD00081DC15 /* Utility+Cocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Cocoa.swift"; sourceTree = "<group>"; };
 		F0D9A4A52059FEE60081DC15 /* Utility+OpenGL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+OpenGL.swift"; sourceTree = "<group>"; };
+		F0FC6435216D3544008728D9 /* MapFeatureTypeId.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapFeatureTypeId.swift; sourceTree = "<group>"; };
+		F0FC6437216D3550008728D9 /* UnitTypeId.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTypeId.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -301,6 +305,7 @@
 				B5E26EF21ED9EB05006C329B /* hpi.swift */,
 				B5B258632065CD0100DD6A15 /* MapInfo.swift */,
 				F04B28BC2065B503003A1ACC /* MapFeature.swift */,
+				F0FC6435216D3544008728D9 /* MapFeatureTypeId.swift */,
 				F0D9A49720586F230081DC15 /* MapModel.swift */,
 				B5E26EF31ED9EB05006C329B /* ModelTexturePack.swift */,
 				F0D9A49D2059F9180081DC15 /* Palette.swift */,
@@ -325,6 +330,7 @@
 				F0C08758201FACA300A884B1 /* UnitScript+Instructions.swift */,
 				B5E26F011ED9EB05006C329B /* UnitScript+VM.swift */,
 				B5E26F3D1EDB4A02006C329B /* UnitTextureAtlas.swift */,
+				F0FC6437216D3550008728D9 /* UnitTypeId.swift */,
 				B5E26F021ED9EB05006C329B /* Utility.swift */,
 				F0D9A4A32059FBD00081DC15 /* Utility+Cocoa.swift */,
 				B5F89FF220AA6DED0082943E /* Utility+GLKit.swift */,
@@ -476,6 +482,7 @@
 				F08A641C20EEAA47001E5982 /* ModelViewRenderer+MetalShaders.metal in Sources */,
 				B5D432FA1F0995CC005B468E /* QuickLookView.swift in Sources */,
 				F0D23B902072C97200C0A245 /* Palette+Files.swift in Sources */,
+				F0FC6436216D3544008728D9 /* MapFeatureTypeId.swift in Sources */,
 				F0C08759201FACA300A884B1 /* UnitScript+Instructions.swift in Sources */,
 				F02C2F44211A1013003CDCC1 /* TntViewRenderer+MetalDynamicTiles.swift in Sources */,
 				F04B28BF2065B70F003A1ACC /* MapView.swift in Sources */,
@@ -494,6 +501,7 @@
 				B52A67471EC3F35900698DEF /* CobView.swift in Sources */,
 				B5C5564E1E2C86A2001BEFAB /* TaassetsDocument.swift in Sources */,
 				F09272362051E214007C51EC /* UnitScript+CobDecompile.swift in Sources */,
+				F0FC6438216D3550008728D9 /* UnitTypeId.swift in Sources */,
 				F02C2F49211A5BDA003CDCC1 /* MapViewRenderer+MetalShaders.metal in Sources */,
 				B5E26F501EE4813A006C329B /* MapBrowser.swift in Sources */,
 				B5C5568F1E3437EF001BEFAB /* ModelView.swift in Sources */,

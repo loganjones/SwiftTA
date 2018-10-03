@@ -11,23 +11,24 @@ import UIKit
 
 class GameViewController: UIViewController {
     
-    let state: GameState
+    let game: GameManager
     let renderer: GameRenderer & GameViewProvider
     
     private let scrollView: UIScrollView
     private let dummy: UIView
     
     required init(_ state: GameState) {
-        let initialViewState = GameViewState(viewport: viewport(ofSize: Size2D(640, 480), centeredOn: state.startPosition, in: state.map))
+        let initialViewState = state.generateInitialViewState(viewportSize: Size2D(640, 480))
         
-        self.state = state
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!
+        self.game = GameManager(state: state, renderer: renderer)
         
         let defaultFrameRect = CGRect(size: initialViewState.viewport.size)
         scrollView = UIScrollView(frame: defaultFrameRect)
         dummy = UIView(frame: defaultFrameRect)
         
         super.init(nibName: nil, bundle: nil)
+        game.start()
     }
     
     required init?(coder: NSCoder) {
@@ -45,13 +46,13 @@ class GameViewController: UIViewController {
         let scale: CGFloat = 1
         scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         scrollView.contentOffset = renderer.viewState.viewport.origin * scale
-        scrollView.contentSize = CGSize(state.map.resolution) * scale
+        scrollView.contentSize = CGSize(game.loadedState.map.resolution) * scale
         scrollView.minimumZoomScale = 0.5
         scrollView.maximumZoomScale = 2
         scrollView.zoomScale = scale
         scrollView.delegate = self
         
-        dummy.frame.size = CGSize(state.map.resolution) * scale
+        dummy.frame.size = CGSize(game.loadedState.map.resolution) * scale
         scrollView.addSubview(dummy)
         
         view.addSubview(gameView)

@@ -14,8 +14,9 @@ class GameState {
     let filesystem: FileSystem
     let map: MapModel
     let mapInfo: MapInfo
-    let features: [String: MapFeatureInfo]
-    let units: [String: UnitInfo]
+    let features: [FeatureTypeId: MapFeatureInfo]
+    let units: [UnitTypeId: UnitData]
+    let sides: [SideInfo]
     
     let startPosition: Point2D
     
@@ -36,15 +37,25 @@ class GameState {
         let endMap = Date()
         
         let beginUnits = Date()
-        units = UnitInfo.collectUnits(from: filesystem)
+        units = UnitInfo.collectUnits(from: filesystem, onlyAllowing: ["armcom", "corcom", "araking", "tarnecro", "vermage", "zonhunt", "cresage"])
+            .compactMap { try? UnitData(loading: $0, from: filesystem) }
+            .reduce(into: [:]) { $0[UnitTypeId(for: $1.info)] = $1 }
         let endUnits = Date()
         
         let beginFeatures = Date()
+        let corpses = units.values.lazy
+            .compactMap { $0.info.corpse }
+            .reduce(into: Set()) { $0.insert(FeatureTypeId(named: $1)) }
         features = MapFeatureInfo.collectFeatures(
             Set(map.features), planet: mapInfo.planet,
-            unitCorpses: units.values.reduce(into: Set()) { $0.insert($1.corpse.lowercased()) },
+            unitCorpses: corpses,
             filesystem: filesystem)
         let endFeatures = Date()
+        
+        let beginSides = Date()
+        let sidedata = try filesystem.openFile(at: "gamedata/sidedata.tdf")
+        sides = try SideInfo.load(contentsOf: sidedata)
+        let endSides = Date()
         
         startPosition = mapInfo.schema.first?.startPositions.first ?? Point2D(32, 32)
         
@@ -55,6 +66,7 @@ class GameState {
               Map(\(map.mapSize)): \(endMap.timeIntervalSince(beginMap)) seconds
               Units(\(units.count)): \(endUnits.timeIntervalSince(beginUnits)) seconds
               Features(\(features.count)): \(endFeatures.timeIntervalSince(beginFeatures)) seconds
+              Sides(\(sides.count)): \(endSides.timeIntervalSince(beginSides)) seconds
             """)
     }
     
@@ -87,5 +99,33 @@ class GameState {
         print("Total Annihilation directory: \(taDir)")
         try self.init(loadFrom: try FileSystem(mergingHpisIn: taDir), mapName: mapName)
     }
+    
+    func generateInitialViewState(viewportSize: Size2D) -> GameViewState {
+        
+//        // TEMP
+//        var startingObjects: [GameViewObject] = []
+//
+//        if let unit = randomStartingUnit() {
+//            startingObjects.append(.unit(GameViewUnit(name: unit.info.name.lowercased(),
+//                                                      position: Vertex3(Double(startPosition.x), Double(startPosition.y), 0),
+//                                                      orientation: .zero,
+//                                                      pose: UnitModel.Instance(for: unit.model))))
+//        }
+        
+        return GameViewState(viewport: viewport(ofSize: viewportSize, centeredOn: startPosition, in: map),
+                             objects: [])
+    }
+    
+//    private func randomStartingUnit() -> UnitData? {
+//        if let taUnitName = ["armcom", "corcom"].randomElement(), let taUnit = units[taUnitName] {
+//            return taUnit
+//        }
+//        else if let takUnitName = ["araking", "tarnecro", "vermage", "zonhunt", "cresage"].randomElement(), let takUnit = units[takUnitName] {
+//            return takUnit
+//        }
+//        else {
+//            return nil
+//        }
+//    }
     
 }

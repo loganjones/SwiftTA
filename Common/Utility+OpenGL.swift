@@ -130,6 +130,30 @@ class OpenglTextureResource {
     }
 }
 
+class OpenglVertexBufferResource {
+    let vao: GLuint
+    let vbo: [GLuint]
+    
+    init(bufferCount: Int = 1) {
+        
+        var vao: GLuint = 0
+        glGenVertexArrays(1, &vao)
+        
+        var vbo = [GLuint](repeating: 0, count: bufferCount)
+        glGenBuffers(GLsizei(vbo.count), &vbo)
+        
+        self.vao = vao
+        self.vbo = vbo
+    }
+    
+    deinit {
+        var vbo = self.vbo
+        glDeleteBuffers(GLsizei(vbo.count), &vbo)
+        var vao = self.vao
+        glDeleteVertexArrays(1, &vao)
+    }
+}
+
 // MARK:- I am Error
 
 func printGlErrors(prefix: String = "") {
