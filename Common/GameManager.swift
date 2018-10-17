@@ -19,7 +19,7 @@ class GameManager: ScriptMachine {
     
     private var thread: Thread? = nil
     private var isRunningUpdateThread = false
-    private let updateRate = 1.0 / 60.0
+    private let updateRate: GameFloat = 1.0 / 60.0
     
     private var objects: [GameObjectId: GameObject] = [:]
     
@@ -30,8 +30,8 @@ class GameManager: ScriptMachine {
         // TEMP
         if let unit = randomStartingUnit() {
             let id: GameObjectId = 1
-            let startPosition = state.startPosition
-            let instance = UnitInstance(unit, position: Vertex3(Double(startPosition.x), Double(startPosition.y), 0))
+            let startPosition = Point2f(state.startPosition)
+            let instance = UnitInstance(unit, position: Vertex3f(xy: startPosition))
             instance.scriptContext.startScript("Create")
             objects[id] = .unit(instance)
         }
@@ -41,7 +41,7 @@ class GameManager: ScriptMachine {
         isRunningUpdateThread = true
         let thread = Thread(block: {
             [weak self] in
-            let updateRate = self?.updateRate ?? 0
+            let updateRate = Double(self?.updateRate ?? 0)
             while let self = self, self.isRunningUpdateThread {
                 let start = getCurrentTime()
                 self.update()
@@ -110,6 +110,26 @@ class GameManager: ScriptMachine {
     
 }
 
+extension GameState {
+    
+    func generateInitialViewState(viewportSize: Size2<Int>) -> GameViewState {
+        
+//        // TEMP
+//        var startingObjects: [GameViewObject] = []
+//
+//        if let unit = randomStartingUnit() {
+//            startingObjects.append(.unit(GameViewUnit(name: unit.info.name.lowercased(),
+//                                                      position: Vertex3(Double(startPosition.x), Double(startPosition.y), 0),
+//                                                      orientation: .zero,
+//                                                      pose: UnitModel.Instance(for: unit.model))))
+//        }
+        
+        return GameViewState(viewport: Rect4f(viewport(ofSize: viewportSize, centeredOn: startPosition, in: map)),
+                             objects: [])
+    }
+    
+}
+
 // MARK:- Objects
 
 struct GameObjectId: ExpressibleByIntegerLiteral, Equatable, Hashable, CustomStringConvertible {
@@ -128,14 +148,14 @@ enum GameObject {
 
 struct FeatureInstance {
     let type: FeatureTypeId
-    var worldPosition: Vertex3
+    var worldPosition: Vertex3f
 }
 
 struct UnitInstance {
     
     let type: UnitTypeId
-    var worldPosition: Vertex3
-    var orientation: Vector3
+    var worldPosition: Vertex3f
+    var orientation: Vector3f
     var modelInstance: UnitModel.Instance
     var scriptContext: UnitScript.Context
     
@@ -149,7 +169,7 @@ struct UnitInstance {
 }
 
 extension UnitInstance {
-    init(_ unit: UnitData, position: Vertex3 = .zero, orientation: Vector3 = .zero) {
+    init(_ unit: UnitData, position: Vertex3f = .zero, orientation: Vector3f = .zero) {
         type = UnitTypeId(for: unit.info)
         worldPosition = position
         self.orientation = orientation

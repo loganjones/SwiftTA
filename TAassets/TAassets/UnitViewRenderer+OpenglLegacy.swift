@@ -9,7 +9,6 @@
 import Cocoa
 import OpenGL
 import OpenGL.GL3
-import GLKit
 
 
 class LegacyOpenglUnitViewRenderer: OpenglUnitViewRenderer {
@@ -25,7 +24,7 @@ class LegacyOpenglUnitViewRenderer: OpenglUnitViewRenderer {
     private var model: GLInstancePieces?
     private var modelTexture: OpenglTextureResource?
     
-    private let gridSize = Size2D(width: 16, height: 16)
+    private let gridSize = Size2<Int>(width: 16, height: 16)
     private let gridSpacing: Int = UnitViewState.gridSize
     
     init() {
@@ -165,12 +164,12 @@ private extension LegacyOpenglUnitViewRenderer {
         let size = self.gridSize
         let gridSpacing = self.gridSpacing
         
-        let psize = CGSize(size * gridSpacing)
+        let psize = Size2(size * gridSpacing)
         glTranslatef(GLfloat(-psize.width / 2), GLfloat(-psize.height / 2) + GLfloat(viewState.movement), -0.5)
         
         var n = 0
-        let addLine: (Vertex3, Vertex3) -> () = { (a, b) in glVertex(a); glVertex(b); n += 2 }
-        let makeVert: (Int, Int) -> Vertex3 = { (w, h) in Vertex3(x: Double(w * gridSpacing), y: Double(h * gridSpacing), z: 0) }
+        let addLine: (Vertex3f, Vertex3f) -> () = { (a, b) in glVertex(a); glVertex(b); n += 2 }
+        let makeVert: (Int, Int) -> Vertex3f = { (w, h) in Vertex3f(x: GameFloat(w * gridSpacing), y: GameFloat(h * gridSpacing), z: 0) }
         
         glBegin(GLenum(GL_LINES))
         for h in 0..<size.height {
@@ -291,7 +290,7 @@ private struct GLInstancePieces {
         let piece = model.pieces[pieceIndex]
         
         glPushMatrix()
-        glMultMatrixd(makeTransform(from: state, with: piece.offset))
+        glMultMatrixf(makeTransform(from: state, with: piece.offset))
         
         if !state.hidden {
             glCallList(displayLists[pieceIndex])
@@ -305,7 +304,7 @@ private struct GLInstancePieces {
         
     }
     
-    mutating func animate(_ script: UnitScript.Context, for deltaTime: Double) {
+    mutating func animate(_ script: UnitScript.Context, for deltaTime: GameFloat) {
         script.applyAnimations(to: &instance, for: deltaTime)
     }
     
@@ -314,28 +313,25 @@ private struct GLInstancePieces {
 
 // MARK:- Draw Piece Vertices
 
-private typealias QuadTexCoords = (Vertex2, Vertex2, Vertex2, Vertex2)
+private typealias QuadTexCoords = (Vertex2f, Vertex2f, Vertex2f, Vertex2f)
 
 private enum ModelGL { }
 
 private extension ModelGL {
     
-    typealias DrawFunc = ([Vertex3], QuadTexCoords) -> ()
+    typealias DrawFunc = ([Vertex3f], QuadTexCoords) -> ()
     
     static var ZeroTexCoords: QuadTexCoords {
-        return (Vertex2.zero, Vertex2.zero, Vertex2.zero, Vertex2.zero)
+        return (Vertex2f.zero, Vertex2f.zero, Vertex2f.zero, Vertex2f.zero)
     }
     
-    static func drawWireShape(vertices: [Vertex3], tex: QuadTexCoords) {
+    static func drawWireShape(vertices: [Vertex3f], tex: QuadTexCoords) {
         glBegin(GLenum(GL_LINE_LOOP))
         vertices.forEach { glVertex($0) }
         glEnd()
     }
     
-    private static func glTexCoordOpt(_ v: Vertex2?) {
-        if let v = v { glTexCoord2d(v.x, v.y) }
-    }
-    private static func glPrimitiveNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [Vertex3]) {
+    private static func glPrimitiveNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [Vertex3f]) {
         let v1 = vertices[a]
         let v2 = vertices[b]
         let v3 = vertices[c]
@@ -344,7 +340,7 @@ private extension ModelGL {
         glNormal(u × v)
     }
     
-    static func drawFilledPrimitive(vertices: [Vertex3], tex: QuadTexCoords) {
+    static func drawFilledPrimitive(vertices: [Vertex3f], tex: QuadTexCoords) {
         switch vertices.count {
         case Int.min..<0: () // What?
         case 0: () // No Vertices
@@ -354,28 +350,28 @@ private extension ModelGL {
             glBegin(GLenum(GL_TRIANGLES))
             glPrimitiveNormal(0,2,1, in: vertices)
             // Triangle 0,2,1
-            glTexCoordOpt(tex.0); glVertex(vertices[0])
-            glTexCoordOpt(tex.2); glVertex(vertices[2])
-            glTexCoordOpt(tex.1); glVertex(vertices[1])
+            glTexCoord(tex.0); glVertex(vertices[0])
+            glTexCoord(tex.2); glVertex(vertices[2])
+            glTexCoord(tex.1); glVertex(vertices[1])
             glEnd()
         case 4: // Single Quad, split into two triangles
             glBegin(GLenum(GL_TRIANGLES))
             glPrimitiveNormal(0,2,1, in: vertices)
             // Triangle 0,2,1
-            glTexCoordOpt(tex.0); glVertex(vertices[0])
-            glTexCoordOpt(tex.2); glVertex(vertices[2])
-            glTexCoordOpt(tex.1); glVertex(vertices[1])
+            glTexCoord(tex.0); glVertex(vertices[0])
+            glTexCoord(tex.2); glVertex(vertices[2])
+            glTexCoord(tex.1); glVertex(vertices[1])
             // Triangle 0,3,2
-            glTexCoordOpt(tex.0); glVertex(vertices[0])
-            glTexCoordOpt(tex.3); glVertex(vertices[3])
-            glTexCoordOpt(tex.2); glVertex(vertices[2])
+            glTexCoord(tex.0); glVertex(vertices[0])
+            glTexCoord(tex.3); glVertex(vertices[3])
+            glTexCoord(tex.2); glVertex(vertices[2])
             glEnd()
         default: // Polygon with more than 4 sides
             glBegin(GLenum(GL_TRIANGLES))
             for n in 2 ..< vertices.count {
-                glTexCoordOpt(tex.0); glVertex(vertices[0])
-                glTexCoordOpt(tex.2); glVertex(vertices[n])
-                glTexCoordOpt(tex.1); glVertex(vertices[n-1])
+                glTexCoord(tex.0); glVertex(vertices[0])
+                glTexCoord(tex.2); glVertex(vertices[n])
+                glTexCoord(tex.1); glVertex(vertices[n-1])
             }
             glEnd()
         }
@@ -383,11 +379,11 @@ private extension ModelGL {
     
 }
 
-private func makeTransform(from piece: UnitModel.PieceState, with offset: Vector3) -> [Double] {
+private func makeTransform(from piece: UnitModel.PieceState, with offset: Vector3f) -> [GameFloat] {
     
-    var M: [Double] = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1]
+    var M: [GameFloat] = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1]
     
-    let rad2deg = Double.pi / 180
+    let rad2deg = GameFloat.pi / 180
     let sin = piece.turn.map { Darwin.sin($0 * rad2deg) }
     let cos = piece.turn.map { Darwin.cos($0 * rad2deg) }
     

@@ -15,16 +15,37 @@ import Cgl
 #endif
 
 
-func glVertex(_ v: Vertex3) {
+let GL_GAMEFLOAT: Int32 = {
+    switch MemoryLayout<GameFloat>.size {
+    case MemoryLayout<Float>.size: return GL_FLOAT
+    case MemoryLayout<Double>.size: return GL_DOUBLE
+    default: fatalError("Unsupported float size for OpenGL")
+    }
+}()
+
+func glVertex(_ v: Vertex3<Float>) {
+    glVertex3f(v.x, v.y, v.z)
+}
+func glNormal(_ v: Vertex3<Float>) {
+    glNormal3f(v.x, v.y, v.z)
+}
+func glTexCoord(_ v: Vertex2<Float>) {
+    glTexCoord2f(v.x, v.y)
+}
+func glTranslate(_ v: Vertex3<Float>) {
+    glTranslatef(v.x, v.y, v.z)
+}
+
+func glVertex(_ v: Vertex3<Double>) {
     glVertex3d(v.x, v.y, v.z)
 }
-func glNormal(_ v: Vector3) {
+func glNormal(_ v: Vertex3<Double>) {
     glNormal3d(v.x, v.y, v.z)
 }
-func glTexCoord(_ v: Vertex2) {
+func glTexCoord(_ v: Vertex2<Double>) {
     glTexCoord2d(v.x, v.y)
 }
-func glTranslate(_ v: Vector3) {
+func glTranslate(_ v: Vertex3<Double>) {
     glTranslated(v.x, v.y, v.z)
 }
 
@@ -36,6 +57,57 @@ func glBufferSubData<T>(_ target: GLenum, _ offset: Int, _ data: [T]) {
     var d = data
     glBufferSubData(target, offset, MemoryLayout<T>.stride * data.count, &d)
 }
+
+func glUniform3(_ location: GLint, _ value: Vector3<Float>) {
+    glUniform3f(location, value.x, value.y, value.z)
+}
+func glUniform4(_ location: GLint, _ value: Vector4<Float>) {
+    glUniform4f(location, value.x, value.y, value.z, value.w)
+}
+func glUniform3x3(_ location: GLint, transpose: Bool = false, _ value: Matrix3x3<Float>) {
+    withUnsafeBytes(of: value) {
+        glUniformMatrix3fv(location, 1, transpose ? 1 : 0, $0.baseAddress?.assumingMemoryBound(to: Float.self))
+    }
+}
+func glUniform4x4(_ location: GLint, transpose: Bool = false, _ value: Matrix4x4<Float>) {
+    withUnsafeBytes(of: value) {
+        glUniformMatrix4fv(location, 1, transpose ? 1 : 0, $0.baseAddress?.assumingMemoryBound(to: Float.self))
+    }
+}
+func glUniform4x4(_ location: GLint, transpose: Bool = false, _ values: [Matrix4x4<Float>]) {
+    values.withUnsafeBytes {
+        glUniformMatrix4fv(location, GLsizei(values.count), transpose ? 1 : 0, $0.baseAddress?.assumingMemoryBound(to: Float.self))
+    }
+}
+
+#if !os(Linux)
+// glUniform3d, glUniform4d, glUniformMatrix3dv, and glUniformMatrix4dv are part of OpenGL 4.0 (at least according to the glext.h on my system).
+// My current Linux test system (Ubuntu 16.04 on VMWare) does not expose an OpenGL 4 driver.
+/// TODO: Reform the OpenGL renderer(s) to deal with OpenGL versions and extension loading.
+
+func glUniform3(_ location: GLint, _ value: Vector3<Double>) {
+    glUniform3d(location, value.x, value.y, value.z)
+}
+func glUniform4(_ location: GLint, _ value: Vector4<Double>) {
+    glUniform4d(location, value.x, value.y, value.z, value.w)
+}
+func glUniform3x3(_ location: GLint, transpose: Bool = false, _ value: Matrix3x3<Double>) {
+    withUnsafeBytes(of: value) {
+        glUniformMatrix3dv(location, 1, transpose ? 1 : 0, $0.baseAddress?.assumingMemoryBound(to: Double.self))
+    }
+}
+func glUniform4x4(_ location: GLint, transpose: Bool = false, _ value: Matrix4x4<Double>) {
+    withUnsafeBytes(of: value) {
+        glUniformMatrix4dv(location, 1, transpose ? 1 : 0, $0.baseAddress?.assumingMemoryBound(to: Double.self))
+    }
+}
+func glUniform4x4(_ location: GLint, transpose: Bool = false, _ values: [Matrix4x4<Double>]) {
+    values.withUnsafeBytes {
+        glUniformMatrix4dv(location, GLsizei(values.count), transpose ? 1 : 0, $0.baseAddress?.assumingMemoryBound(to: Double.self))
+    }
+}
+#endif
+
 
 // MARK:- Shader Utility
 

@@ -18,7 +18,7 @@ class GameViewController: NSViewController {
     private let emptyView: NSView
     
     required init(_ state: GameState) {
-        let initialViewState = state.generateInitialViewState(viewportSize: Size2D(1024, 768))
+        let initialViewState = state.generateInitialViewState(viewportSize: Size2<Int>(1024, 768))
         
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!
         //self.renderer = OpenglCore3CocoaRenderer(loadedState: state, viewState: initialViewState)!
@@ -63,7 +63,7 @@ class GameViewController: NSViewController {
         view.addSubview(gameView)
         view.addSubview(scrollView)
         scrollView.documentView = emptyView
-        scrollView.contentView.bounds = renderer.viewState.viewport
+        scrollView.contentView.bounds = CGRect(renderer.viewState.viewport)
         scrollView.contentView.postsBoundsChangedNotifications = true
         NotificationCenter.default.addObserver(self, selector: #selector(contentBoundsDidChange), name: NSView.boundsDidChangeNotification, object: scrollView.contentView)
         NotificationCenter.default.addObserver(self, selector: #selector(viewFrameDidChange), name: NSView.frameDidChangeNotification, object: view)
@@ -76,11 +76,11 @@ class GameViewController: NSViewController {
     }
     
     @objc func contentBoundsDidChange(_ notification: NSNotification) {
-        renderer.viewState.viewport = scrollView.contentView.bounds
+        renderer.viewState.viewport = Rect4f(scrollView.contentView.bounds)
     }
     
     @objc func viewFrameDidChange(_ notification: NSNotification) {
-        renderer.viewState.viewport = scrollView.contentView.bounds
+        renderer.viewState.viewport = Rect4f(scrollView.contentView.bounds)
     }
 
 }

@@ -15,7 +15,7 @@ struct UnitModel {
     
     typealias Pieces = Array<Piece>
     typealias Primitives = Array<Primitive>
-    typealias Vertices = Array<Vertex3>
+    typealias Vertices = Array<Vertex3f>
     typealias Textures = Array<Texture>
     
     var pieces: Pieces
@@ -58,7 +58,7 @@ struct UnitModel {
     
     struct Piece {
         var name: String
-        var offset: Vector3
+        var offset: Vector3f
         var primitives: [Primitives.Index]
         var children: [Pieces.Index]
     }
@@ -312,26 +312,28 @@ private extension RangeReplaceableCollection {
 
 // MARK:- Geometry 3DO Extensions
 
-let ANGULAR_CONSTANT = 65536.0 / 360.0
-let LINEAR_CONSTANT = 163840.0 / 2.5
+let ANGULAR_CONSTANT: GameFloat = 65536.0 / 360.0
+let LINEAR_CONSTANT: GameFloat = 163840.0 / 2.5
 
-extension Vertex3 {
+extension Vertex3 where Element == GameFloat {
     
     init(_ v: TA_3DO_VERTEX) {
-        x = Double(v.x) / LINEAR_CONSTANT
-        y = Double(v.z) / LINEAR_CONSTANT
-        z = Double(v.y) / LINEAR_CONSTANT
+        self.init(
+            x: GameFloat(v.x) / LINEAR_CONSTANT,
+            y: GameFloat(v.z) / LINEAR_CONSTANT,
+            z: GameFloat(v.y) / LINEAR_CONSTANT
+        )
     }
     
 }
 
 extension TA_3DO_OBJECT {
     
-    var offsetFromParent: Vector3 {
-        return Vector3(
-            x: Double(xFromParent) / LINEAR_CONSTANT,
-            y: Double(zFromParent) / LINEAR_CONSTANT,
-            z: Double(yFromParent) / LINEAR_CONSTANT
+    var offsetFromParent: Vector3f {
+        return Vector3f(
+            x: GameFloat(xFromParent) / LINEAR_CONSTANT,
+            y: GameFloat(zFromParent) / LINEAR_CONSTANT,
+            z: GameFloat(yFromParent) / LINEAR_CONSTANT
         )
     }
     

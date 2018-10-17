@@ -133,10 +133,10 @@ private extension TaMapTileView {
         
         let path = NSBezierPath()
         for y in minY...maxY {
-            let h0 = map.height(at: Point2D(x: minX, y: y)) / 2
+            let h0 = map.height(at: Point2<Int>(x: minX, y: y)) / 2
             path.move(to: NSPoint(x: minX * 16, y: (y * 16) - h0))
             for x in (minX+1)...maxX {
-                let h = map.height(at: Point2D(x: x, y: y)) / 2
+                let h = map.height(at: Point2<Int>(x: x, y: y)) / 2
                 path.line(to: NSPoint(x: x * 16, y: (y * 16) - h))
             }
         }
@@ -153,8 +153,8 @@ private extension TaMapTileView {
         
         for y in minY...maxY {
             for x in minX...maxX {
-                guard map.featureIndex(at: Point2D(x: x, y: y)) != nil else { continue }
-                let h = map.height(at: Point2D(x: x, y: y)) / 2
+                guard map.featureIndex(at: Point2<Int>(x: x, y: y)) != nil else { continue }
+                let h = map.height(at: Point2<Int>(x: x, y: y)) / 2
                 context.fillEllipse(in: CGRect(x: (x * 16) + 8, y: (y * 16) + 8 - h, width: 16, height: 16))
             }
         }
@@ -287,10 +287,10 @@ private extension TakMapTileView {
         
         let path = NSBezierPath()
         for y in minY...maxY {
-            let h0 = map.height(at: Point2D(x: minX, y: y)) / 2
+            let h0 = map.height(at: Point2<Int>(x: minX, y: y)) / 2
             path.move(to: NSPoint(x: minX * 16, y: (y * 16) - h0))
             for x in (minX+1)...maxX {
-                let h = map.height(at: Point2D(x: x, y: y)) / 2
+                let h = map.height(at: Point2<Int>(x: x, y: y)) / 2
                 path.line(to: NSPoint(x: x * 16, y: (y * 16) - h))
             }
         }
@@ -307,8 +307,8 @@ private extension TakMapTileView {
         
         for y in minY...maxY {
             for x in minX...maxX {
-                guard map.featureIndex(at: Point2D(x: x, y: y)) != nil else { continue }
-                let h = map.height(at: Point2D(x: x, y: y)) / 2
+                guard map.featureIndex(at: Point2<Int>(x: x, y: y)) != nil else { continue }
+                let h = map.height(at: Point2<Int>(x: x, y: y)) / 2
                 context.fillEllipse(in: CGRect(x: (x * 16) + 8, y: (y * 16) + 8 - h, width: 16, height: 16))
             }
         }

@@ -144,13 +144,13 @@ class MetalTntView: NSView, TntViewLoader, MTKViewDelegate {
     }
     
     @objc func contentBoundsDidChange(_ notification: NSNotification) {
-        viewState.viewport = scrollView.contentView.bounds
+        viewState.viewport = Rect4f(scrollView.contentView.bounds)
     }
     
     override var frame: NSRect {
         didSet {
             super.frame = frame
-            viewState.viewport = scrollView.contentView.bounds
+            viewState.viewport = Rect4f(scrollView.contentView.bounds)
         }
     }
     /*
@@ -204,7 +204,7 @@ class MetalTntView: NSView, TntViewLoader, MTKViewDelegate {
 }
 
 struct MetalTntViewState {
-    var viewport = CGRect()
+    var viewport = Rect4f()
 }
 
 protocol MetalTntRenderer {

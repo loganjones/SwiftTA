@@ -9,6 +9,27 @@
 import Foundation
 
 
+// MARK:- Float Type
+
+typealias GameFloat = Float
+
+typealias Point2f = Point2<GameFloat>
+typealias Point3f = Point2<GameFloat>
+typealias Size2f = Size2<GameFloat>
+typealias Rect4f = Rect4<GameFloat>
+
+typealias Vertex2f = Vertex2<GameFloat>
+typealias Vertex3f = Vertex3<GameFloat>
+typealias Vector2f = Vector2<GameFloat>
+typealias Vector3f = Vector3<GameFloat>
+typealias Vector4f = Vector4<GameFloat>
+
+typealias Matrix3x3f = Matrix3x3<GameFloat>
+typealias Matrix4x4f = Matrix4x4<GameFloat>
+
+
+// MARK:- The State
+
 class GameState {
     
     let filesystem: FileSystem
@@ -18,7 +39,7 @@ class GameState {
     let units: [UnitTypeId: UnitData]
     let sides: [SideInfo]
     
-    let startPosition: Point2D
+    let startPosition: Point2<Int>
     
     convenience init(loadFrom taDir: URL, mapName: String) throws {
         try self.init(loadFrom: try FileSystem(mergingHpisIn: taDir), mapName: mapName)
@@ -57,7 +78,7 @@ class GameState {
         sides = try SideInfo.load(contentsOf: sidedata)
         let endSides = Date()
         
-        startPosition = mapInfo.schema.first?.startPositions.first ?? Point2D(32, 32)
+        startPosition = mapInfo.schema.first?.startPositions.first ?? Point2(32, 32)
         
         let endGame = Date()
         
@@ -99,33 +120,5 @@ class GameState {
         print("Total Annihilation directory: \(taDir)")
         try self.init(loadFrom: try FileSystem(mergingHpisIn: taDir), mapName: mapName)
     }
-    
-    func generateInitialViewState(viewportSize: Size2D) -> GameViewState {
-        
-//        // TEMP
-//        var startingObjects: [GameViewObject] = []
-//
-//        if let unit = randomStartingUnit() {
-//            startingObjects.append(.unit(GameViewUnit(name: unit.info.name.lowercased(),
-//                                                      position: Vertex3(Double(startPosition.x), Double(startPosition.y), 0),
-//                                                      orientation: .zero,
-//                                                      pose: UnitModel.Instance(for: unit.model))))
-//        }
-        
-        return GameViewState(viewport: viewport(ofSize: viewportSize, centeredOn: startPosition, in: map),
-                             objects: [])
-    }
-    
-//    private func randomStartingUnit() -> UnitData? {
-//        if let taUnitName = ["armcom", "corcom"].randomElement(), let taUnit = units[taUnitName] {
-//            return taUnit
-//        }
-//        else if let takUnitName = ["araking", "tarnecro", "vermage", "zonhunt", "cresage"].randomElement(), let takUnit = units[takUnitName] {
-//            return takUnit
-//        }
-//        else {
-//            return nil
-//        }
-//    }
     
 }

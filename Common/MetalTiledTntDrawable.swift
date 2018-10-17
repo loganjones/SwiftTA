@@ -12,7 +12,7 @@ import simd
 
 
 private let screenTileSize = 512
-private let maximumDisplaySize = Size2D(width: 4096, height: 4096)
+private let maximumDisplaySize = Size2<Int>(width: 4096, height: 4096)
 private let maximumGridSize = maximumDisplaySize / screenTileSize
 
 private typealias BufferIndex = MetalTntViewRenderer_BufferIndex
@@ -39,13 +39,13 @@ class MetalTiledTntDrawable: MetalTntDrawable {
     private var indexCount: Int = 0
     
     private var mapResources: MapResources?
-    private var lastTileGrid: Rect2D = .zero
+    private var lastTileGrid: Rect4<Int> = .zero
     private var availableScreenTiles: [Int]
-    private var activeScreenTiles: [Point2D: Int]
+    private var activeScreenTiles: [Point2<Int>: Int]
     
     fileprivate struct MapResources {
-        var resolution: Size2D
-        var gridBounds: Rect2D
+        var resolution: Size2<Int>
+        var gridBounds: Rect4<Int>
         var tntSources: TntSources
         var screenTiles: MTLTexture
     }
@@ -133,13 +133,9 @@ extension MetalTiledTntDrawable {
         
         let visibleTileGrid = computeTileGrid(for: viewState.viewport, boundedBy: map.gridBounds)
         
-        let viewportSize = vector_float2(viewState.viewport.size)
-        let viewportPosition = vector_float2(viewState.viewport.origin)
-        let tileGridOffset = vector_float2(visibleTileGrid.origin * screenTileSize)
-        
-        let modelMatrix = matrix_float4x4.translation(xy: tileGridOffset)
-        let viewMatrix = matrix_float4x4.translation(xy: -viewportPosition)
-        let projectionMatrix = matrix_float4x4.ortho(0, viewportSize.x, viewportSize.y, 0, -1024, 256)
+        let modelMatrix = matrix_float4x4.translation(xy: vector_float2(visibleTileGrid.origin * screenTileSize))
+        let viewMatrix = matrix_float4x4.translation(xy: -vector_float2(viewState.viewport.origin))
+        let projectionMatrix = matrix_float4x4.ortho(Rect4(size: viewState.viewport.size), -1024, 256)
         
         let uniforms = uniformBuffer.next().contents.bindMemory(to: Uniforms.self, capacity: 1)
         uniforms.pointee.mvpMatrix = projectionMatrix * viewMatrix * modelMatrix
@@ -175,7 +171,7 @@ extension MetalTiledTntDrawable {
         case badTextureDescriptor
     }
     
-    private func rebuildGrid(_ visibleTileGrid: Rect2D, for map: MapResources, using commandBuffer: MTLCommandBuffer) {
+    private func rebuildGrid(_ visibleTileGrid: Rect4<Int>, for map: MapResources, using commandBuffer: MTLCommandBuffer) {
         
         let totalVertexCount = visibleTileGrid.size.area * 6
         let slices = sliceBuffer.next().contents.bindMemory(to: Int32.self, capacity: totalVertexCount)
@@ -191,7 +187,7 @@ extension MetalTiledTntDrawable {
         for y in visibleTileGrid.heightRange {
             var vertexIndex = rowVertexIndex
             for x in visibleTileGrid.widthRange {
-                let tilePosition = Point2D(x: x, y: y)
+                let tilePosition = Point2(x, y)
                 let tileSliceIndex: Int
                 
                 if let slice = activeScreenTiles[tilePosition] {
@@ -231,17 +227,15 @@ extension MetalTiledTntDrawable {
         indexCount = indexIndex
     }
     
-    private func fillScreenTile(_ tilePosition: Point2D, into screenTexture: MTLTexture, slice screenSlice: Int, tileSet: TaTntTileSet, layout: TaMapModel.TileIndexMap, using blitEncoder: MTLBlitCommandEncoder) {
+    private func fillScreenTile(_ tilePosition: Point2<Int>, into screenTexture: MTLTexture, slice screenSlice: Int, tileSet: TaTntTileSet, layout: TaMapModel.TileIndexMap, using blitEncoder: MTLBlitCommandEncoder) {
         
         let tileSize = layout.tileSize
-        let tntRect = Rect2D(origin: (tilePosition * screenTileSize) / tileSize,
-                             size: Size2D(width: screenTileSize/tileSize.width, height: screenTileSize/tileSize.height))
+        let tntRect = Rect4<Int>(origin: (tilePosition * screenTileSize) / tileSize, size: Size2(screenTileSize) / tileSize)
         
         layout.eachIndex(in: tntRect) {
             (index, column, row) in
             
-            let patch = Point2D(x: (column - tntRect.origin.x) * tileSize.width,
-                                y: (row - tntRect.origin.y) * tileSize.height)
+            let patch = (Point2(column, row) - tntRect.origin) * tileSize
             let t = tileSet.lookup(tileIndex: index)
             
             blitEncoder.copy(from: t.texture, sourceSlice: t.slice, sourceLevel: 0, sourceOrigin: .zero, sourceSize: MTLSize(tileSize),
@@ -250,21 +244,18 @@ extension MetalTiledTntDrawable {
         
     }
     
-    private func fillScreenTile(_ tilePosition: Point2D, into screenTexture: MTLTexture, slice screenSlice: Int, terrain: TakTntTerrainSet, layout: TakMapModel.TileIndexMap, using blitEncoder: MTLBlitCommandEncoder) {
+    private func fillScreenTile(_ tilePosition: Point2<Int>, into screenTexture: MTLTexture, slice screenSlice: Int, terrain: TakTntTerrainSet, layout: TakMapModel.TileIndexMap, using blitEncoder: MTLBlitCommandEncoder) {
         
         let tileSize = layout.tileSize
-        let tntRect = Rect2D(origin: (tilePosition * screenTileSize) / tileSize,
-                             size: Size2D(width: screenTileSize/tileSize.width, height: screenTileSize/tileSize.height))
+        let tntRect = Rect4<Int>(origin: (tilePosition * screenTileSize) / tileSize, size: Size2(screenTileSize) / tileSize)
         
         layout.eachTile(in: tntRect) {
             (imageName, imageColumn, imageRow, mapColumn, mapRow) in
             
             guard let texture = terrain[imageName] else { return }
             
-            let terrainTilePosition = Point2D(x: imageColumn * tileSize.width,
-                                              y: imageRow * tileSize.height)
-            let screenTilePosition = Point2D(x: (mapColumn - tntRect.origin.x) * tileSize.width,
-                                             y: (mapRow - tntRect.origin.y) * tileSize.height)
+            let terrainTilePosition = Point2(imageColumn, imageRow) * tileSize
+            let screenTilePosition = (Point2(mapColumn, mapRow) - tntRect.origin) * tileSize
             
             blitEncoder.copy(from: texture, sourceSlice: 0, sourceLevel: 0, sourceOrigin: MTLOrigin(xy: terrainTilePosition), sourceSize: MTLSize(tileSize),
                              to: screenTexture, destinationSlice: screenSlice, destinationLevel: 0, destinationOrigin: MTLOrigin(xy: screenTilePosition))
@@ -279,7 +270,7 @@ private extension MetalTiledTntDrawable.MapResources {
     init(for map: TaMapModel, using palette: Palette, device: MTLDevice) throws {
         
         resolution = map.resolution
-        gridBounds = Rect2D(size: map.resolution.map { $0.partitionCount(by: screenTileSize) })
+        gridBounds = Rect4<Int>(size: map.resolution.map { $0.partitionCount(by: screenTileSize) })
     
         tntSources = .ta(tileSet: try MetalTiledTntDrawable.TaTntTileSet(device: device, tileSet: map.tileSet, palette: palette),
                          layout: map.tileIndexMap)
@@ -296,7 +287,7 @@ private extension MetalTiledTntDrawable.MapResources {
     init(for map: TakMapModel, from filesystem: FileSystem, device: MTLDevice) throws {
         
         resolution = map.resolution
-        gridBounds = Rect2D(size: map.resolution.map { $0.partitionCount(by: screenTileSize) })
+        gridBounds = Rect4<Int>(size: map.resolution.map { $0.partitionCount(by: screenTileSize) })
         
         tntSources = .tak(terrain: try MetalTiledTntDrawable.TakTntTerrainSet(device: device, terrain: map.tileIndexMap.uniqueNames, filesystem: filesystem),
                           layout: map.tileIndexMap)
@@ -370,13 +361,13 @@ private extension MetalTiledTntDrawable.TaTntTileSet {
         return (textures[textureIndex], slice)
     }
     
-    private static func allocateTextures(device: MTLDevice, tileCount: Int, tntTileSize: Size2D) throws -> [MTLTexture] {
+    private static func allocateTextures(device: MTLDevice, tileCount: Int, tntTileSize: Size2<Int>) throws -> [MTLTexture] {
         return try tileCount
             .partitions(by: tilesPerTexture)
             .map { try allocateTexture(device: device, tileCount: $0, tntTileSize: tntTileSize) }
     }
     
-    private static func allocateTexture(device: MTLDevice, tileCount: Int, tntTileSize: Size2D) throws -> MTLTexture {
+    private static func allocateTexture(device: MTLDevice, tileCount: Int, tntTileSize: Size2<Int>) throws -> MTLTexture {
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm_srgb, width: tntTileSize.width, height: tntTileSize.height, mipmapped: false)
         descriptor.textureType = .type2DArray
         descriptor.arrayLength = tileCount
@@ -427,7 +418,7 @@ private extension MetalTiledTntDrawable.TakTntTerrainSet {
     
 }
 
-private func prefillGridVertices(_ vertexBuffer: MTLBuffer, _ vertexCount: Int, _ tileCount: Size2D, _ tileSize: Int) {
+private func prefillGridVertices(_ vertexBuffer: MTLBuffer, _ vertexCount: Int, _ tileCount: Size2<Int>, _ tileSize: Int) {
     
     let v = vertexBuffer.contents().bindMemory(to: Vertex.self, capacity: vertexCount)
     var i = 0
@@ -462,31 +453,31 @@ private func prefillGridVertices(_ vertexBuffer: MTLBuffer, _ vertexCount: Int, 
     }
 }
 
-private func computeTileGrid(for rect: CGRect, boundedBy bounds: Rect2D) -> Rect2D {
-    return rect.computeGrid(division: CGFloat(screenTileSize)).clamp(within: bounds)
+private func computeTileGrid(for rect: Rect4f, boundedBy bounds: Rect4<Int>) -> Rect4<Int> {
+    return rect.computeGrid(division: GameFloat(screenTileSize)).clamp(within: bounds)
 }
 
-private extension CGRect {
-    func computeGrid(division d: CGFloat) -> Rect2D {
+private extension Rect4 where Element == GameFloat {
+    func computeGrid(division d: GameFloat) -> Rect4<Int> {
         
         let minX = Int(floor(self.minX / d))
         let minY = Int(floor(self.minY / d))
         let maxX = Int(ceil(self.maxX / d))
         let maxY = Int(ceil(self.maxY / d))
         
-        return Rect2D(origin: Point2D(x: minX, y: minY),
-                      size: Size2D(width: maxX - minX, height: maxY - minY))
+        return Rect4<Int>(origin: Point2(minX, minY),
+                      size: Size2(width: maxX - minX, height: maxY - minY))
     }
 }
 
-private extension Rect2D {
-    var allPoints: Set<Point2D> {
-        let p = UnsafeMutableBufferPointer<Point2D>.allocate(capacity: size.area)
+private extension Rect4 where Element == Int {
+    var allPoints: Set<Point2<Int>> {
+        let p = UnsafeMutableBufferPointer<Point2<Int>>.allocate(capacity: size.area)
         defer { p.deallocate() }
         var i = 0
         for y in heightRange {
             for x in widthRange {
-                p[i] = Point2D(x: x, y: y)
+                p[i] = Point2(x, y)
                 i += 1
             }
         }

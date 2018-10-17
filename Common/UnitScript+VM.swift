@@ -124,7 +124,7 @@ extension UnitScript.Context {
         else { throw UnitScript.Thread.ExecutionError.badPiece(index) }
     }
     
-    func applyAnimations(to instance: inout UnitModel.Instance, for delta: Double) {
+    func applyAnimations(to instance: inout UnitModel.Instance, for delta: GameFloat) {
         let unfinished = animations.compactMap { instance.apply($0, with: delta) }
         animations = unfinished
     }

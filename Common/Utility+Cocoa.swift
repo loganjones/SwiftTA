@@ -52,11 +52,11 @@ extension String {
 #if canImport(CoreGraphics)
 extension CGImage {
 
-    var size: Size2D {
-        return Size2D(width: width, height: height)
+    var size: Size2<Int> {
+        return Size2<Int>(width, height)
     }
     
-    static func createWith(imageIndices: Data, size: Size2D, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws -> CGImage {
+    static func createWith(imageIndices: Data, size: Size2<Int>, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws -> CGImage {
         
         let bitsPerPixel: Int
         let bytesPerRow: Int
@@ -184,7 +184,7 @@ extension CGImage {
 #if canImport(AppKit)
 extension NSImage {
     
-    convenience init(imageIndices: Data, size: Size2D, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws {
+    convenience init(imageIndices: Data, size: Size2<Int>, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws {
         let image = try CGImage.createWith(imageIndices: imageIndices, size: size, palette: palette, useTransparency: useTransparency, isFlipped: isFlipped)
         self.init(cgImage: image, size: NSSize(size))
     }
@@ -211,67 +211,6 @@ extension NSImage {
 #endif
 
 // MARK:- Misc Conversions
-
-extension CGPoint {
-    
-    init(_ point: Point2D) {
-        self.init(x: point.x, y: point.y)
-    }
-    
-    func makeRect(size: CGSize) -> CGRect {
-        return CGRect(origin: self, size: size)
-    }
-    func makeRect(size: Size2D) -> CGRect {
-        return CGRect(origin: self, size: CGSize(size))
-    }
-    
-}
-
-extension CGSize {
-    
-    init(_ size: Size2D) {
-        self.init(width: size.width, height: size.height)
-    }
-    
-    func makeRect(origin: CGPoint) -> CGRect {
-        return CGRect(origin: origin, size: self)
-    }
-    func makeRect(origin: Point2D) -> CGRect {
-        return CGRect(origin: CGPoint(origin), size: self)
-    }
-    
-}
-
-extension Vector2 {
-    init(_ size: CGSize) {
-        x = Double(size.width)
-        y = Double(size.height)
-    }
-}
-
-extension CGRect {
-    
-    init(origin: Point2D, size: Size2D) {
-        self.init(x: origin.x, y: origin.y, width: size.width, height: size.height)
-    }
-    
-    init(x: Int, y: Int, size: Size2D) {
-        self.init(x: x, y: y, width: size.width, height: size.height)
-    }
-    
-    init(size: Size2D) {
-        self.init(x: 0, y: 0, width: size.width, height: size.height)
-    }
-    
-    init(size: CGSize) {
-        self.init(x: 0, y: 0, width: size.width, height: size.height)
-    }
-    
-    init(_ rect: Rect2D) {
-        self.init(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
-    }
-    
-}
 
 extension Palette.Color {
     

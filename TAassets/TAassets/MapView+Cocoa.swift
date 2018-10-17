@@ -90,7 +90,7 @@ private extension CocoaMapView {
         var info: MapFeatureInfo
         var frames: [Frame]
         var shadow: Frame?
-        typealias Frame = (image: CGImage, offset: Point2D)
+        typealias Frame = (image: CGImage, offset: Point2<Int>)
     }
     
     struct FeatureInstance {

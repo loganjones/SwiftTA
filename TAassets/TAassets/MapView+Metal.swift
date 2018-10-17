@@ -208,13 +208,13 @@ class MetalMapView: NSView, MapViewLoader, MTKViewDelegate {
     }
     
     @objc func contentBoundsDidChange(_ notification: NSNotification) {
-        viewState.viewport = scrollView.contentView.bounds
+        viewState.viewport = Rect4f(scrollView.contentView.bounds)
     }
     
     override var frame: NSRect {
         didSet {
             super.frame = frame
-            viewState.viewport = scrollView.contentView.bounds
+            viewState.viewport = Rect4f(scrollView.contentView.bounds)
         }
     }
     
@@ -351,7 +351,7 @@ extension MetalMapFeatureRenderer {
     struct AnimatedFeature {
         var texture: MTLTexture
         var frames: Frame
-        typealias Frame = (slice: Int, offset: Point2D)
+        typealias Frame = (slice: Int, offset: Point2<Int>)
     }
     
     func loadMapFeatures(_ map: MapModel, planet: String?, from filesystem: FileSystem) -> (features: [Feature], shadows: [Feature]) {
@@ -444,7 +444,7 @@ extension MetalMapFeatureRenderer {
         return featureOccurrences
     }
     
-    func buildInstances(of feature: (size: Size2D, offset: Point2D, footprint: Size2D), from occurrenceIndices: [Int], in map: MapModel) -> (MTLBuffer, Int)? {
+    func buildInstances(of feature: (size: Size2<Int>, offset: Point2<Int>, footprint: Size2<Int>), from occurrenceIndices: [Int], in map: MapModel) -> (MTLBuffer, Int)? {
         
         let vertexCount = occurrenceIndices.count * 6
         guard let vertexBuffer = device.makeBuffer(length: MemoryLayout<Vertex>.stride * vertexCount, options: [.storageModeShared]) else { return nil }
@@ -456,7 +456,7 @@ extension MetalMapFeatureRenderer {
                 .center(inFootprint: feature.footprint)
                 .offset(by: feature.offset)
                 .adjust(forHeight: map.heightMap[i])
-                .makeRect(size: feature.size)
+                .makeRect(size: Size2f(feature.size))
             
             createRect(boundingBox, in: vertices)
             vertices += 6
@@ -476,7 +476,7 @@ extension MetalMapFeatureRenderer.Feature {
         }
     }
     
-    var size: Size2D {
+    var size: Size2<Int> {
         switch self {
         case .static(let f):
             return f.texture.size2D
@@ -488,34 +488,34 @@ extension MetalMapFeatureRenderer.Feature {
 }
 
 private extension MapModel {
-    func worldPosition(ofMapIndex index: Int) -> Point2D {
-        return Point2D(index: index, stride: self.mapSize.width) * 16
+    func worldPosition(ofMapIndex index: Int) -> Point2<Int> {
+        return Point2<Int>(index: index, stride: self.mapSize.width) * 16
     }
 }
-private extension Point2D {
+private extension Point2 where Element == Int {
     
-    func center(inFootprint footprint: Size2D) -> Point2D {
-        return self + (footprint * 8)
+    func center(inFootprint footprint: Size2<Int>) -> Point2<Int> {
+        return self + Vector2(footprint * 8)
     }
     
-    func offset(by offset: Point2D) -> Point2D {
+    func offset(by offset: Point2<Int>) -> Point2<Int> {
         return self - offset
     }
     
-    func adjust(forHeight height: Int) -> CGPoint {
-        let h = CGFloat(height) / 2.0
-        return CGPoint(x: CGFloat(self.x), y: CGFloat(self.y) - h)
+    func adjust(forHeight height: Int) -> Point2f {
+        let h = GameFloat(height) / 2.0
+        return Point2f(x: GameFloat(self.x), y: GameFloat(self.y) - h)
     }
     
 }
 
-private func createRect(_ rect: CGRect, in vertices: UnsafeMutablePointer<Vertex>) {
+private func createRect(_ rect: Rect4f, in vertices: UnsafeMutablePointer<Vertex>) {
 
-    let x = Float(rect.origin.x)
-    let y = Float(rect.origin.y)
-    let z = Float(rect.maxY) / (32000.0 / 256.0)//Float(10)
-    let w = Float(rect.size.width)
-    let h = Float(rect.size.height)
+    let x = rect.origin.x
+    let y = rect.origin.y
+    let z = rect.maxY / (32000.0 / 256.0)//Float(10)
+    let w = rect.size.width
+    let h = rect.size.height
 
     vertices[0].position = vector_float3(x+0, y+0, z)
     vertices[0].texCoord = vector_float2(0, 0)

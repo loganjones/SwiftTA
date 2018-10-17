@@ -841,8 +841,8 @@ extension CobDecompile.StackItem {
         case .constant(let v):
             switch style {
             case .normal:   return String(v)
-            case .linear:   return String(Double(v) / LINEAR_CONSTANT)
-            case .angular:  return String(Double(v) / ANGULAR_CONSTANT)
+            case .linear:   return String(GameFloat(v) / LINEAR_CONSTANT)
+            case .angular:  return String(GameFloat(v) / ANGULAR_CONSTANT)
             case .boolean:  return (v != 0) ? "TRUE" : "FALSE"
             case .piece:    return context.pieceName(for: v)
             case .explode:  return UnitScript.ExplodeType(rawValue: v)?.scriptIdentifier ?? String(v)

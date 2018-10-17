@@ -14,6 +14,7 @@ let package = Package(
             name: "SwiftTA",
             path: ".",
             exclude: [
+                "../../Common/Geometry+simd.swift",
                 "../../Common/MetalFeatureDrawable.swift",
                 "../../Common/MetalOneTextureTntDrawable.swift",
                 "../../Common/MetalRenderer.swift",

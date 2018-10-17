@@ -25,7 +25,7 @@ struct MapInfo {
     struct Schema {
         var type: SchemaType
         var aiProfile: String
-        var startPositions: [Point2D]
+        var startPositions: [Point2<Int>]
     }
     
     enum SchemaType {
@@ -101,23 +101,23 @@ extension MapInfo.Schema {
         startPositions = MapInfo.Schema.loadSpecialsStartPositions(from: info.subobjects["specials"])
     }
     
-    private static func loadSpecialsStartPositions(from specials: TdfParser.Object?) -> [Point2D] {
+    private static func loadSpecialsStartPositions(from specials: TdfParser.Object?) -> [Point2<Int>] {
         guard let specials = specials else { return [] }
         
         var maxNum = 0
-        var positions = [Int: Point2D]()
+        var positions = [Int: Point2<Int>]()
         
         for special in specials.subobjects where special.key.starts(with: "special") {
             guard let what = special.value["specialwhat"], what.starts(with: "StartPos") else { continue }
             let numString = what[what.index(what.startIndex, offsetBy: 8)...]
             guard let num = Int(numString) else { continue }
-            let position = Point2D(x: special.value.numericProperty("xpos", default: 0),
+            let position = Point2<Int>(x: special.value.numericProperty("xpos", default: 0),
                                    y: special.value.numericProperty("zpos", default: 0))
             positions[num] = position
             maxNum = max(num, maxNum)
         }
         
-        var startPositions = [Point2D](repeating: .zero, count: maxNum)
+        var startPositions = [Point2<Int>](repeating: .zero, count: maxNum)
         for i in startPositions.indices {
             guard let p = positions[i+1] else { continue }
             startPositions[i] = p

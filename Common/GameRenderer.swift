@@ -10,7 +10,7 @@ import Foundation
 
 
 struct GameViewState {
-    var viewport = CGRect.zero
+    var viewport = Rect4f.zero
     var objects: [GameViewObject] = []
 }
 
@@ -43,8 +43,8 @@ enum GameViewObject {
 
 struct GameViewUnit {
     var type: UnitTypeId
-    var position: Vertex3
-    var orientation: Vector3
+    var position: Vertex3f
+    var orientation: Vector3f
     var pose: UnitModel.Instance
 }
 extension GameViewUnit {
@@ -56,13 +56,13 @@ extension GameViewUnit {
     }
 }
 
-func viewport(ofSize size: Size2D, centeredOn start: Point2D, in map: MapModel) -> CGRect {
+func viewport(ofSize size: Size2<Int>, centeredOn start: Point2<Int>, in map: MapModel) -> Rect4<Int> {
     
-    var rect = Rect2D(origin: start, size: size)
+    var rect = Rect4(origin: start, size: size)
     rect.origin.x -= size.width / 2
     rect.origin.y -= size.height / 2
     
-    let bounds = Rect2D(size: map.resolution)
+    let bounds = Rect4(size: map.resolution)
     
     if rect.origin.x < bounds.origin.x {
         rect.origin.x = bounds.origin.x
@@ -77,5 +77,5 @@ func viewport(ofSize size: Size2D, centeredOn start: Point2D, in map: MapModel) 
         rect.origin.y = bounds.bottom - size.height
     }
     
-    return CGRect(rect)
+    return rect
 }

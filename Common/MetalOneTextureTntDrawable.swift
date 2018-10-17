@@ -114,11 +114,11 @@ extension MetalOneTextureTntDrawable {
         
         let texteureSize = vector_float2(texture.size2D)
         let viewportSize = vector_float2(viewState.viewport.size)
-        let (viewportPosition, quadOffset) = clamp(viewport: viewState.viewport, to: CGSize(texture.size2D))
+        let (viewportPosition, quadOffset) = clamp(viewport: viewState.viewport, to: Size2f(texture.size2D))
         
         let modelMatrix = matrix_float4x4.identity
         let viewMatrix = matrix_float4x4.translation(xy: quadOffset)
-        let projectionMatrix = matrix_float4x4.ortho(0, viewportSize.x, viewportSize.y, 0, -1024, 256)
+        let projectionMatrix = matrix_float4x4.ortho(Rect4(size: viewState.viewport.size), -1024, 256)
         
         let uniforms = uniformBuffer.next().contents.bindMemory(to: Uniforms.self, capacity: 1)
         uniforms.pointee.mvpMatrix = projectionMatrix * viewMatrix * modelMatrix
@@ -160,19 +160,19 @@ extension MetalOneTextureTntDrawable {
     
 }
 
-private func clamp(viewport: CGRect, to size: CGSize) -> (position: vector_float2, offset: vector_float2) {
-    let positionX: Float
-    let positionY: Float
-    let offsetX: Float
-    let offsetY: Float
+private func clamp(viewport: Rect4f, to size: Size2f) -> (position: vector_float2, offset: vector_float2) {
+    let positionX: GameFloat
+    let positionY: GameFloat
+    let offsetX: GameFloat
+    let offsetY: GameFloat
     
-    if viewport.minX < 0 { offsetX = Float(-viewport.minX); positionX = 0 }
-    else if viewport.maxX > size.width { offsetX = Float(size.width - viewport.maxX); positionX = Float(size.width - viewport.size.width) }
-    else { offsetX = 0; positionX = Float(viewport.minX) }
+    if viewport.minX < 0 { offsetX = -viewport.minX; positionX = 0 }
+    else if viewport.maxX > size.width { offsetX = size.width - viewport.maxX; positionX = size.width - viewport.size.width }
+    else { offsetX = 0; positionX = viewport.minX }
     
-    if viewport.minY < 0 { offsetY = Float(-viewport.minY); positionY = 0 }
-    else if viewport.maxY > size.height { offsetY = Float(size.height - viewport.maxY); positionY = Float(size.height - viewport.size.height) }
-    else { offsetY = 0; positionY = Float(viewport.minY) }
+    if viewport.minY < 0 { offsetY = -viewport.minY; positionY = 0 }
+    else if viewport.maxY > size.height { offsetY = size.height - viewport.maxY; positionY = size.height - viewport.size.height }
+    else { offsetY = 0; positionY = viewport.minY }
     
     return (vector_float2(positionX, positionY), vector_float2(offsetX, offsetY))
 }

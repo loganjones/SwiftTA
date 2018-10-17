@@ -73,10 +73,7 @@ class MetalUnitDrawable {
     
     func setupNextFrame(_ viewState: GameViewState, _ commandBuffer: MTLCommandBuffer) -> FrameState {
         
-        let viewportSize = vector_float2(Float(viewState.viewport.size.width), Float(viewState.viewport.size.height))
-        let viewportPosition = vector_float2(Float(viewState.viewport.origin.x), Float(viewState.viewport.origin.y))
-        
-        let projectionMatrix = matrix_float4x4.ortho(0, viewportSize.x, viewportSize.y, 0, -1024, 256)
+        let projectionMatrix = matrix_float4x4.ortho(Rect4(size: viewState.viewport.size), -1024, 256)
         
         var instances: [UnitTypeId: [Uniforms]] = [:]
         let uniforms = UnsafeMutablePointer<Uniforms>.allocate(capacity: 1)
@@ -88,7 +85,7 @@ class MetalUnitDrawable {
         for case let .unit(unit) in viewState.objects {
             guard let model = modelsTEMP[unit.type] else { continue }
             
-            let viewMatrix = matrix_float4x4.translation(Float(unit.position.x) - viewportPosition.x, Float(unit.position.y) - viewportPosition.y, 0) * matrix_float4x4.taPerspective
+            let viewMatrix = matrix_float4x4.translation(xy: vector_float2(unit.position.xy - viewState.viewport.origin), z: 0) * matrix_float4x4.taPerspective
             
             uniforms.pointee.vpMatrix = projectionMatrix * viewMatrix
             uniforms.pointee.normalMatrix = matrix_float3x3(topLeftOf: viewMatrix).inverse.transpose
@@ -326,13 +323,12 @@ private extension MetalUnitDrawable.Instance {
         let offset = vector_float3(piece.offset)
         let move = vector_float3(anims.move)
         
-        let rad2deg = Double.pi / 180
-        let sin = vector_float3( anims.turn.map { Darwin.sin($0 * rad2deg) } )
-        let cos = vector_float3( anims.turn.map { Darwin.cos($0 * rad2deg) } )
+        let deg2rad = GameFloat.pi / 180
+        let sin = vector_float3( anims.turn.map { ($0 * deg2rad).sine } )
+        let cos = vector_float3( anims.turn.map { ($0 * deg2rad).cosine } )
         
         let t = matrix_float4x4(columns: (
             vector_float4(
-                
                 cos.y * cos.z,
                 (sin.y * cos.x) + (sin.x * cos.y * sin.z),
                 (sin.x * sin.y) - (cos.x * cos.y * sin.z),

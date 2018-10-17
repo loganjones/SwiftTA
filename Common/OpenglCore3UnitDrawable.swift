@@ -11,7 +11,6 @@ import Foundation
 #if canImport(OpenGL)
 import OpenGL
 import OpenGL.GL3
-import GLKit
 #else
 import Cgl
 #endif
@@ -40,14 +39,10 @@ class OpenglCore3UnitDrawable {
     }
     
     func setupNextFrame(_ viewState: GameViewState) -> FrameState {
-        
-        let viewportSize = (x: Float(viewState.viewport.size.width), y: Float(viewState.viewport.size.height))
-        let viewportPosition = (x: Float(viewState.viewport.origin.x), y: Float(viewState.viewport.origin.y))
-        
         return FrameState(buildInstanceList(
             for: viewState.objects,
-            projectionMatrix: GLKMatrix4MakeOrtho(0, viewportSize.x, viewportSize.y, 0, -1024, 256),
-            viewportPosition: viewportPosition))
+            projectionMatrix: Matrix4x4f.ortho(Rect4f(size: viewState.viewport.size), -1024, 256),
+            viewportPosition: viewState.viewport.origin))
     }
     
     func drawFrame(_ frameState: FrameState) {
@@ -61,27 +56,27 @@ class OpenglCore3UnitDrawable {
             glBindTexture(GLenum(GL_TEXTURE_2D), model.texture.id)
             glBindVertexArray(model.buffer.vao)
             for instance in instances {
-                glUniformGLKMatrix4(program.uniform_vpMatrix, instance.vpMatrix)
-                glUniformGLKMatrix3(program.uniform_normalMatrix, instance.normalMatrix)
-                glUniformGLKMatrix4(program.uniform_pieces, instance.transformations)
+                glUniform4x4(program.uniform_vpMatrix, instance.vpMatrix)
+                glUniform3x3(program.uniform_normalMatrix, instance.normalMatrix)
+                glUniform4x4(program.uniform_pieces, instance.transformations)
                 glDrawArrays(GLenum(GL_TRIANGLES), 0, GLsizei(model.vertexCount))
             }
         }
         
     }
     
-    private func buildInstanceList(for objects: [GameViewObject], projectionMatrix: GLKMatrix4, viewportPosition: (x: Float, y: Float)) -> [UnitTypeId: [Instance]] {
+    private func buildInstanceList(for objects: [GameViewObject], projectionMatrix: Matrix4x4f, viewportPosition: Point2f) -> [UnitTypeId: [Instance]] {
         var instances: [UnitTypeId: [Instance]] = [:]
         
         for case let .unit(unit) in objects {
             guard let model = modelsTEMP[unit.type] else { continue }
             
-            let viewMatrix = GLKMatrix4MakeTranslation(Float(unit.position.x) - viewportPosition.x, Float(unit.position.y) - viewportPosition.y, 0) * GLKMatrix4.taPerspective
+            let viewMatrix = Matrix4x4f.translation(unit.position.x - viewportPosition.x, unit.position.y - viewportPosition.y, 0) * Matrix4x4f.taPerspective
             
             var draw = Instance(pieceCount: unit.pose.pieces.count)
             draw.set(
                 vpMatrix: projectionMatrix * viewMatrix,
-                normalMatrix: GLKMatrix3(topLeftOf: viewMatrix).inverseTranspose,
+                normalMatrix: Matrix3x3f(topLeftOf: viewMatrix).inverseTranspose,
                 transformations: unit.pose,
                 for: model)
             instances[unit.type, default: []].append(draw)
@@ -120,19 +115,19 @@ private extension OpenglCore3UnitDrawable.Model {
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), buffer.vbo[0])
         glBufferData(GLenum(GL_ARRAY_BUFFER), arrays.positions, GLenum(GL_STATIC_DRAW))
         let vertexAttrib: GLuint = 0
-        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_GAMEFLOAT), GLboolean(GL_FALSE), 0, nil)
         glEnableVertexAttribArray(vertexAttrib)
         
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), buffer.vbo[1])
         glBufferData(GLenum(GL_ARRAY_BUFFER), arrays.normals, GLenum(GL_STATIC_DRAW))
         let normalAttrib: GLuint = 1
-        glVertexAttribPointer(normalAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glVertexAttribPointer(normalAttrib, 3, GLenum(GL_GAMEFLOAT), GLboolean(GL_FALSE), 0, nil)
         glEnableVertexAttribArray(normalAttrib)
         
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), buffer.vbo[2])
         glBufferData(GLenum(GL_ARRAY_BUFFER), arrays.texCoords, GLenum(GL_STATIC_DRAW))
         let texAttrib: GLuint = 2
-        glVertexAttribPointer(texAttrib, 2, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glVertexAttribPointer(texAttrib, 2, GLenum(GL_GAMEFLOAT), GLboolean(GL_FALSE), 0, nil)
         glEnableVertexAttribArray(texAttrib)
         
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), buffer.vbo[3])
@@ -225,7 +220,7 @@ private func collectVertexAttributes(primitive: UnitModel.Primitive, pieceIndex:
     }
 }
 
-private func makeNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [Vertex3]) -> Vector3 {
+private func makeNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [Vertex3f]) -> Vector3f {
     let v1 = vertices[a]
     let v2 = vertices[b]
     let v3 = vertices[c]
@@ -235,9 +230,9 @@ private func makeNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [Vertex3]) ->
 }
 
 private struct VertexArrays {
-    var positions: [Vertex3]
-    var normals: [Vector3]
-    var texCoords: [Vertex2]
+    var positions: [Vertex3f]
+    var normals: [Vector3f]
+    var texCoords: [Vertex2f]
     var pieceIndices: [Int]
     
     init() {
@@ -257,10 +252,10 @@ private struct VertexArrays {
         pieceIndices.reserveCapacity(capacity)
     }
     
-    mutating func append(_ texCoord1: Vertex2, _ vertex1: Vertex3,
-                         _ texCoord2: Vertex2, _ vertex2: Vertex3,
-                         _ texCoord3: Vertex2, _ vertex3: Vertex3,
-                         _ normal: Vector3,
+    mutating func append(_ texCoord1: Vertex2f, _ vertex1: Vertex3f,
+                         _ texCoord2: Vertex2f, _ vertex2: Vertex3f,
+                         _ texCoord3: Vertex2f, _ vertex3: Vertex3f,
+                         _ normal: Vector3f,
                          _ pieceIndex: Int) {
         
         positions.append(vertex1)
@@ -319,34 +314,31 @@ private func makeTexture(_ textureAtlas: UnitTextureAtlas, _ palette: Palette, _
 
 private extension OpenglCore3UnitDrawable {
     struct Instance {
-        var vpMatrix: GLKMatrix4
-        var normalMatrix: GLKMatrix3
-        var transformations: [GLKMatrix4]
+        var vpMatrix: Matrix4x4f
+        var normalMatrix: Matrix3x3f
+        var transformations: [Matrix4x4f]
     }
 }
-
-private let plaformSin: (Double) -> Double = sin
-private let plaformCos: (Double) -> Double = cos
 
 private extension OpenglCore3UnitDrawable.Instance {
     
     init(pieceCount: Int) {
-        vpMatrix = GLKMatrix4Identity
-        normalMatrix = GLKMatrix3Identity
-        transformations = [GLKMatrix4](repeating: GLKMatrix4Identity, count: pieceCount)
+        vpMatrix = .identity
+        normalMatrix = .identity
+        transformations = [Matrix4x4f](repeating: .identity, count: pieceCount)
     }
     
-    mutating func set(vpMatrix: GLKMatrix4, normalMatrix: GLKMatrix3, transformations modelInstance: UnitModel.Instance, for model: UnitModel) {
+    mutating func set(vpMatrix: Matrix4x4f, normalMatrix: Matrix3x3f, transformations modelInstance: UnitModel.Instance, for model: UnitModel) {
         self.vpMatrix = vpMatrix
         self.normalMatrix = normalMatrix
         OpenglCore3UnitDrawable.Instance.applyPieceTransformations(model: model, instance: modelInstance, transformations: &transformations)
     }
     
-    static func applyPieceTransformations(model: UnitModel, instance: UnitModel.Instance, transformations: inout [GLKMatrix4]) {
-        applyPieceTransformations(pieceIndex: model.root, p: GLKMatrix4Identity, model: model, instance: instance, transformations: &transformations)
+    static func applyPieceTransformations(model: UnitModel, instance: UnitModel.Instance, transformations: inout [Matrix4x4f]) {
+        applyPieceTransformations(pieceIndex: model.root, p: .identity, model: model, instance: instance, transformations: &transformations)
     }
     
-    static func applyPieceTransformations(pieceIndex: UnitModel.Pieces.Index, p: GLKMatrix4, model: UnitModel, instance: UnitModel.Instance, transformations: inout [GLKMatrix4]) {
+    static func applyPieceTransformations(pieceIndex: UnitModel.Pieces.Index, p: Matrix4x4f, model: UnitModel, instance: UnitModel.Instance, transformations: inout [Matrix4x4f]) {
         let piece = model.pieces[pieceIndex]
         let anims = instance.pieces[pieceIndex]
         
@@ -355,14 +347,14 @@ private extension OpenglCore3UnitDrawable.Instance {
             return
         }
         
-        let offset = GLKVector3(piece.offset)
-        let move = GLKVector3(anims.move)
+        let offset = piece.offset
+        let move = anims.move
         
-        let rad2deg = Double.pi / 180
-        let sin = GLKVector3( anims.turn.map { plaformSin($0 * rad2deg) } )
-        let cos = GLKVector3( anims.turn.map { plaformCos($0 * rad2deg) } )
+        let deg2rad = GameFloat.pi / 180
+        let sin: Vector3f = anims.turn.map { ($0 * deg2rad).sine }
+        let cos: Vector3f = anims.turn.map { ($0 * deg2rad).cosine }
         
-        let t = GLKMatrix4Make(
+        let t = Matrix4x4f(
             cos.y * cos.z,
             (sin.y * cos.x) + (sin.x * cos.y * sin.z),
             (sin.x * sin.y) - (cos.x * cos.y * sin.z),
@@ -384,7 +376,7 @@ private extension OpenglCore3UnitDrawable.Instance {
             1
         )
         
-        let pt = GLKMatrix4Multiply(p, t)
+        let pt = p * t
         transformations[pieceIndex] = pt
         
         for child in piece.children {
@@ -392,9 +384,9 @@ private extension OpenglCore3UnitDrawable.Instance {
         }
     }
     
-    static func applyPieceDiscard(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, transformations: inout [GLKMatrix4]) {
+    static func applyPieceDiscard(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, transformations: inout [Matrix4x4f]) {
         
-        transformations[pieceIndex] = GLKMatrix4MakeTranslation(0, 0, -1000)
+        transformations[pieceIndex] = Matrix4x4f.translation(0, 0, -1000)
         
         let piece = model.pieces[pieceIndex]
         for child in piece.children {

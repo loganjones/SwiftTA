@@ -12,7 +12,7 @@ import Foundation
 struct MapFeatureInfo {
     
     var name: String
-    var footprint: Size2D
+    var footprint: Size2<Int>
     var height: Int
     
     var world: String?
@@ -39,7 +39,7 @@ extension MapFeatureInfo {
     private init(name: String, object: TdfParser.Object) throws {
         self.name = name
         
-        footprint = Size2D(width: object.numericProperty("footprintx", default: 1),
+        footprint = Size2<Int>(width: object.numericProperty("footprintx", default: 1),
                            height: object.numericProperty("footprintz", default: 1))
         height = object.numericProperty("height", default: 0)
         

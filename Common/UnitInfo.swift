@@ -17,7 +17,7 @@ struct UnitInfo {
     var title: String = ""
     var description: String = ""
     
-    var footprint: Size2D = Size2D(width: 1 , height: 1)
+    var footprint: Size2<Int> = Size2<Int>(width: 1 , height: 1)
     var capabilities: Capabilities = .defaults
     var categories: Set<String> = []
     var tedClass: String = ""
@@ -75,7 +75,7 @@ extension UnitInfo {
         
         let footprintX = try info.requiredStringProperty("footprintx")
         let footprintZ = try info.requiredStringProperty("footprintz")
-        footprint = Size2D(width: Int(footprintX) ?? 1, height: Int(footprintZ) ?? 1)
+        footprint = Size2<Int>(width: Int(footprintX) ?? 1, height: Int(footprintZ) ?? 1)
         
         capabilities = .defaults
         

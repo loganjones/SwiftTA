@@ -118,7 +118,7 @@ extension Palette {
 
 extension Palette {
     
-    func mapIndicesRgb(_ imageIndices: Data, size: Size2D) -> Data {
+    func mapIndicesRgb(_ imageIndices: Data, size: Size2<Int>) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 3)
         pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
@@ -138,7 +138,7 @@ extension Palette {
         return pixelData
     }
     
-    func mapIndicesRgbFlipped(_ imageIndices: Data, size: Size2D) -> Data {
+    func mapIndicesRgbFlipped(_ imageIndices: Data, size: Size2<Int>) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 3)
         pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
@@ -162,7 +162,7 @@ extension Palette {
         return pixelData
     }
     
-    func mapIndicesRgba(_ imageIndices: Data, size: Size2D) -> Data {
+    func mapIndicesRgba(_ imageIndices: Data, size: Size2<Int>) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 4)
         pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
@@ -183,7 +183,7 @@ extension Palette {
         return pixelData
     }
     
-    func mapIndicesRgbaFlipped(_ imageIndices: Data, size: Size2D) -> Data {
+    func mapIndicesRgbaFlipped(_ imageIndices: Data, size: Size2<Int>) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 4)
         pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in

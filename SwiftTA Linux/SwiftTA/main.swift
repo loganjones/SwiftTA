@@ -67,11 +67,11 @@ func glfwGetGameContext(for window: OpaquePointer?) -> GameBox {
 
 
 /* new window size or exposure */
-func reshape(window: OpaquePointer?, to viewportSize: Size2D)
+func reshape(window: OpaquePointer?, to viewportSize: Size2<Int>)
 {
     let game = glfwGetGameContext(for: window)
     
-    game.renderer.viewState.viewport.size = CGSize(viewportSize)
+    game.renderer.viewState.viewport.size = Size2f(viewportSize)
     
     glViewport(0, 0, GLsizei(viewportSize.width), GLsizei(viewportSize.height))
 }
@@ -122,7 +122,7 @@ func main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
     
-    let initialWindowSize = Size2D(1024, 768)
+    let initialWindowSize = Size2<Int>(1024, 768)
     guard let window = glfwCreateWindow(
         Int32(initialWindowSize.width),
         Int32(initialWindowSize.height),
@@ -166,7 +166,7 @@ func main() {
     }
     glfwSetWindowSizeCallback(window) {
         (win, width, height) in
-        reshape(window: win, to: Size2D(Int(width), Int(height)))
+        reshape(window: win, to: Size2<Int>(Int(width), Int(height)))
     }
     
     reshape(window: window, to: initialWindowSize)

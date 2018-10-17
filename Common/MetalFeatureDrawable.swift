@@ -66,12 +66,9 @@ class MetalFeatureDrawable {
     
     func setupNextFrame(_ viewState: GameViewState, _ commandBuffer: MTLCommandBuffer) {
         
-        let viewportSize = vector_float2(Float(viewState.viewport.size.width), Float(viewState.viewport.size.height))
-        let viewportPosition = vector_float2(Float(viewState.viewport.origin.x), Float(viewState.viewport.origin.y))
-        
         let modelMatrix = matrix_float4x4.identity
-        let viewMatrix = matrix_float4x4.translation(-viewportPosition.x, -viewportPosition.y, 0)
-        let projectionMatrix = matrix_float4x4.ortho(0, viewportSize.x, viewportSize.y, 0, -1024, 256)
+        let viewMatrix = matrix_float4x4.translation(xy: -vector_float2(viewState.viewport.origin), z: 0)
+        let projectionMatrix = matrix_float4x4.ortho(Rect4(size: viewState.viewport.size), -1024, 256)
         
         let uniforms = uniformBuffer.next().contents.bindMemory(to: Uniforms.self, capacity: 1)
         uniforms.pointee.mvpMatrix = projectionMatrix * viewMatrix * modelMatrix
@@ -127,7 +124,7 @@ private extension MetalFeatureDrawable {
     struct AnimatedFeature {
         var texture: MTLTexture
         var frames: Frame
-        typealias Frame = (slice: Int, offset: Point2D)
+        typealias Frame = (slice: Int, offset: Point2<Int>)
     }
     
     func loadFeatures(_ featureInfo: MapFeatureInfo.FeatureInfoCollection, andInstancesFrom map: MapModel, filesystem: FileSystem) -> (features: [Feature], shadows: [Feature]) {
@@ -219,7 +216,7 @@ private extension MetalFeatureDrawable {
         return featureOccurrences
     }
     
-    func buildInstances(of feature: (size: Size2D, offset: Point2D, footprint: Size2D), from occurrenceIndices: [Int], in map: MapModel) -> (MTLBuffer, Int)? {
+    func buildInstances(of feature: (size: Size2<Int>, offset: Point2<Int>, footprint: Size2<Int>), from occurrenceIndices: [Int], in map: MapModel) -> (MTLBuffer, Int)? {
         
         let vertexCount = occurrenceIndices.count * 6
         guard let vertexBuffer = device.makeBuffer(length: MemoryLayout<Vertex>.stride * vertexCount, options: [.storageModeShared]) else { return nil }
@@ -231,7 +228,7 @@ private extension MetalFeatureDrawable {
                 .center(inFootprint: feature.footprint)
                 .offset(by: feature.offset)
                 .adjust(forHeight: map.heightMap[i])
-                .makeRect(size: feature.size)
+                .makeRect(size: Size2f(feature.size))
             
             createRect(boundingBox, in: vertices)
             vertices += 6
@@ -251,7 +248,7 @@ private extension MetalFeatureDrawable.Feature {
         }
     }
     
-    var size: Size2D {
+    var size: Size2<Int> {
         switch self {
         case .static(let f):
             return f.texture.size2D
@@ -263,28 +260,29 @@ private extension MetalFeatureDrawable.Feature {
 }
 
 private extension MapModel {
-    func worldPosition(ofMapIndex index: Int) -> Point2D {
-        return Point2D(index: index, stride: self.mapSize.width) * 16
+    func worldPosition(ofMapIndex index: Int) -> Point2<Int> {
+        return Point2<Int>(index: index, stride: self.mapSize.width) * 16
     }
 }
-private extension Point2D {
+private extension Point2 where Element == Int {
     
-    func center(inFootprint footprint: Size2D) -> Point2D {
-        return self + (footprint * 8)
+    func center(inFootprint footprint: Size2<Int>) -> Point2<Int> {
+        return self + Point2(footprint * 8)
     }
     
-    func offset(by offset: Point2D) -> Point2D {
-        return self - offset
+    func offset(by offset: Point2<Int>) -> Point2<Int> {
+        return Point2(self - offset)
     }
     
-    func adjust(forHeight height: Int) -> CGPoint {
-        let h = CGFloat(height) / 2.0
-        return CGPoint(x: CGFloat(self.x), y: CGFloat(self.y) - h)
+    func adjust(forHeight height: Int) -> Point2f {
+        var p = Point2f(self)
+        p.y -= GameFloat(height) / 2.0
+        return p
     }
     
 }
 
-private func createRect(_ rect: CGRect, in vertices: UnsafeMutablePointer<Vertex>) {
+private func createRect(_ rect: Rect4f, in vertices: UnsafeMutablePointer<Vertex>) {
     
     let x = Float(rect.origin.x)
     let y = Float(rect.origin.y)

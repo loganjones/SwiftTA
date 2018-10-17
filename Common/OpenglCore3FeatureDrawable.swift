@@ -11,7 +11,6 @@ import Foundation
 #if canImport(OpenGL)
 import OpenGL
 import OpenGL.GL3
-import GLKit
 #else
 import Cgl
 #endif
@@ -35,12 +34,12 @@ class OpenglCore3FeatureDrawable {
     
     func setupNextFrame(_ viewState: GameViewState) {
         
-        let modelMatrix = GLKMatrix4Identity
-        let viewMatrix = GLKMatrix4MakeTranslation(Float(-viewState.viewport.origin.x), Float(-viewState.viewport.origin.y), 0)
-        let projectionMatrix = GLKMatrix4MakeOrtho(0, Float(viewState.viewport.size.width), Float(viewState.viewport.size.height), 0, -1024, 256)
+        let modelMatrix = Matrix4x4f.identity
+        let viewMatrix = Matrix4x4f.translation(-Vector2f(viewState.viewport.origin), 0)
+        let projectionMatrix = Matrix4x4f.ortho(Rect4f(size: viewState.viewport.size), -1024, 256)
         
         glUseProgram(program.id)
-        glUniformGLKMatrix4(program.uniform_mvp, projectionMatrix * viewMatrix * modelMatrix)
+        glUniform4x4(program.uniform_mvp, projectionMatrix * viewMatrix * modelMatrix)
         glUniform1i(program.uniform_texture, 0)
     }
     
@@ -95,16 +94,16 @@ private extension OpenglCore3FeatureDrawable {
     
     struct StaticFeature {
         var texture: OpenglTextureResource
-        var textureSize: Size2D
+        var textureSize: Size2<Int>
         var instancesVertexBuffer: OpenglVertexBufferResource
         var instancesVertexCount: Int
     }
     
     struct AnimatedFeature {
         var texture: OpenglTextureResource
-        var textureSize: Size2D
+        var textureSize: Size2<Int>
         var frames: Frame
-        typealias Frame = (slice: Int, offset: Point2D)
+        typealias Frame = (slice: Int, offset: Point2<Int>)
     }
     
     func loadFeatures(_ featureInfo: MapFeatureInfo.FeatureInfoCollection, andInstancesFrom map: MapModel, filesystem: FileSystem) -> (features: [Feature], shadows: [Feature]) {
@@ -207,10 +206,10 @@ private extension OpenglCore3FeatureDrawable {
         return featureOccurrences
     }
     
-    func buildInstances(of feature: (size: Size2D, offset: Point2D, footprint: Size2D), from occurrenceIndices: [Int], in map: MapModel) -> (OpenglVertexBufferResource, Int)? {
+    func buildInstances(of feature: (size: Size2<Int>, offset: Point2<Int>, footprint: Size2<Int>), from occurrenceIndices: [Int], in map: MapModel) -> (OpenglVertexBufferResource, Int)? {
         
         let vertexCount = occurrenceIndices.count * 6
-        var vertices = (position: [Vertex3](repeating: .zero, count: vertexCount), texCoord: [Vector2](repeating: .zero, count: vertexCount))
+        var vertices = (position: [Vertex3f](repeating: .zero, count: vertexCount), texCoord: [Vector2f](repeating: .zero, count: vertexCount))
         var index = 0
         
         for i in occurrenceIndices {
@@ -219,7 +218,7 @@ private extension OpenglCore3FeatureDrawable {
                 .center(inFootprint: feature.footprint)
                 .offset(by: feature.offset)
                 .adjust(forHeight: map.heightMap[i])
-                .makeRect(size: feature.size)
+                .makeRect(size: Size2f(feature.size))
             
             createRect(boundingBox, in: &vertices, &index)
             index += 6
@@ -237,13 +236,13 @@ private extension OpenglCore3FeatureDrawable {
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), vertexBuffer.vbo[0])
         glBufferData(GLenum(GL_ARRAY_BUFFER), vertices.position, GLenum(GL_STATIC_DRAW))
         let vertexAttrib: GLuint = 0
-        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_GAMEFLOAT), GLboolean(GL_FALSE), 0, nil)
         glEnableVertexAttribArray(vertexAttrib)
         
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), vertexBuffer.vbo[1])
         glBufferData(GLenum(GL_ARRAY_BUFFER), vertices.texCoord, GLenum(GL_STATIC_DRAW))
         let texAttrib: GLuint = 1
-        glVertexAttribPointer(texAttrib, 2, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glVertexAttribPointer(texAttrib, 2, GLenum(GL_GAMEFLOAT), GLboolean(GL_FALSE), 0, nil)
         glEnableVertexAttribArray(texAttrib)
         
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0)
@@ -263,7 +262,7 @@ private extension OpenglCore3FeatureDrawable.Feature {
         }
     }
     
-    var size: Size2D {
+    var size: Size2<Int> {
         switch self {
         case .static(let f):
             return f.textureSize
@@ -275,48 +274,49 @@ private extension OpenglCore3FeatureDrawable.Feature {
 }
 
 private extension MapModel {
-    func worldPosition(ofMapIndex index: Int) -> Point2D {
-        return Point2D(index: index, stride: self.mapSize.width) * 16
+    func worldPosition(ofMapIndex index: Int) -> Point2<Int> {
+        return Point2<Int>(index: index, stride: self.mapSize.width) * 16
     }
 }
-private extension Point2D {
+private extension Point2 where Element == Int {
     
-    func center(inFootprint footprint: Size2D) -> Point2D {
-        return self + (footprint * 8)
+    func center(inFootprint footprint: Size2<Int>) -> Point2<Int> {
+        return self + Point2(footprint * 8)
     }
     
-    func offset(by offset: Point2D) -> Point2D {
-        return self - offset
+    func offset(by offset: Point2<Int>) -> Point2<Int> {
+        return Point2(self - offset)
     }
     
-    func adjust(forHeight height: Int) -> CGPoint {
-        let h = CGFloat(height) / 2.0
-        return CGPoint(x: CGFloat(self.x), y: CGFloat(self.y) - h)
+    func adjust(forHeight height: Int) -> Point2f {
+        var p = Point2f(self)
+        p.y -= GameFloat(height) / 2.0
+        return p
     }
     
 }
 
-private func createRect(_ rect: CGRect, in vertices: inout (position: [Vertex3], texCoord: [Vector2]), _ index: inout Int) {
+private func createRect(_ rect: Rect4f, in vertices: inout (position: [Vertex3f], texCoord: [Vector2f]), _ index: inout Int) {
     
-    let x = Double(rect.origin.x)
-    let y = Double(rect.origin.y)
-    let z = Double(rect.maxY) / (32000.0 / 256.0)//Double(10)
-    let w = Double(rect.size.width)
-    let h = Double(rect.size.height)
+    let x = rect.origin.x
+    let y = rect.origin.y
+    let z = rect.maxY / (32000.0 / 256.0)//Double(10)
+    let w = rect.size.width
+    let h = rect.size.height
     
-    vertices.position[index+0] = Vertex3(x+0, y+0, z)
-    vertices.texCoord[index+0] = Vector2(0, 0)
-    vertices.position[index+1] = Vertex3(x+0, y+h, z)
-    vertices.texCoord[index+1] = Vector2(0, 1)
-    vertices.position[index+2] = Vertex3(x+w, y+h, z)
-    vertices.texCoord[index+2] = Vector2(1, 1)
+    vertices.position[index+0] = Vertex3f(x+0, y+0, z)
+    vertices.texCoord[index+0] = Vector2f(0, 0)
+    vertices.position[index+1] = Vertex3f(x+0, y+h, z)
+    vertices.texCoord[index+1] = Vector2f(0, 1)
+    vertices.position[index+2] = Vertex3f(x+w, y+h, z)
+    vertices.texCoord[index+2] = Vector2f(1, 1)
     
-    vertices.position[index+3] = Vertex3(x+0, y+0, z)
-    vertices.texCoord[index+3] = Vector2(0, 0)
-    vertices.position[index+4] = Vertex3(x+w, y+h, z)
-    vertices.texCoord[index+4] = Vector2(1, 1)
-    vertices.position[index+5] = Vertex3(x+w, y+0, z)
-    vertices.texCoord[index+5] = Vector2(1, 0)
+    vertices.position[index+3] = Vertex3f(x+0, y+0, z)
+    vertices.texCoord[index+3] = Vector2f(0, 0)
+    vertices.position[index+4] = Vertex3f(x+w, y+h, z)
+    vertices.texCoord[index+4] = Vector2f(1, 1)
+    vertices.position[index+5] = Vertex3f(x+w, y+0, z)
+    vertices.texCoord[index+5] = Vector2f(1, 0)
 }
 
 

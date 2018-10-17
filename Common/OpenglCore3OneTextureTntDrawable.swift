@@ -11,7 +11,6 @@ import Foundation
 #if canImport(OpenGL)
 import OpenGL
 import OpenGL.GL3
-import GLKit
 #else
 import Cgl
 #endif
@@ -21,7 +20,7 @@ class OpenglCore3OneTextureTntDrawable: OpenglCore3TntDrawable {
     
     private let program: TntProgram
     private let texture: OpenglTextureResource
-    private let textureSize: Size2D
+    private let textureSize: Size2<Int>
     private let quad: TntQuadModel
     
     init(for map: MapModel, from filesystem: FileSystem) throws {
@@ -44,14 +43,14 @@ class OpenglCore3OneTextureTntDrawable: OpenglCore3TntDrawable {
     }
     
     func setupNextFrame(_ viewState: GameViewState) {
-        let (viewportPosition, quadOffset) = clamp(viewport: viewState.viewport, to: CGSize(textureSize))
+        let (viewportPosition, quadOffset) = clamp(viewport: viewState.viewport, to: Size2f(textureSize))
         
-        let modelMatrix = GLKMatrix4Identity
-        let viewMatrix = GLKMatrix4MakeTranslation(Float(quadOffset.x), Float(quadOffset.y), 0)
-        let projectionMatrix = GLKMatrix4MakeOrtho(0, Float(viewState.viewport.size.width), Float(viewState.viewport.size.height), 0, -1024, 256)
+        let modelMatrix = Matrix4x4f.identity
+        let viewMatrix = Matrix4x4f.translation(quadOffset, 0)
+        let projectionMatrix = Matrix4x4f.ortho(Rect4f(size: viewState.viewport.size), -1024, 256)
         
         glUseProgram(program.id)
-        glUniformGLKMatrix4(program.uniform_mvp, projectionMatrix * viewMatrix * modelMatrix)
+        glUniform4x4(program.uniform_mvp, projectionMatrix * viewMatrix * modelMatrix)
         glUniform1i(program.uniform_texture, 0)
         
         quad.setupNextFrame(viewportPosition, Vector2(viewState.viewport.size), Vector2(textureSize))
@@ -77,21 +76,21 @@ class OpenglCore3OneTextureTntDrawable: OpenglCore3TntDrawable {
     
 }
 
-private func clamp(viewport: CGRect, to size: CGSize) -> (position: Vertex2, offset: Vector2) {
-    let positionX: Double
-    let positionY: Double
-    let offsetX: Double
-    let offsetY: Double
+private func clamp(viewport: Rect4f, to size: Size2f) -> (position: Point2f, offset: Vector2f) {
+    let positionX: GameFloat
+    let positionY: GameFloat
+    let offsetX: GameFloat
+    let offsetY: GameFloat
     
-    if viewport.minX < 0 { offsetX = Double(-viewport.minX); positionX = 0 }
-    else if viewport.maxX > size.width { offsetX = Double(size.width - viewport.maxX); positionX = Double(size.width - viewport.size.width) }
-    else { offsetX = 0; positionX = Double(viewport.minX) }
+    if viewport.minX < 0 { offsetX = -viewport.minX; positionX = 0 }
+    else if viewport.maxX > size.width { offsetX = size.width - viewport.maxX; positionX = size.width - viewport.size.width }
+    else { offsetX = 0; positionX = viewport.minX }
     
-    if viewport.minY < 0 { offsetY = Double(-viewport.minY); positionY = 0 }
-    else if viewport.maxY > size.height { offsetY = Double(size.height - viewport.maxY); positionY = Double(size.height - viewport.size.height) }
-    else { offsetY = 0; positionY = Double(viewport.minY) }
+    if viewport.minY < 0 { offsetY = -viewport.minY; positionY = 0 }
+    else if viewport.maxY > size.height { offsetY = size.height - viewport.maxY; positionY = size.height - viewport.size.height }
+    else { offsetY = 0; positionY = viewport.minY }
     
-    return (Vertex2(positionX, positionY), Vector2(offsetX, offsetY))
+    return (Point2f(positionX, positionY), Vector2f(offsetX, offsetY))
 }
 
 // MARK:- Texture Loading
@@ -232,8 +231,8 @@ private class TntQuadModel {
     private let vbo: [GLuint]
     
     init() {
-        let vertices = [Vertex3](repeating: .zero, count: 4)
-        let texCoords = [Vector2](repeating: .zero, count: 4)
+        let vertices = [Vertex3f](repeating: .zero, count: 4)
+        let texCoords = [Vector2f](repeating: .zero, count: 4)
         
         var vao: GLuint = 0
         glGenVertexArrays(1, &vao)
@@ -246,13 +245,13 @@ private class TntQuadModel {
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[0])
         glBufferData(GLenum(GL_ARRAY_BUFFER), vertices, GLenum(GL_STATIC_DRAW))
         let vertexAttrib: GLuint = 0
-        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_GAMEFLOAT), GLboolean(GL_FALSE), 0, nil)
         glEnableVertexAttribArray(vertexAttrib)
         
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[1])
         glBufferData(GLenum(GL_ARRAY_BUFFER), texCoords, GLenum(GL_STATIC_DRAW))
         let texAttrib: GLuint = 1
-        glVertexAttribPointer(texAttrib, 2, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glVertexAttribPointer(texAttrib, 2, GLenum(GL_GAMEFLOAT), GLboolean(GL_FALSE), 0, nil)
         glEnableVertexAttribArray(texAttrib)
         
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0)
@@ -270,7 +269,7 @@ private class TntQuadModel {
         glDeleteVertexArrays(1, &vao)
     }
     
-    func setupNextFrame(_ viewportPosition: Vertex2, _ viewportSize: Vector2, _ texteureSize: Vector2) {
+    func setupNextFrame(_ viewportPosition: Vertex2f, _ viewportSize: Vector2f, _ texteureSize: Vector2f) {
         let vx = viewportSize.x
         let vy = viewportSize.y
         let tx = viewportPosition.x / texteureSize.x
@@ -278,17 +277,17 @@ private class TntQuadModel {
         let tw = viewportSize.x / texteureSize.x
         let th = viewportSize.y / texteureSize.y
         
-        let vertices: [Vertex3] = [
-            Vertex3( 0,  0, 0),
-            Vertex3( 0, vy, 0),
-            Vertex3(vx,  0, 0),
-            Vertex3(vx, vy, 0),
+        let vertices: [Vertex3f] = [
+            Vertex3f( 0,  0, 0),
+            Vertex3f( 0, vy, 0),
+            Vertex3f(vx,  0, 0),
+            Vertex3f(vx, vy, 0),
         ]
-        let texCoords: [Vector2] = [
-            Vector2(tx, ty),
-            Vector2(tx, ty+th),
-            Vector2(tx+tw, ty),
-            Vector2(tx+tw, ty+th),
+        let texCoords: [Vector2f] = [
+            Vector2f(tx, ty),
+            Vector2f(tx, ty+th),
+            Vector2f(tx+tw, ty),
+            Vector2f(tx+tw, ty+th),
         ]
         
         glBindVertexArray(vao)
