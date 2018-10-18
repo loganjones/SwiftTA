@@ -116,8 +116,8 @@ private extension TaMapTileView {
     
     final func drawTiles(of map: TaMapModel, in rect: NSRect, with context: CGContext) {
         let tileSize = map.tileSet.tileSize
-        let rows = map.tileRows(in: rect)
-        let columns = map.tileColumns(in: rect)
+        let rows = map.tileRows(in: Rect4f(rect))
+        let columns = map.tileColumns(in: Rect4f(rect))
         map.tileIndexMap.eachIndex(inColumns: columns, rows: rows) { (index, column, row) in
             let tile = tileSet[index]
             context.draw(tile, in: CGRect(x: column * tileSize.width, y: row * tileSize.height, width: tile.width, height: tile.height))
@@ -256,8 +256,8 @@ private extension TakMapTileView {
     final func drawTiles(of map: TakMapModel, in rect: NSRect, with context: CGContext) {
         
         let tileSize = map.tileSize
-        let rows = map.tileRows(in: rect)
-        let columns = map.tileColumns(in: rect)
+        let rows = map.tileRows(in: Rect4f(rect))
+        let columns = map.tileColumns(in: Rect4f(rect))
         
         map.tileIndexMap.eachTile(inColumns: columns, rows: rows) { (name, imageColumn, imageRow, mapColumn, mapRow) in
             

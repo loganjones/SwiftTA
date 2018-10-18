@@ -11,9 +11,6 @@
       location = "group:TAassets/TAassets.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:ModelView/ModelView.xcodeproj">
-   </FileRef>
-   <FileRef
       location = "group:HPIView/HPIView.xcodeproj">
    </FileRef>
 </Workspace>
