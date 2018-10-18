@@ -7,7 +7,6 @@
 
 import Foundation
 import OpenGL
-import GLKit
 import Darwin
 
 var model = Data()
@@ -56,13 +55,13 @@ struct Buffers {
     }
 }
 
-func constructPiece(atOffset offset: Int, in memory: UnsafePointer<UInt8>, offsetFromParent: Vector3 = .zero, buffers: inout Buffers) {
+func constructPiece(atOffset offset: Int, in memory: UnsafePointer<UInt8>, offsetFromParent: Vector3f = .zero, buffers: inout Buffers) {
     
     let object = UnsafeRawPointer(memory + offset).bindMemory(to: TA_3DO_OBJECT.self, capacity: 1).pointee
     //let name = String(cString: memory + object.offsetToObjectName)
     
     let offsetFromParent2 = offsetFromParent + object.offsetFromParent
-    let vertices = UnsafeRawPointer(memory + object.offsetToVertexArray).bindMemoryBuffer(to: TA_3DO_VERTEX.self, capacity: Int(object.numberOfVertexes)).map({ Vertex3($0) + offsetFromParent2 })
+    let vertices = UnsafeRawPointer(memory + object.offsetToVertexArray).bindMemoryBuffer(to: TA_3DO_VERTEX.self, capacity: Int(object.numberOfVertexes)).map({ Vertex3f($0) + offsetFromParent2 })
     /*
     let textures = UnsafeRawPointer(memory + object.offsetToPrimitiveArray).bindMemoryBuffer(to: TA_3DO_PRIMITIVE.self, capacity: Int(object.numberOfPrimitives)).map({
         primitive in
@@ -201,9 +200,9 @@ func glGetProgramInfoLog(_ program: GLuint) -> String? {
 func draw() {
     glClear(GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT))
     
-    var projection = GLKMatrix4MakeFrustum(-1.0, 1.0, -aspectRatio, aspectRatio, 5.0, 1024)
-    var view = GLKMatrix4MakeTranslation(0, -10, zPan)
-    var model = GLKMatrix4Rotate(GLKMatrix4Identity, view_roty * (π / 180.0), 0, 1, 0);
+    var projection = Matrix4x4fMakeFrustum(-1.0, 1.0, -aspectRatio, aspectRatio, 5.0, 1024)
+    var view = Matrix4x4fMakeTranslation(0, -10, zPan)
+    var model = Matrix4x4fRotate(Matrix4x4fIdentity, view_roty * (π / 180.0), 0, 1, 0);
     var lightPosition = GLKVector3Make(5, 5, 10)
     var viewPosition = GLKVector3Make(0, 10, -zPan)
     

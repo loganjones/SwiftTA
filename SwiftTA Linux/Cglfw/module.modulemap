@@ -1,0 +1,5 @@
+module Cglfw [system] {
+  header "shim.h"
+  link "glfw"
+  export *
+}

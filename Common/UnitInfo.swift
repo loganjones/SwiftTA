@@ -12,11 +12,12 @@ struct UnitInfo {
     var name: String = ""
     var side: String = ""
     var object: String = ""
+    var corpse: String?
     
     var title: String = ""
     var description: String = ""
     
-    var footprint: Size2D = Size2D(width: 1 , height: 1)
+    var footprint: Size2<Int> = Size2<Int>(width: 1 , height: 1)
     var capabilities: Capabilities = .defaults
     var categories: Set<String> = []
     var tedClass: String = ""
@@ -70,10 +71,11 @@ extension UnitInfo {
         description = try info.requiredStringProperty("description")
         categories = Set(try info.requiredStringProperty("category").components(separatedBy: " "))
         tedClass = try info.requiredStringProperty("tedclass")
+        corpse = info["corpse"]
         
         let footprintX = try info.requiredStringProperty("footprintx")
         let footprintZ = try info.requiredStringProperty("footprintz")
-        footprint = Size2D(width: Int(footprintX) ?? 1, height: Int(footprintZ) ?? 1)
+        footprint = Size2<Int>(width: Int(footprintX) ?? 1, height: Int(footprintZ) ?? 1)
         
         capabilities = .defaults
         
@@ -119,5 +121,36 @@ extension UnitInfo {
     var isBuilder: Bool { return capabilities.contains(.builder) }
     var canFly: Bool { return capabilities.contains(.flying) }
     var canHover: Bool { return capabilities.contains(.hover) }
+    
+}
+
+// MARK: Load Units
+
+extension UnitInfo {
+    
+    static func collectUnits(from filesystem: FileSystem) -> [UnitInfo] {
+        
+        guard let unitsDirectory = filesystem.root[directory: "units"] else { return [] }
+        
+        let units = unitsDirectory.files(withExtension: "fbi")
+            .compactMap { try? filesystem.openFile($0) }
+            .compactMap { try? UnitInfo(contentsOf: $0) }
+        
+        return units
+    }
+    
+    static func collectUnits(from filesystem: FileSystem, onlyAllowing allowedUnits: [String]) -> [UnitInfo] {
+        
+        guard let unitsDirectory = filesystem.root[directory: "units"] else { return [] }
+        
+        let allowed = Set(allowedUnits.map { $0.lowercased() })
+        
+        let units = unitsDirectory.files(withExtension: "fbi")
+            .filter { allowed.contains($0.baseName.lowercased()) }
+            .compactMap { try? filesystem.openFile($0) }
+            .compactMap { try? UnitInfo(contentsOf: $0) }
+        
+        return units
+    }
     
 }

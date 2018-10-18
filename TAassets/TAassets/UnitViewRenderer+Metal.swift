@@ -188,7 +188,7 @@ private extension BasicMetalUnitViewRenderer {
             vertexFunctionName: "gridVertexShader",
             fragmentFunctionName: "gridFragmentShader")
         
-        grid = try MetalGrid(size: Size2D(width: 16, height: 16), device: device)
+        grid = try MetalGrid(size: Size2(16, 16), device: device)
         
         let depthStateDesciptor = MTLDepthStencilDescriptor()
         depthStateDesciptor.depthCompareFunction = MTLCompareFunction.less
@@ -248,7 +248,7 @@ private extension BasicMetalUnitViewRenderer {
     
     class func makeTexture(_ device: MTLDevice, _ textureAtlas: UnitTextureAtlas, _ data: Data) throws -> MTLTexture {
         
-        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba8Unorm, width: textureAtlas.size.width, height: textureAtlas.size.height, mipmapped: false)
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba8Unorm_srgb, width: textureAtlas.size.width, height: textureAtlas.size.height, mipmapped: false)
         guard let texture = device.makeTexture(descriptor: descriptor) else {
             throw TextureError.badTextureDescriptor
         }
@@ -492,7 +492,7 @@ private extension MetalModel {
         let offset = vector_float3(piece.offset)
         let move = vector_float3(anims.move)
         
-        let rad2deg = Double.pi / 180
+        let rad2deg = GameFloat.pi / 180
         let sin = vector_float3( anims.turn.map { Darwin.sin($0 * rad2deg) } )
         let cos = vector_float3( anims.turn.map { Darwin.cos($0 * rad2deg) } )
         
@@ -552,7 +552,7 @@ private class MetalGrid {
     let buffer: MTLBuffer
     let vertexCount: Int
     
-    init(size: Size2D, gridSpacing: Int = ModelViewState.gridSize, device: MTLDevice) throws {
+    init(size: Size2<Int>, gridSpacing: Int = ModelViewState.gridSize, device: MTLDevice) throws {
         
         let vertexCount = (size.width * 2) + (size.height * 2) + (size.area * 4)
         let bufferLength = vertexCount * MemoryLayout<ModelMetalRenderer_GridVertex>.size

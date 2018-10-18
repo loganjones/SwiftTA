@@ -205,7 +205,7 @@ private func stopSpin(execution: ScriptExecutionContext) throws {
     
     if let found = execution.process.findSpinAnimation(of: try execution.process.pieceIndex(at: piece), around: try execution.thread.makeAxis(for: axis)) {
         var spin = found.spin
-        spin.acceleration = decceleration.angularValue * Double.pi/180.0
+        spin.acceleration = decceleration.angularValue * GameFloat.pi/180.0
         execution.process.animations[found.index] = .spinDown(spin)
     }
     
@@ -413,9 +413,9 @@ private func sleep(execution: ScriptExecutionContext) throws {
     let duration = try execution.thread.stack.pop()
     let time = execution.machine.getTime()
     
-    execution.thread.status = .sleeping(time + (Double(duration) / 1500))
+    execution.thread.status = .sleeping(time + (Double(duration) / 1500.0))
     
-    //print("[\(execution.thread.id)] sleep \(sleep) =~ \(Double(sleep) / 1500)")
+    //print("[\(execution.thread.id)] sleep \(sleep) =~ \(GameFloat(sleep) / 1500)")
     execution.thread.instructionPointer += 1
 }
 
@@ -719,7 +719,7 @@ private func startScript(execution: ScriptExecutionContext) throws {
     let paramCount = execution.immediate(at: 2)
     
     let module = try execution.process.module(at: moduleIndex)
-    let params = try execution.thread.stack.pop(count: paramCount)
+    let params = try execution.thread.stack.pop(count: Int(paramCount))
     
     execution.process.startScript(module, parameters: params.reversed())
     execution.thread.instructionPointer += 3
@@ -742,7 +742,7 @@ private func callScript(execution: ScriptExecutionContext) throws {
     let paramCount = execution.immediate(at: 2)
     
     let module = try execution.process.module(at: moduleIndex)
-    let params = try execution.thread.stack.pop(count: paramCount)
+    let params = try execution.thread.stack.pop(count: Int(paramCount))
     
     execution.thread.instructionPointer += 3
     execution.thread.callScript(module, parameters: params.reversed())
@@ -949,20 +949,12 @@ private func dropUnit(execution: ScriptExecutionContext) throws {
 
 private typealias _StackValue = UnitScript.CodeUnit
 
-private extension UnitScript.Thread.Stack {
-    
-    mutating func pop(count n: _StackValue) throws -> [Element] {
-        return try pop(count: Int(n))
-    }
-    
-}
-
 // MARK:- Operator Helpers
 
 private extension UnitScript.CodeUnit {
     
-    var linearValue: Double { return Double(self) / LINEAR_CONSTANT }
-    var angularValue: Double { return Double(self) / ANGULAR_CONSTANT }
+    var linearValue: GameFloat { return GameFloat(self) / LINEAR_CONSTANT }
+    var angularValue: GameFloat { return GameFloat(self) / ANGULAR_CONSTANT }
     
     static func booleanAnd(lhs: _StackValue, rhs: _StackValue) -> _StackValue {
         return ((lhs != 0) && (rhs != 0)) ? 1 : 0

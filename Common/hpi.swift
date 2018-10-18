@@ -7,6 +7,12 @@
 //
 
 import Foundation
+#if canImport(Ctypes)
+import Ctypes
+#endif
+#if canImport(Czlib)
+import Czlib
+#endif
 
 public enum HpiFormat {
     

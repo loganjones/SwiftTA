@@ -154,7 +154,7 @@ private extension BasicMetalModelViewRenderer {
             vertexFunctionName: "gridVertexShader",
             fragmentFunctionName: "gridFragmentShader")
         
-        grid = try MetalGrid(size: Size2D(width: 16, height: 16), device: device)
+        grid = try MetalGrid(size: Size2<Int>(width: 16, height: 16), device: device)
         
         let depthStateDesciptor = MTLDepthStencilDescriptor()
         depthStateDesciptor.depthCompareFunction = MTLCompareFunction.less
@@ -427,7 +427,7 @@ private class MetalGrid {
     let buffer: MTLBuffer
     let vertexCount: Int
     
-    init(size: Size2D, gridSpacing: Int = ModelViewState.gridSize, device: MTLDevice) throws {
+    init(size: Size2<Int>, gridSpacing: Int = ModelViewState.gridSize, device: MTLDevice) throws {
         
         let vertexCount = (size.width * 2) + (size.height * 2) + (size.area * 4)
         let bufferLength = vertexCount * MemoryLayout<ModelMetalRenderer_GridVertex>.size

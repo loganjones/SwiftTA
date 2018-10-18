@@ -7,6 +7,9 @@
 //
 
 import Foundation
+#if canImport(Ctypes)
+import Ctypes
+#endif
 
 struct UnitScript {
     
@@ -407,36 +410,36 @@ extension UnitScript {
     struct SetPosition {
         var piece: UnitModel.Pieces.Index
         var axis: Axis
-        var target: Double
+        var target: GameFloat
     }
     
     struct TranslationAnimation {
         var piece: UnitModel.Pieces.Index
         var axis: Axis
-        var target: Double
-        var velocity: Double
+        var target: GameFloat
+        var velocity: GameFloat
     }
     
     struct SetAngle {
         var piece: UnitModel.Pieces.Index
         var axis: Axis
-        var target: Double
+        var target: GameFloat
     }
     
     struct RotationAnimation {
         var piece: UnitModel.Pieces.Index
         var axis: Axis
-        var target: Double
-        var speed: Double
-        var targetPolar: Vector2
+        var target: GameFloat
+        var speed: GameFloat
+        var targetPolar: Vector2f
     }
     
     struct SpinAnimation {
         var piece: UnitModel.Pieces.Index
         var axis: Axis
-        var acceleration: Double
-        var speed: Double
-        var targetSpeed: Double
+        var acceleration: GameFloat
+        var speed: GameFloat
+        var targetSpeed: GameFloat
     }
     
 }

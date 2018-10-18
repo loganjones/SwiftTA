@@ -287,6 +287,10 @@ extension TdfParser.Object {
         return value
     }
     
+    func stringProperty(_ name: String, default: String = "") -> String {
+        return properties[name] ?? `default`
+    }
+    
     func boolProperty(_ name: String, default: Bool = false) -> Bool {
         guard let value = properties[name] else { return `default` }
         if let number = Int(value) { return number != 0 }

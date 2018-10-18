@@ -7,12 +7,15 @@
 //
 
 import Foundation
+#if canImport(Ctypes)
+import Ctypes
+#endif
 
 struct UnitModel {
     
     typealias Pieces = Array<Piece>
     typealias Primitives = Array<Primitive>
-    typealias Vertices = Array<Vertex3>
+    typealias Vertices = Array<Vertex3f>
     typealias Textures = Array<Texture>
     
     var pieces: Pieces
@@ -55,7 +58,7 @@ struct UnitModel {
     
     struct Piece {
         var name: String
-        var offset: Vector3
+        var offset: Vector3f
         var primitives: [Primitives.Index]
         var children: [Pieces.Index]
     }
@@ -70,6 +73,30 @@ struct UnitModel {
         case color(Int)
     }
     
+}
+
+extension UnitModel {
+    struct PieceMap {
+        var pieces: [Piece]
+        var root: Array<Piece>.Index
+        struct Piece {
+            var parents: [Array<Piece>.Index]
+            var children: [Array<Piece>.Index]
+        }
+        init(_ model: UnitModel) {
+            root = model.root
+            var pieces = model.pieces.map { Piece(parents: [], children: $0.children) }
+            UnitModel.PieceMap.mapParents(of: model.root, in: &pieces)
+            self.pieces = pieces
+        }
+        static func mapParents(of pieceIndex: Array<Piece>.Index, in pieces: inout Array<Piece>, parents: [Array<Piece>.Index] = []) {
+            pieces[pieceIndex].parents = parents
+            let newParents = parents + [pieceIndex]
+            for childIndex in pieces[pieceIndex].children {
+                mapParents(of: childIndex, in: &pieces, parents: newParents)
+            }
+        }
+    }
 }
 
 private extension UnitModel {
@@ -285,26 +312,28 @@ private extension RangeReplaceableCollection {
 
 // MARK:- Geometry 3DO Extensions
 
-let ANGULAR_CONSTANT = 65536.0 / 360.0
-let LINEAR_CONSTANT = 163840.0 / 2.5
+let ANGULAR_CONSTANT: GameFloat = 65536.0 / 360.0
+let LINEAR_CONSTANT: GameFloat = 163840.0 / 2.5
 
-extension Vertex3 {
+extension Vertex3 where Element == GameFloat {
     
     init(_ v: TA_3DO_VERTEX) {
-        x = Double(v.x) / LINEAR_CONSTANT
-        y = Double(v.z) / LINEAR_CONSTANT
-        z = Double(v.y) / LINEAR_CONSTANT
+        self.init(
+            x: GameFloat(v.x) / LINEAR_CONSTANT,
+            y: GameFloat(v.z) / LINEAR_CONSTANT,
+            z: GameFloat(v.y) / LINEAR_CONSTANT
+        )
     }
     
 }
 
 extension TA_3DO_OBJECT {
     
-    var offsetFromParent: Vector3 {
-        return Vector3(
-            x: Double(xFromParent) / LINEAR_CONSTANT,
-            y: Double(zFromParent) / LINEAR_CONSTANT,
-            z: Double(yFromParent) / LINEAR_CONSTANT
+    var offsetFromParent: Vector3f {
+        return Vector3f(
+            x: GameFloat(xFromParent) / LINEAR_CONSTANT,
+            y: GameFloat(zFromParent) / LINEAR_CONSTANT,
+            z: GameFloat(yFromParent) / LINEAR_CONSTANT
         )
     }
     

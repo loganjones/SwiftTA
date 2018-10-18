@@ -43,7 +43,7 @@ class ModelTexturePack {
     
 }
 
-//private func largestSize(a: Size2D, b: Size2D) -> Bool {
+//private func largestSize(a: Size2<Int>, b: Size2<Int>) -> Bool {
 //    let areaA = a.width * a.height
 //    let areaB = b.width * b.height
 //    let perimeterA = a.width * 2 + a.height * 2

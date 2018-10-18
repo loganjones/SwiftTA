@@ -7,6 +7,9 @@
 //
 
 import Foundation
+#if canImport(Ctypes)
+import Ctypes
+#endif
 
 enum GafFrameEncoding: UInt8 {
     /// The data at `offsetToFrameData` is a raw collection of `width` x `height` bytes.
@@ -119,8 +122,8 @@ extension GafItem {
     /// The raw data of a GAF frame
     struct Frame {
         var data: Data
-        var size: Size2D
-        var offset: Point2D
+        var size: Size2<Int>
+        var offset: Point2<Int>
         var format: PixelFormat
         
         enum PixelFormat {
@@ -244,7 +247,7 @@ extension GafItem {
         return Frame(frameData, frame.size, frame.offset, encoding.pixelFormat)
     }
     
-    private static func decompressTaImageBits(_ data: Data, decompressedSize size: Size2D) -> Data {
+    private static func decompressTaImageBits(_ data: Data, decompressedSize size: Size2<Int>) -> Data {
         
         let outputEnd = size.area
         var imageData = Data(count: outputEnd)
@@ -377,7 +380,7 @@ extension GafItem {
 
 extension GafItem.Frame {
     
-    init(_ data: Data, _ size: Size2D, _ offset: Point2D, _ format: PixelFormat = .paletteIndex) {
+    init(_ data: Data, _ size: Size2<Int>, _ offset: Point2<Int>, _ format: PixelFormat = .paletteIndex) {
         self.data = data
         self.size = size
         self.offset = offset
@@ -433,11 +436,11 @@ extension TA_GAF_ENTRY {
 }
 
 extension TA_GAF_FRAME_DATA {
-    var size: Size2D {
-        return Size2D(width: Int(width), height: Int(height))
+    var size: Size2<Int> {
+        return Size2(Int(width), Int(height))
     }
-    var offset: Point2D {
-        return Point2D(x: Int(xOffset), y: Int(yOffset))
+    var offset: Point2<Int> {
+        return Point2(Int(xOffset), Int(yOffset))
     }
 }
 

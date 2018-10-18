@@ -130,7 +130,7 @@ extension UnitViewController: UnitViewStateProvider {
         }
         
         unit.scriptContext.run(for: unit.modelInstance, on: self)
-        unit.scriptContext.applyAnimations(to: &unit.modelInstance, for: deltaTime)
+        unit.scriptContext.applyAnimations(to: &unit.modelInstance, for: GameFloat(deltaTime))
         
         if viewState.isMoving {
             let dt = deltaTime * 10

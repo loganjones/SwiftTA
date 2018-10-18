@@ -1,0 +1,5 @@
+module Cgl [system] {
+  header "shim.h"
+  link "GL"
+  export *
+}

@@ -7,6 +7,9 @@
 //
 
 import Foundation
+#if canImport(Ctypes)
+import Ctypes
+#endif
 
 enum Pcx { }
 
@@ -14,7 +17,7 @@ enum Pcx { }
 
 extension Pcx {
     
-    static func extractImage<File>(contentsOf pcxFile: File) throws -> (data: Data, size: Size2D)
+    static func extractImage<File>(contentsOf pcxFile: File) throws -> (data: Data, size: Size2<Int>)
         where File: FileReadHandle
     {
         // Read in the PCX header and check that the `identifer` is what we expect.
@@ -185,8 +188,8 @@ extension Pcx {
 
 extension PCX_HEADER {
     
-    var imageSize: Size2D {
-        return Size2D(width:  Int(window.xMax) - Int(window.xMin) + 1,
+    var imageSize: Size2<Int> {
+        return Size2<Int>(width:  Int(window.xMax) - Int(window.xMin) + 1,
                       height: Int(window.yMax) - Int(window.yMin) + 1)
     }
     

@@ -95,7 +95,7 @@ extension UnitScript.Context {
         let thread = UnitScript.Thread(UnitScript.nextId, module, parameters: parameters)
         threads.append(thread)
         UnitScript.nextId += 1
-        print("start-script \(module.name)(\(parameters)) -> Thread[\(thread.id)]")
+        //print("start-script \(module.name)(\(parameters)) -> Thread[\(thread.id)]")
     }
     
     func `static`(at index: UnitScript.CodeUnit) throws -> UnitScript.CodeUnit {
@@ -124,7 +124,7 @@ extension UnitScript.Context {
         else { throw UnitScript.Thread.ExecutionError.badPiece(index) }
     }
     
-    func applyAnimations(to instance: inout UnitModel.Instance, for delta: Double) {
+    func applyAnimations(to instance: inout UnitModel.Instance, for delta: GameFloat) {
         let unfinished = animations.compactMap { instance.apply($0, with: delta) }
         animations = unfinished
     }
@@ -145,7 +145,7 @@ extension UnitScript.Context {
         threads.forEach {
             if $0.isSignaled(by: mask) && $0 !== except {
                 $0.status = .finished
-                print("[\($0.id)] signaled with \(mask)")
+                //print("[\($0.id)] signaled with \(mask)")
             }
         }
     }
@@ -232,13 +232,13 @@ extension UnitScript.Thread {
                     }
                     break runLoop
                 case .waitingForMove:
-                    print("[\(id)] waiting for move")
+                    //print("[\(id)] waiting for move")
                     break runLoop
                 case .waitingForTurn:
-                    print("[\(id)] waiting for turn")
+                    //print("[\(id)] waiting for turn")
                     break runLoop
                 case .finished:
-                    print("[\(id)] finished")
+                    //print("[\(id)] finished")
                     break runLoop
                 }
             }

@@ -10,7 +10,7 @@ import Foundation
 
 class UnitTextureAtlas {
     
-    let size: Size2D
+    let size: Size2<Int>
     let textures: [Texture]
     
     struct Texture {
@@ -27,7 +27,7 @@ class UnitTextureAtlas {
     struct GafContent {
         var file: FileSystem.File
         var item: GafItem
-        var size: Size2D
+        var size: Size2<Int>
     }
     
     init(for modelTextures: [UnitModel.Texture], from texPack: ModelTexturePack) {
@@ -48,19 +48,19 @@ class UnitTextureAtlas {
         return Data(bytesNoCopy: bytes, count: byteCount, deallocator: .custom({ (p, i) in p.deallocate() }))
     }
     
-    func textureCoordinates(for index: Int) -> (Vertex2, Vertex2, Vertex2, Vertex2) {
+    func textureCoordinates(for index: Int) -> (Vertex2f, Vertex2f, Vertex2f, Vertex2f) {
         
         let texture = textures[index]
         
-        let left = Double(texture.location.left) / Double(size.width)
-        let top = Double(texture.location.top) / Double(size.height)
-        let right = Double(texture.location.right) / Double(size.width)
-        let bottom = Double(texture.location.bottom) / Double(size.height)
+        let left = GameFloat(texture.location.left) / GameFloat(size.width)
+        let top = GameFloat(texture.location.top) / GameFloat(size.height)
+        let right = GameFloat(texture.location.right) / GameFloat(size.width)
+        let bottom = GameFloat(texture.location.bottom) / GameFloat(size.height)
         
-        return (Vertex2(x: left, y: top),
-                Vertex2(x: right, y: top),
-                Vertex2(x: right, y: bottom),
-                Vertex2(x: left, y: bottom)
+        return (Vertex2f(left, top),
+                Vertex2f(right, top),
+                Vertex2f(right, bottom),
+                Vertex2f(left, bottom)
         )
     }
     
@@ -70,7 +70,7 @@ private extension UnitTextureAtlas {
     
     class func copy(texture: Texture,
                     to bytes: UnsafeMutablePointer<UInt8>,
-                    of size: Size2D,
+                    of size: Size2<Int>,
                     filesystem: FileSystem,
                     palette: Palette) {
         
@@ -138,13 +138,13 @@ private extension UnitTextureAtlas {
         
     }
     
-    class func pack(_ content: [Content]) -> (Size2D, [Texture]) {
+    class func pack(_ content: [Content]) -> (Size2<Int>, [Texture]) {
         
         let sorted = content.enumerated().sorted(by: largestContent)
         
         let totalArea = sorted.reduce(0) { (total: Int, e: IndexedContent) in total + e.c.size.area }
         
-        var findSize = Size2D(width: 1024,height: 1024)
+        var findSize = Size2<Int>(width: 1024,height: 1024)
         while findSize.area > totalArea { findSize /= 2 }
         let textureSize = findSize * 2
         
@@ -167,11 +167,11 @@ private extension UnitTextureAtlas {
 }
 
 extension UnitTextureAtlas.Content {
-    var size: Size2D {
+    var size: Size2<Int> {
         switch self {
-        case .color: return Size2D(width: 8, height: 8)
+        case .color: return Size2<Int>(width: 8, height: 8)
         case .gafItem(let gaf): return gaf.size
-        case .notFound: return Size2D.zero
+        case .notFound: return Size2<Int>.zero
         }
     }
 }
@@ -197,7 +197,7 @@ extension _Rect: CustomStringConvertible {
     var description: String { return "[left:\(left),top:\(top), right:\(right),bottom:\(bottom)]" }
 }
 extension _Rect {
-    init(_ size: Size2D) {
+    init(_ size: Size2<Int>) {
         left = 0
         top = 0
         right = size.width
@@ -207,14 +207,14 @@ extension _Rect {
 
 private class RectFiller {
     
-    init(size: Size2D) {
+    init(size: Size2<Int>) {
         rects = [_Rect(size)]
         rects.reserveCapacity(32)
     }
     
     private var rects: [_Rect]
     
-    func findSuitableRect(ofSize size: Size2D) -> _Rect? {
+    func findSuitableRect(ofSize size: Size2<Int>) -> _Rect? {
         
         // Find the first rect where `size` would fit inside
         guard let index = rects.index(where: { size.width <= $0.width && size.height <= $0.height })

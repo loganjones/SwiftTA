@@ -32,7 +32,7 @@ class StaticTextureSetMetalTntViewRenderer: MetalTntRenderer {
     private var mapResources: MapResources?
     
     private struct MapResources {
-        var tileCount: Size2D
+        var tileCount: Size2<Int>
         var texture: MTLTexture
         var vertices: MTLBuffer
         var slices: MTLBuffer
@@ -123,7 +123,7 @@ extension StaticTextureSetMetalTntViewRenderer {
         renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: map.vertexCount)
     }
     
-    func makeTexture(tiles tileCount: Size2D, for map: TaMapModel, using palette: Palette) throws -> MTLTexture {
+    func makeTexture(tiles tileCount: Size2<Int>, for map: TaMapModel, using palette: Palette) throws -> MTLTexture {
         let beginAll = Date()
         
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: textureTileSize, height: textureTileSize, mipmapped: false)
@@ -144,7 +144,7 @@ extension StaticTextureSetMetalTntViewRenderer {
         let tileStride = tntTileSize.width * 4
         map.tileIndexMap.eachIndex(inColumns: 0 ..< map.tileIndexMap.size.width, rows: 0 ..< map.tileIndexMap.size.height) {
             (index, column, row) in
-            let mapPosition = Point2D(x: column, y: row) * tntTileSize
+            let mapPosition = Point2<Int>(x: column, y: row) * tntTileSize
             let tileXY = mapPosition / textureTileSize
             let tileIndex = tileXY.index(rowStride: tileCount.width)
             let tilePosition = tileXY * textureTileSize
@@ -165,7 +165,7 @@ extension StaticTextureSetMetalTntViewRenderer {
             Tnt Render load time: \(endAll.timeIntervalSince(beginAll)) seconds
             Tile Buffer: \(tileBuffer.count) bytes
             Conversion: \(endConversion.timeIntervalSince(beginConversion)) seconds
-            Texture: \(Size2D(width: texture.width, height: texture.height)) -> \(textureAllocatedSize) bytes
+            Texture: \(Size2<Int>(width: texture.width, height: texture.height)) -> \(textureAllocatedSize) bytes
             Fill: \(endTexture.timeIntervalSince(beginTexture)) seconds
             """)
         print("map:\(map.resolution) -> tiles:\(tileCount)")
@@ -177,7 +177,7 @@ extension StaticTextureSetMetalTntViewRenderer {
         case badTextureDescriptor
     }
     
-    func makeGeometry(tiles tileCount: Size2D) throws -> (MTLBuffer, MTLBuffer, Int) {
+    func makeGeometry(tiles tileCount: Size2<Int>) throws -> (MTLBuffer, MTLBuffer, Int) {
         
         let vertexCount = tileCount.area * 6
         let alignedVerticesSize = alignSizeForMetalBuffer(MemoryLayout<Vertex>.stride * vertexCount)

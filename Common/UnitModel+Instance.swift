@@ -11,14 +11,14 @@ import Foundation
 extension UnitModel {
     
     struct Instance {
-        var position: Vector3 = Vector3.zero
-        var orientation: Vector3 = Vector3.zero
+        var position: Vector3f = .zero
+        var orientation: Vector3f = .zero
         var pieces: [PieceState]
     }
     
     struct PieceState {
-        var move = Vector3.zero
-        var turn = Vector3.zero
+        var move = Vector3f.zero
+        var turn = Vector3f.zero
         var hidden = false
         var cache = true
         var shade = true
@@ -41,7 +41,7 @@ extension UnitModel.Instance {
 
 extension UnitModel.Instance {
     
-    func beginTranslation(for piece: Int, along axis: UnitScript.Axis, to target: Double, with speed: Double) -> UnitScript.Animation {
+    func beginTranslation(for piece: Int, along axis: UnitScript.Axis, to target: GameFloat, with speed: GameFloat) -> UnitScript.Animation {
         
         let current = pieces[piece].move[axis]
         
@@ -54,23 +54,23 @@ extension UnitModel.Instance {
         return .translation(translation)
     }
     
-    func beginRotation(for piece: Int, around axis: UnitScript.Axis, to target: Double, with speed: Double) -> UnitScript.Animation {
+    func beginRotation(for piece: Int, around axis: UnitScript.Axis, to target: GameFloat, with speed: GameFloat) -> UnitScript.Animation {
         
-        let deg2rad = Double.pi/180.0
+        let deg2rad = GameFloat.pi/180.0
         
         let rotation = UnitScript.RotationAnimation(
             piece: piece,
             axis: axis,
             target: target,
             speed: speed * deg2rad,
-            targetPolar: Vector2(polarAngle: target * deg2rad))
+            targetPolar: Vector2f(polarAngle: target * deg2rad))
         
         return .rotation(rotation)
     }
     
-    func beginSpin(for piece: Int, around axis: UnitScript.Axis, accelerating acceleration: Double, to speed: Double) -> UnitScript.Animation {
+    func beginSpin(for piece: Int, around axis: UnitScript.Axis, accelerating acceleration: GameFloat, to speed: GameFloat) -> UnitScript.Animation {
         
-        let deg2rad = Double.pi/180.0
+        let deg2rad = GameFloat.pi/180.0
         
         if acceleration > 0 {
             let spin = UnitScript.SpinAnimation(
@@ -92,7 +92,7 @@ extension UnitModel.Instance {
         }
     }
     
-    mutating func apply(_ animation: UnitScript.Animation, with delta: Double) -> UnitScript.Animation? {
+    mutating func apply(_ animation: UnitScript.Animation, with delta: GameFloat) -> UnitScript.Animation? {
         switch animation {
             
         case .setPosition(let move):
@@ -139,17 +139,17 @@ extension UnitModel.Instance {
             
         case .show(let piece):
             pieces[piece].hidden = false
-            print("Anim: Show \(piece)")
+            //print("Anim: Show \(piece)")
             return nil
         case .hide(let piece):
             pieces[piece].hidden = true
-            print("Anim: Hide \(piece)")
+            //print("Anim: Hide \(piece)")
             return nil
             
         }
     }
     
-    mutating func apply(_ move: UnitScript.TranslationAnimation, with delta: Double) -> UnitScript.Animation? {
+    mutating func apply(_ move: UnitScript.TranslationAnimation, with delta: GameFloat) -> UnitScript.Animation? {
         
         let current = pieces[move.piece].move[move.axis]
         let next = current + move.velocity * delta
@@ -180,10 +180,10 @@ extension UnitModel.Instance {
         }
     }
     
-    mutating func apply(_ turn: UnitScript.RotationAnimation, with delta: Double) -> UnitScript.Animation? {
+    mutating func apply(_ turn: UnitScript.RotationAnimation, with delta: GameFloat) -> UnitScript.Animation? {
         
-        let deg2rad = Double.pi/180.0
-        let rad2deg = 180.0/Double.pi
+        let deg2rad = GameFloat.pi/180.0
+        let rad2deg = 180.0/GameFloat.pi
         
         let current = pieces[turn.piece].turn[turn.axis]
         let currentPolar = Vector2(polarAngle: current * deg2rad)
@@ -202,10 +202,10 @@ extension UnitModel.Instance {
         }
     }
     
-    mutating func apply(_ turn: UnitScript.SpinAnimation, with delta: Double) {
+    mutating func apply(_ turn: UnitScript.SpinAnimation, with delta: GameFloat) {
         
-        let deg2rad = Double.pi/180.0
-        let rad2deg = 180.0/Double.pi
+        let deg2rad = GameFloat.pi/180.0
+        let rad2deg = 180.0/GameFloat.pi
         
         let current = pieces[turn.piece].turn[turn.axis]
         let currentPolar = Vector2(polarAngle: current * deg2rad)
@@ -217,9 +217,9 @@ extension UnitModel.Instance {
     
 }
 
-private extension Vector3 {
+private extension Vector3 where Element == GameFloat {
     
-    subscript(axis: UnitScript.Axis) -> Double {
+    subscript(axis: UnitScript.Axis) -> GameFloat {
         get {
             switch axis {
             case .x: return x
@@ -238,28 +238,30 @@ private extension Vector3 {
     
 }
 
-private extension Vector2 {
+private extension Vector2 where Element == GameFloat {
     
-    init(polarAngle angle: Double, magnitude: Double = 1) {
-        x = cos(angle) * magnitude
-        y = sin(angle) * magnitude
+    init(polarAngle angle: GameFloat, magnitude: GameFloat = 1) {
+        self.init(values: (
+            cos(angle) * magnitude,
+            sin(angle) * magnitude
+        ))
     }
     
-    var angle: Double {
+    var angle: GameFloat {
         if y >= 0 { return acos(x) }
         else { return -acos(x) }
     }
     
-    func rotated(by angle: Double) -> Vector2 {
+    func rotated(by angle: GameFloat) -> Vector2 {
         let c = cos(angle)
         let s = sin(angle)
-        return Vector2(
+        return Vector2f(
             x: (x * c) + (y * -s),
             y: (x * s) + (y * c)
         )
     }
     
-    static func determinant(_ a: Vector2, _ b: Vector2) -> Double {
+    static func determinant(_ a: Vector2f, _ b: Vector2f) -> GameFloat {
         return (a.x * b.y) - (a.y * b.x)
     }
     

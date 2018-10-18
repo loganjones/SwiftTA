@@ -9,7 +9,6 @@
 import Cocoa
 import OpenGL
 import OpenGL.GL3
-import GLKit
 
 
 class Core33OpenglModelViewRenderer: OpenglModelViewRenderer {
@@ -25,20 +24,13 @@ class Core33OpenglModelViewRenderer: OpenglModelViewRenderer {
     
     private var toLoad: UnitModel?
     private var model: GLBufferedStaticModel?
-    private var dummyTransformations: [GLKMatrix4] = []
+    private var dummyTransformations: [Matrix4x4f] = []
     private var modelTexture: GLuint = 0
     
     private var grid: GLWorldSpaceGrid!
     
     private var unitViewProgram = UnitViewPrograms()
     private var gridProgram = GridProgram()
-    
-    private let taPerspective = GLKMatrix4Make(
-        -1,   0,   0,   0,
-         0,   1,   0,   0,
-         0,-0.5,   1,   0,
-         0,   0,   0,   1
-    )
     
     init() {
         
@@ -47,7 +39,7 @@ class Core33OpenglModelViewRenderer: OpenglModelViewRenderer {
     func initializeOpenglState() {
         initScene()
         (unitViewProgram, gridProgram) = try! makePrograms()
-        grid = GLWorldSpaceGrid(size: Size2D(width: 16, height: 16))
+        grid = GLWorldSpaceGrid(size: Size2<Int>(width: 16, height: 16))
     }
     
     func drawFrame(_ viewState: ModelViewState) {
@@ -56,7 +48,7 @@ class Core33OpenglModelViewRenderer: OpenglModelViewRenderer {
         
         if let newModel = toLoad {
             model = GLBufferedStaticModel(newModel)
-            dummyTransformations = [GLKMatrix4](repeating: GLKMatrix4Identity, count: newModel.pieces.count)
+            dummyTransformations = [Matrix4x4f](repeating: .identity, count: newModel.pieces.count)
             toLoad = nil
         }
         
@@ -126,10 +118,10 @@ private extension Core33OpenglModelViewRenderer {
         glClearColor(1, 1, 1, 1)
         glClear(GLbitfield(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT))
         
-        let projection = GLKMatrix4MakeOrtho(0, viewState.sceneSize.width, viewState.sceneSize.height, 0, -1024, 256)
+        let projection = Matrix4x4f.ortho(0, viewState.sceneSize.width, viewState.sceneSize.height, 0, -1024, 256)
         
-        let sceneCentering = GLKMatrix4MakeTranslation(viewState.sceneSize.width / 2, viewState.sceneSize.height / 2, 0)
-        let sceneView = GLKMatrix4Rotate(GLKMatrix4Multiply(sceneCentering, taPerspective), -viewState.rotateZ * (Float.pi / 180.0), 0, 0, 1)
+        let sceneCentering = Matrix4x4f.translation(viewState.sceneSize.width / 2, viewState.sceneSize.height / 2, 0)
+        let sceneView = (sceneCentering * .taPerspective) * Matrix4x4f.rotation(radians: -viewState.rotateZ * (GameFloat.pi / 180.0), axis: Vector3f(0, 0, 1))
         
         drawGrid(viewState, projection, sceneView)
         drawUnit(viewState, projection, sceneView)
@@ -138,31 +130,31 @@ private extension Core33OpenglModelViewRenderer {
         glUseProgram(0)
     }
     
-    func drawGrid(_ viewState: ModelViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
-        let view = GLKMatrix4Translate(sceneView, Float(-grid.size.width / 2), Float(-grid.size.height / 2), 0)
+    func drawGrid(_ viewState: ModelViewState, _ projection: Matrix4x4f, _ sceneView: Matrix4x4f) {
+        let view = sceneView * Matrix4x4f.translation(GameFloat(-grid.size.width / 2), GameFloat(-grid.size.height / 2), 0)
         
-//        let model = GLKMatrix4MakeTranslation(0, Float(viewState.movement), -0.5)
+//        let model = Matrix4x4f.translation(0, GameFloat(viewState.movement), -0.5)
         
         glUseProgram(gridProgram.id)
-        glUniformGLKMatrix4(gridProgram.uniform_model, GLKMatrix4Identity)
-        glUniformGLKMatrix4(gridProgram.uniform_view, view)
-        glUniformGLKMatrix4(gridProgram.uniform_projection, projection)
-        glUniformGLKVector4(gridProgram.uniform_objectColor, GLKVector4Make(0.9, 0.9, 0.9, 1))
+        glUniform4x4(gridProgram.uniform_model, Matrix4x4f.identity)
+        glUniform4x4(gridProgram.uniform_view, view)
+        glUniform4x4(gridProgram.uniform_projection, projection)
+        glUniform4(gridProgram.uniform_objectColor, Vector4f(0.9, 0.9, 0.9, 1))
         
         grid.draw()
     }
     
-    func drawUnit(_ viewState: ModelViewState, _ projection: GLKMatrix4, _ sceneView: GLKMatrix4) {
+    func drawUnit(_ viewState: ModelViewState, _ projection: Matrix4x4f, _ sceneView: Matrix4x4f) {
         glUseProgram(unitViewProgram.current.id)
-        glUniformGLKMatrix4(unitViewProgram.current.uniform_model, GLKMatrix4Identity)
-        glUniformGLKMatrix4(unitViewProgram.current.uniform_view, sceneView)
-        glUniformGLKMatrix4(unitViewProgram.current.uniform_projection, projection)
-        glUniformGLKMatrix4(unitViewProgram.current.uniform_pieces, dummyTransformations)
+        glUniform4x4(unitViewProgram.current.uniform_model, Matrix4x4f.identity)
+        glUniform4x4(unitViewProgram.current.uniform_view, sceneView)
+        glUniform4x4(unitViewProgram.current.uniform_projection, projection)
+        glUniform4x4(unitViewProgram.current.uniform_pieces, dummyTransformations)
         
-        let lightPosition = GLKVector3Make(50, 50, 100)
-        let viewPosition = GLKVector3Make(viewState.sceneSize.width / 2, viewState.sceneSize.height / 2, 0)
-        glUniformGLKVector3(unitViewProgram.current.uniform_lightPosition, lightPosition)
-        glUniformGLKVector3(unitViewProgram.current.uniform_viewPosition, viewPosition)
+        let lightPosition = Vector3f(50, 50, 100)
+        let viewPosition = Vector3f(viewState.sceneSize.width / 2, viewState.sceneSize.height / 2, 0)
+        glUniform3(unitViewProgram.current.uniform_lightPosition, lightPosition)
+        glUniform3(unitViewProgram.current.uniform_viewPosition, viewPosition)
         
         glActiveTexture(GLenum(GL_TEXTURE0));
         glBindTexture(GLenum(GL_TEXTURE_2D), modelTexture);
@@ -170,20 +162,20 @@ private extension Core33OpenglModelViewRenderer {
         
         switch viewState.drawMode {
         case .solid:
-            glUniformGLKVector4(unitViewProgram.current.uniform_objectColor, viewState.textured ? GLKVector4Make(0, 0, 0, 0) : GLKVector4Make(0.95, 0.85, 0.80, 1))
+            glUniform4(unitViewProgram.current.uniform_objectColor, viewState.textured ? Vector4f(0, 0, 0, 0) : Vector4f(0.95, 0.85, 0.80, 1))
             model?.drawFilled()
         case .wireframe:
-            glUniformGLKVector4(unitViewProgram.current.uniform_objectColor, GLKVector4Make(0.4, 0.35, 0.3, 1))
+            glUniform4(unitViewProgram.current.uniform_objectColor, Vector4f(0.4, 0.35, 0.3, 1))
             model?.drawWireframe()
         case .outlined:
-            glUniformGLKVector4(unitViewProgram.current.uniform_objectColor, viewState.textured ? GLKVector4Make(0, 0, 0, 0) : GLKVector4Make(0.95, 0.85, 0.80, 1))
+            glUniform4(unitViewProgram.current.uniform_objectColor, viewState.textured ? Vector4f(0, 0, 0, 0) : Vector4f(0.95, 0.85, 0.80, 1))
             
             glEnable(GLenum(GL_POLYGON_OFFSET_FILL))
             glPolygonOffset(1.0, 1.0)
             model?.drawFilled()
             glDisable(GLenum(GL_POLYGON_OFFSET_FILL))
             
-            glUniformGLKVector4(unitViewProgram.current.uniform_objectColor, viewState.textured ? GLKVector4Make(0.95, 0.85, 0.80, 1) : GLKVector4Make(0.4, 0.35, 0.3, 1))
+            glUniform4(unitViewProgram.current.uniform_objectColor, viewState.textured ? Vector4f(0.95, 0.85, 0.80, 1) : Vector4f(0.4, 0.35, 0.3, 1))
             model?.drawWireframe()
         }
     }
@@ -394,7 +386,7 @@ private class GLBufferedStaticModel {
         glDrawArrays(GLenum(GL_LINES), 0, GLsizei(elementCountOutline))
     }
     
-    private static func collectVertexAttributes(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, parentOffset: Vector3 = .zero, textures: UnitTextureAtlas? = nil, buffers: inout Buffers) {
+    private static func collectVertexAttributes(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, parentOffset: Vector3f = .zero, textures: UnitTextureAtlas? = nil, buffers: inout Buffers) {
         
         let piece = model.pieces[pieceIndex]
         let offset = piece.offset + parentOffset
@@ -409,10 +401,10 @@ private class GLBufferedStaticModel {
         }
     }
     
-    private static func collectVertexAttributes(primitive: UnitModel.Primitive, pieceIndex: UnitModel.Pieces.Index, model: UnitModel, offset: Vector3, textures: UnitTextureAtlas?, buffers: inout Buffers) {
+    private static func collectVertexAttributes(primitive: UnitModel.Primitive, pieceIndex: UnitModel.Pieces.Index, model: UnitModel, offset: Vector3f, textures: UnitTextureAtlas?, buffers: inout Buffers) {
         
         let vertices = primitive.indices.map({ model.vertices[$0] + offset })
-        let texCoords = textures?.textureCoordinates(for: primitive.texture) ?? (Vertex2.zero, Vertex2.zero, Vertex2.zero, Vertex2.zero)
+        let texCoords = textures?.textureCoordinates(for: primitive.texture) ?? (Vertex2f.zero, Vertex2f.zero, Vertex2f.zero, Vertex2f.zero)
         
         switch vertices.count {
             
@@ -461,7 +453,7 @@ private class GLBufferedStaticModel {
         }
     }
     
-    private static func collectOutlines(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, parentOffset: Vector3 = .zero, buffers: inout Buffers) {
+    private static func collectOutlines(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, parentOffset: Vector3f = .zero, buffers: inout Buffers) {
         
         let piece = model.pieces[pieceIndex]
         let offset = piece.offset + parentOffset
@@ -488,7 +480,7 @@ private class GLBufferedStaticModel {
         }
     }
     
-    private static func makeNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [Vertex3]) -> Vector3 {
+    private static func makeNormal(_ a: Int, _ b: Int, _ c: Int, in vertices: [Vertex3f]) -> Vector3f {
         let v1 = vertices[a]
         let v2 = vertices[b]
         let v3 = vertices[c]
@@ -498,9 +490,9 @@ private class GLBufferedStaticModel {
     }
     
     private struct Buffers {
-        var vertices: [Vertex3]
-        var normals: [Vector3]
-        var texCoords: [Vertex2]
+        var vertices: [Vertex3f]
+        var normals: [Vector3f]
+        var texCoords: [Vertex2f]
         var pieceIndices: [Int]
         
         init() {
@@ -510,10 +502,10 @@ private class GLBufferedStaticModel {
             pieceIndices = []
         }
         
-        mutating func append(_ texCoord1: Vertex2, _ vertex1: Vertex3,
-                             _ texCoord2: Vertex2, _ vertex2: Vertex3,
-                             _ texCoord3: Vertex2, _ vertex3: Vertex3,
-                             _ normal: Vector3,
+        mutating func append(_ texCoord1: Vertex2f, _ vertex1: Vertex3f,
+                             _ texCoord2: Vertex2f, _ vertex2: Vertex3f,
+                             _ texCoord3: Vertex2f, _ vertex3: Vertex3f,
+                             _ normal: Vector3f,
                              _ pieceIndex: Int) {
             
             vertices.append(vertex1)
@@ -546,20 +538,20 @@ private class GLBufferedStaticModel {
 
 private class GLWorldSpaceGrid {
     
-    let size: CGSize
-    let spacing: Double
+    let size: Size2f
+    let spacing: GameFloat
     
     private let vao: GLuint
     private let vbo: [GLuint]
     private let elementCount: Int
     
-    init(size: Size2D, gridSpacing: Int = ModelViewState.gridSize) {
+    init(size: Size2<Int>, gridSpacing: Int = ModelViewState.gridSize) {
         
-        var vertices = [Vertex3](repeating: .zero, count: (size.width * 2) + (size.height * 2) + (size.area * 4) )
+        var vertices = [Vertex3f](repeating: .zero, count: (size.width * 2) + (size.height * 2) + (size.area * 4) )
         do {
             var n = 0
-            let addLine: (Vertex3, Vertex3) -> () = { (a, b) in vertices[n] = a; vertices[n+1] = b; n += 2 }
-            let makeVert: (Int, Int) -> Vertex3 = { (w, h) in Vertex3(x: Double(w * gridSpacing), y: Double(h * gridSpacing), z: 0) }
+            let addLine: (Vertex3f, Vertex3f) -> () = { (a, b) in vertices[n] = a; vertices[n+1] = b; n += 2 }
+            let makeVert: (Int, Int) -> Vertex3f = { (w, h) in Vertex3f(x: GameFloat(w * gridSpacing), y: GameFloat(h * gridSpacing), z: 0) }
             
             for h in 0..<size.height {
                 for w in 0..<size.width {
@@ -594,15 +586,15 @@ private class GLWorldSpaceGrid {
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), vbo[0])
         glBufferData(GLenum(GL_ARRAY_BUFFER), vertices, GLenum(GL_STATIC_DRAW))
         let vertexAttrib: GLuint = 0
-        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_DOUBLE), GLboolean(GL_FALSE), 0, nil)
+        glVertexAttribPointer(vertexAttrib, 3, GLenum(GL_GAMEFLOAT), GLboolean(GL_FALSE), 0, nil)
         glEnableVertexAttribArray(vertexAttrib)
         
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0)
         glBindVertexArray(0)
         
         self.vbo = vbo
-        self.size = CGSize(size * gridSpacing)
-        self.spacing = Double(gridSpacing)
+        self.size = Size2f(size * gridSpacing)
+        self.spacing = GameFloat(gridSpacing)
     }
     
     func draw() {

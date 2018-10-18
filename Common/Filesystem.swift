@@ -15,33 +15,54 @@ class FileSystem {
     static let weightedArchiveExtensions = ["ufo", "gp3", "ccx", "gpf", "hpi"]
     
     init(mergingHpisIn searchDirectory: URL, extensions: [String] = FileSystem.weightedArchiveExtensions) throws {
+
+        let weighArchives: (URL, URL) -> Bool = { (a,b) in
+            let weightA = extensions.index(of: a.pathExtension) ?? -1
+            let weightB = extensions.index(of: b.pathExtension) ?? -1
+            return weightA < weightB
+        }
+        
+        let merged = try FileSystem.listArchives(in: searchDirectory, allowedExtensions: Set(extensions))
+            .sorted { weighArchives($0, $1) }
+            .map { FileSystem.Directory(from: try HpiItem.loadFromArchive(contentsOf: $0), in: $0) }
+            .reduce(FileSystem.Directory()) { $0.adding(directory: $1) }
+        
+        root = merged
+    }
+    
+    #if !os(Linux)
+    private static func listArchives(in searchDirectory: URL, allowedExtensions: Set<String>) throws -> [URL] {
+        let fm = FileManager.default
         
         let isDirectory: (URL) -> Bool = { (url) in
             let values = try? url.resourceValues(forKeys: [.isDirectoryKey])
             return values?.isDirectory ?? false
         }
         
-        let weighArchives: (URL, URL) -> Bool = { (a,b) in
-            let weightA = extensions.index(of: a.pathExtension) ?? -1
-            let weightB = extensions.index(of: b.pathExtension) ?? -1
-            return weightA < weightB
-        }
-
-        let allowedExtensions = Set<String>(extensions)
-        
-        let fm = FileManager.default
-        let archives = try fm.contentsOfDirectory(at: searchDirectory,
-                                                  includingPropertiesForKeys: [.isDirectoryKey],
-                                                  options: [.skipsSubdirectoryDescendants, .skipsPackageDescendants])
+        return try fm.contentsOfDirectory(at: searchDirectory,
+                                          includingPropertiesForKeys: [.isDirectoryKey],
+                                          options: [.skipsSubdirectoryDescendants, .skipsPackageDescendants])
             .filter { !isDirectory($0) && allowedExtensions.contains($0.pathExtension) }
-            .sorted { weighArchives($0, $1) }
-        
-        let merged = try archives
-            .map { FileSystem.Directory(from: try HpiItem.loadFromArchive(contentsOf: $0), in: $0) }
-            .reduce(FileSystem.Directory()) { $0.adding(directory: $1) }
-        
-        root = merged
     }
+    #else
+    private static func listArchives(in searchDirectory: URL, allowedExtensions: Set<String>) throws -> [URL] {
+        let fm = FileManager.default
+        
+        let fullUrl: (String) -> URL = { (filename) in
+            return searchDirectory.appendingPathComponent(filename, isDirectory: false)
+        }
+        
+        let isValidFile: (URL) -> Bool = { (url) in
+            var isDirectory: ObjCBool = false
+            let exists = fm.fileExists(atPath: url.path, isDirectory: &isDirectory)
+            return exists && !isDirectory.boolValue
+        }
+        
+        return try fm.contentsOfDirectory(atPath: searchDirectory.path)
+            .map { fullUrl($0) }
+            .filter { isValidFile($0) && allowedExtensions.contains($0.pathExtension) }
+    }
+    #endif
     
     /// Load a single HPI file's filesystem.
     init(hpi url: URL) throws {
@@ -279,6 +300,12 @@ extension FileSystem.Directory {
         guard let item = try? resolve(path: p)
             else { return nil }
         return item.asFile()
+    }
+    
+    func files(withExtension ext: String) -> [FileSystem.File] {
+        return items
+            .compactMap { $0.asFile() }
+            .filter { $0.hasExtension(ext) }
     }
     
 }
