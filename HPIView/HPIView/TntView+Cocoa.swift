@@ -75,8 +75,8 @@ class TaMapTileView: NSView {
     
     func load(_ map: TaMapModel, using palette: Palette) {
         self.map = map
-        minHeight = CGFloat(map.heightMap.min() ?? 0)
-        maxHeight = CGFloat(map.heightMap.max() ?? 0)
+        minHeight = CGFloat(map.heightMap.samples.min() ?? 0)
+        maxHeight = CGFloat(map.heightMap.samples.max() ?? 0)
         tileSet = TileSet(map.tileSet, palette)
     }
 
@@ -214,8 +214,8 @@ class TakMapTileView: NSView {
     
     func load(_ map: TakMapModel, _ filesystem: FileSystem) {
         self.map = map
-        minHeight = CGFloat(map.heightMap.min() ?? 0)
-        maxHeight = CGFloat(map.heightMap.max() ?? 0)
+        minHeight = CGFloat(map.heightMap.samples.min() ?? 0)
+        maxHeight = CGFloat(map.heightMap.samples.max() ?? 0)
         terrain = TerrainSet(map.tileIndexMap.uniqueNames, filesystem)
     }
     

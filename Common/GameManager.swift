@@ -31,7 +31,8 @@ class GameManager: ScriptMachine {
         if let unit = randomStartingUnit() {
             let id: GameObjectId = 1
             let startPosition = Point2f(state.startPosition)
-            let instance = UnitInstance(unit, position: Vertex3f(xy: startPosition))
+            let height = state.map.heightMap.height(atWorldPosition: startPosition)
+            let instance = UnitInstance(unit, position: Vertex3f(xy: startPosition, z: height))
             instance.scriptContext.startScript("Create")
             objects[id] = .unit(instance)
         }

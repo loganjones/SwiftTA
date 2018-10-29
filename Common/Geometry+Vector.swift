@@ -44,9 +44,19 @@ extension Vector2: CustomStringConvertible {
 }
 
 public extension Vector2 where Element: Comparable {
+    
     @inlinable var min: Element { return Swift.min(x, y) }
     @inlinable var max: Element { return Swift.max(x, y) }
+    
+    @inlinable func clamped(to rect: Rect4<Element>) -> Vector2<Element> {
+        return Vector2(
+            Swift.min(Swift.max(rect.minX, x), rect.maxX),
+            Swift.min(Swift.max(rect.minY, y), rect.maxY)
+        )
+    }
+    
 }
+
 public extension Vector2 where Element: BinaryInteger {
     @inlinable func index(rowStride: Element) -> Element {
         return (rowStride * y) + x
