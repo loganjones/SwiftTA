@@ -34,14 +34,17 @@ extension Double: Division {}
 public protocol TrigonometricFloatingPoint: FloatingPoint {
     var sine: Self { get }
     var cosine: Self { get }
+    var arccosine: Self { get }
 }
 extension Float: TrigonometricFloatingPoint {
     @inlinable public var sine: Float { return sin(self) }
     @inlinable public var cosine: Float { return cos(self) }
+    @inlinable public var arccosine: Float { return acos(self) }
 }
 extension Double: TrigonometricFloatingPoint {
     @inlinable public var sine: Double { return sin(self) }
     @inlinable public var cosine: Double { return cos(self) }
+    @inlinable public var arccosine: Double { return acos(self) }
 }
 
 

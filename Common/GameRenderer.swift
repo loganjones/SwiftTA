@@ -42,7 +42,7 @@ enum GameViewObject {
 }
 
 struct GameViewUnit {
-    var type: UnitTypeId
+    var type: UnitData
     var position: Vertex3f
     var orientation: Vector3f
     var pose: UnitModel.Instance

@@ -22,10 +22,10 @@ struct UnitInfo {
     var categories: Set<String> = []
     var tedClass: String = ""
     
-    var acceleration: Double
-    var maxVelocity: Double
-    var brakeRate: Double
-    var turnRate: Double
+    var acceleration: GameFloat
+    var maxVelocity: GameFloat
+    var brakeRate: GameFloat
+    var turnRate: GameFloat
 }
 
 extension UnitInfo {
@@ -100,7 +100,7 @@ extension UnitInfo {
         acceleration = info.numericProperty("acceleration")
         maxVelocity = info.numericProperty("maxvelocity")
         brakeRate = info.numericProperty("brakerate")
-        turnRate = info.numericProperty("turnrate")
+        turnRate = (info.numericProperty("turnrate") / ANGULAR_CONSTANT) * (GameFloat.pi / 180.0)
     }
     
 }

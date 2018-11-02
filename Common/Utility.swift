@@ -273,6 +273,20 @@ extension StringlyIdentifier {
 
 // MARK:- Misc
 
+@usableFromInline func sqr<T: Numeric>(_ value: T) -> T {
+    return value * value
+}
+
+@inlinable public func negate<T: SignedNumeric>(_ value: T, if condition: Bool) -> T {
+    return condition ? -value : value
+}
+
+public extension SignedNumeric {
+    @inlinable func negate(if condition: Bool) -> Self {
+        return condition ? -self : self
+    }
+}
+
 extension FloatingPoint {
     func clamped(to range: ClosedRange<Self>) -> Self {
         return self > range.lowerBound
@@ -281,6 +295,7 @@ extension FloatingPoint {
     }
 }
 
+/// Returns UNIX Epoch time in seconds.
 func getCurrentTime() -> Double {
     var tv = timeval()
     var tz = timezone()

@@ -19,7 +19,6 @@ import Cgl
 class OpenglCore3UnitDrawable {
     
     private let program: UnitProgram
-    private var modelsTEMP: [UnitTypeId: UnitModel] = [:]
     private var models: [UnitTypeId: Model] = [:]
     
     struct FrameState {
@@ -35,7 +34,6 @@ class OpenglCore3UnitDrawable {
         
         let textures = ModelTexturePack(loadFrom: filesystem)
         models = units.mapValues { try! Model($0, textures, sides, filesystem) }
-        modelsTEMP = units.mapValues { $0.model }
     }
     
     func setupNextFrame(_ viewState: GameViewState) -> FrameState {
@@ -69,17 +67,14 @@ class OpenglCore3UnitDrawable {
         var instances: [UnitTypeId: [Instance]] = [:]
         
         for case let .unit(unit) in objects {
-            guard let model = modelsTEMP[unit.type] else { continue }
-            
             let viewMatrix = Matrix4x4f.translation(unit.position.x - viewportPosition.x, unit.position.y - viewportPosition.y, 0) * Matrix4x4f.taPerspective
             
             var draw = Instance(pieceCount: unit.pose.pieces.count)
-            draw.set(
-                vpMatrix: projectionMatrix * viewMatrix,
-                normalMatrix: Matrix3x3f(topLeftOf: viewMatrix).inverseTranspose,
-                transformations: unit.pose,
-                for: model)
-            instances[unit.type, default: []].append(draw)
+            draw.vpMatrix = projectionMatrix * viewMatrix
+            draw.normalMatrix = Matrix3x3f(topLeftOf: viewMatrix).inverseTranspose
+            OpenglCore3UnitDrawable.Instance.applyPieceTransformations(orientation: unit.orientation, model: unit.type.model, instance: unit.pose, transformations: &draw.transformations)
+            
+            instances[unit.type.id, default: []].append(draw)
         }
         
         return instances
@@ -328,14 +323,9 @@ private extension OpenglCore3UnitDrawable.Instance {
         transformations = [Matrix4x4f](repeating: .identity, count: pieceCount)
     }
     
-    mutating func set(vpMatrix: Matrix4x4f, normalMatrix: Matrix3x3f, transformations modelInstance: UnitModel.Instance, for model: UnitModel) {
-        self.vpMatrix = vpMatrix
-        self.normalMatrix = normalMatrix
-        OpenglCore3UnitDrawable.Instance.applyPieceTransformations(model: model, instance: modelInstance, transformations: &transformations)
-    }
-    
-    static func applyPieceTransformations(model: UnitModel, instance: UnitModel.Instance, transformations: inout [Matrix4x4f]) {
-        applyPieceTransformations(pieceIndex: model.root, p: .identity, model: model, instance: instance, transformations: &transformations)
+    static func applyPieceTransformations(orientation: Vector3f, model: UnitModel, instance: UnitModel.Instance, transformations: inout [Matrix4x4f]) {
+        let initial = Matrix4x4f.rotation(radians: -orientation.z, axis: Vector3f(0,0,1))
+        applyPieceTransformations(pieceIndex: model.root, p: initial, model: model, instance: instance, transformations: &transformations)
     }
     
     static func applyPieceTransformations(pieceIndex: UnitModel.Pieces.Index, p: Matrix4x4f, model: UnitModel, instance: UnitModel.Instance, transformations: inout [Matrix4x4f]) {

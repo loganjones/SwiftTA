@@ -204,10 +204,10 @@ extension HeightMap {
         
         // Outside of the width?
         guard ps.x > 0 else { return height(atSamplePositionY: ps.y, x0: 0) }
-        guard ps.x < sc.width else { return height(atSamplePositionY: ps.y, x0: sampleCount.width-1) }
+        guard ps.x < sc.width-1 else { return height(atSamplePositionY: ps.y, x0: sampleCount.width-1) }
         // Outside of the height?
         guard ps.y > 0 else { return height(atSamplePositionX: ps.x, y0: 0) }
-        guard ps.y < sc.height else { return height(atSamplePositionX: ps.x, y0: sampleCount.height-1) }
+        guard ps.y < sc.height-1 else { return height(atSamplePositionX: ps.x, y0: sampleCount.height-1) }
         
         // The nearest top-left map point is `p0`.
         // We will interpolate `p0`, the point right of it, the point beneath it, and the point beneath and to the right of it.
@@ -217,11 +217,11 @@ extension HeightMap {
         let i = p0.index(rowStride: w)
         
         let h00 = GameFloat(samples[i])
-        let h01 = GameFloat(samples[i+1])
-        let h10 = GameFloat(samples[i+w])
+        let h10 = GameFloat(samples[i+1])
+        let h01 = GameFloat(samples[i+w])
         let h11 = GameFloat(samples[i+w+1])
         
-        return bilinearInterpolation(h00, h01, h10, h11, ps.x - GameFloat(p0.x), ps.y - GameFloat(p0.y))
+        return bilinearInterpolation(h00, h10, h01, h11, ps.x - GameFloat(p0.x), ps.y - GameFloat(p0.y))
     }
     
     /// With the `x` position fixed, reduce the approximation to a linear interpolation between a sample above and below.
