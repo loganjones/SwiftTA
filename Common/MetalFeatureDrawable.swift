@@ -142,7 +142,7 @@ private extension MetalFeatureDrawable {
         MapFeatureInfo.collateFeatureGafItems(featureInfo, from: filesystem) {
             (name, info, item, gafHandle, gafListing) in
             
-            guard let featureIndex = map.features.index(of: name) else { return }//.firstIndex(of: name) else { return }
+            guard let featureIndex = map.features.firstIndex(of: name) else { return }//.firstIndex(of: name) else { return }
             guard let occurrences = occurrences[featureIndex], !occurrences.isEmpty else { return }
             guard let gafFrames = try? item.extractFrames(from: gafHandle) else { return }
             guard let palette = palettes[info.world ?? ""] else { return }

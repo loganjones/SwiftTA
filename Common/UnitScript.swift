@@ -56,7 +56,7 @@ struct UnitScript {
 extension UnitScript {
     
     func module(named name: String) -> Module? {
-        guard let index = modules.index(where: { $0.name == name })
+        guard let index = modules.firstIndex(where: { $0.name == name })
             else { return nil }
         return modules[index]
     }

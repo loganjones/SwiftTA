@@ -137,7 +137,7 @@ private extension UnitModel {
                 .bindMemoryBuffer(to: TA_3DO_PRIMITIVE.self, capacity: Int(object.numberOfPrimitives))
                 .map { raw -> Primitive in
                     let texture = Texture(of: raw, in: memory)
-                    let texIndex = model.textures.index(of: texture) ?? model.textures.append2(texture)
+                    let texIndex = model.textures.firstIndex(of: texture) ?? model.textures.append2(texture)
                     let indices = UnsafeRawPointer(memory + raw.offsetToVertexIndexArray)
                         .bindMemoryBuffer(to: UInt16.self, capacity: Int(raw.numberOfVertexIndexes))
                         .map { UnitModel.Vertices.Index($0) + verticesStart }

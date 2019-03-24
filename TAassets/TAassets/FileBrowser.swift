@@ -345,15 +345,15 @@ extension FileBrowserViewController.Directory: FinderViewDirectory {
     
     func index(of item: Item) -> Int? {
         switch self {
-        case .directory(_, let items, _): return items.index(where: { FileSystem.compareNames($0.name, item.name) })
-        case .gaf(_, let items, _): return items.index(where: { FileSystem.compareNames($0.name, item.name) })
+        case .directory(_, let items, _): return items.firstIndex(where: { FileSystem.compareNames($0.name, item.name) })
+        case .gaf(_, let items, _): return items.firstIndex(where: { FileSystem.compareNames($0.name, item.name) })
         }
     }
     
     func index(where predicate: (Item) -> Bool) -> Int? {
         switch self {
-        case .directory(_, let items, _): return items.lazy.map({ Item(asset: $0) }).index(where: predicate)
-        case .gaf(_, let items, _): return items.lazy.map({ Item(gaf: $0) }).index(where: predicate)
+        case .directory(_, let items, _): return items.lazy.map({ Item(asset: $0) }).firstIndex(where: predicate)
+        case .gaf(_, let items, _): return items.lazy.map({ Item(gaf: $0) }).firstIndex(where: predicate)
         }
     }
     

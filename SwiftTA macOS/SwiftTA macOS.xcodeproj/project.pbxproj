@@ -294,7 +294,7 @@
 				TargetAttributes = {
 					B5CAAF0320B26BB2003B17D7 = {
 						CreatedOnToolsVersion = 9.3.1;
-						LastSwiftMigration = 1000;
+						LastSwiftMigration = 1020;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
 								enabled = 0;
@@ -536,7 +536,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "Toasty.SwiftTA-macOS";
 				PRODUCT_NAME = SwiftTA;
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftTA macOS/BridgingHeader.h";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -554,7 +554,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "Toasty.SwiftTA-macOS";
 				PRODUCT_NAME = SwiftTA;
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftTA macOS/BridgingHeader.h";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

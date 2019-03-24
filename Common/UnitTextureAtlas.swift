@@ -217,7 +217,7 @@ private class RectFiller {
     func findSuitableRect(ofSize size: Size2<Int>) -> _Rect? {
         
         // Find the first rect where `size` would fit inside
-        guard let index = rects.index(where: { size.width <= $0.width && size.height <= $0.height })
+        guard let index = rects.firstIndex(where: { size.width <= $0.width && size.height <= $0.height })
             else { return nil }
         
         // This rect can fit a rect of `size`

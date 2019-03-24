@@ -155,7 +155,7 @@ class FinderView<Item: FinderViewItem>: NSView {
     
     fileprivate func addTier(for directory: Directory, after parent: Tier) {
         
-        guard let parentIndex = tiers.index(of: parent) else { return }
+        guard let parentIndex = tiers.firstIndex(of: parent) else { return }
         
         let new = tiers.prefix(through: parentIndex)
         let dropped = tiers.suffix(from: parentIndex+1)
@@ -173,7 +173,7 @@ class FinderView<Item: FinderViewItem>: NSView {
     }
     
     fileprivate func clear(after tier: Tier) {
-        guard let index = tiers.index(of: tier) else { return }
+        guard let index = tiers.firstIndex(of: tier) else { return }
         let new = tiers.prefix(through: index)
         let dropped = tiers.suffix(from: index+1)
         dropped.forEach({ $0.removeFromSuperview() })
@@ -196,7 +196,7 @@ class FinderView<Item: FinderViewItem>: NSView {
     }
     
     fileprivate func path(upTo tier: Tier) -> [Directory] {
-        guard let index = tiers.index(of: tier) else { return [] }
+        guard let index = tiers.firstIndex(of: tier) else { return [] }
         return tiers[0...index].map({ $0.directory })
     }
     
