@@ -116,7 +116,7 @@ private extension UnitModel {
         var vertices = 0
     }
     
-    static func loadModel(from memory: UnsafePointer<UInt8>) -> ModelData {
+    static func loadModel(from memory: UnsafeRawBufferPointer) -> ModelData {
         
         let counts = ModelCounts(startingAt: 0, in: memory)
         var model = ModelData(reservingCapacity: counts)
@@ -128,18 +128,17 @@ private extension UnitModel {
         while !queue.isEmpty {
             
             let offset = queue.remove(at: 0)
-            let object = UnsafeRawPointer(memory + offset).bindMemory(to: TA_3DO_OBJECT.self, capacity: 1).pointee
+            let object = memory.load(fromByteOffset: offset, as: TA_3DO_OBJECT.self)
 
-            let vertices = UnsafeRawPointer(memory + object.offsetToVertexArray).bindMemoryBuffer(to: TA_3DO_VERTEX.self, capacity: Int(object.numberOfVertexes)).map({ Vertex3($0) })
+            let vertices = memory.bindMemory(atByteOffset: Int(object.offsetToVertexArray), count: Int(object.numberOfVertexes), to: TA_3DO_VERTEX.self)
+                .map({ Vertex3($0) })
             let verticesStart = model.vertices.append2(contentsOf: vertices)
             
-            let primitives = UnsafeRawPointer(memory + object.offsetToPrimitiveArray)
-                .bindMemoryBuffer(to: TA_3DO_PRIMITIVE.self, capacity: Int(object.numberOfPrimitives))
+            let primitives = memory.bindMemory(atByteOffset: Int(object.offsetToPrimitiveArray), count: Int(object.numberOfPrimitives), to: TA_3DO_PRIMITIVE.self)
                 .map { raw -> Primitive in
                     let texture = Texture(of: raw, in: memory)
                     let texIndex = model.textures.firstIndex(of: texture) ?? model.textures.append2(texture)
-                    let indices = UnsafeRawPointer(memory + raw.offsetToVertexIndexArray)
-                        .bindMemoryBuffer(to: UInt16.self, capacity: Int(raw.numberOfVertexIndexes))
+                    let indices = memory.bindMemory(atByteOffset: Int(raw.offsetToVertexIndexArray), count: Int(raw.numberOfVertexIndexes), to: UInt16.self)
                         .map { UnitModel.Vertices.Index($0) + verticesStart }
                     return Primitive(texture: texIndex, indices: indices)
             }
@@ -155,7 +154,7 @@ private extension UnitModel {
                 else { print("!?!? groundPlateIndex already assigned?") }
             }
             
-            let piece = Piece(name: String(cString: memory + object.offsetToObjectName),
+            let piece = Piece(name: memory.loadCString(fromByteOffset: Int(object.offsetToObjectName)),
                               offset: object.offsetFromParent,
                               primitives: Array(primitivesStart..<model.primitives.endIndex),
                               children: Array(childrenStart..<(childrenStart + childOffsets.count)))
@@ -168,12 +167,12 @@ private extension UnitModel {
         return model
     }
     
-    static func accumulateSiblingOffsets(atOffset start: Int, in memory: UnsafePointer<UInt8>) -> [Int] {
+    static func accumulateSiblingOffsets(atOffset start: Int, in memory: UnsafeRawBufferPointer) -> [Int] {
         var offsets: [Int] = []
         var offset = start
         while true {
             offsets.append(offset)
-            let object = UnsafeRawPointer(memory + offset).bindMemory(to: TA_3DO_OBJECT.self, capacity: 1).pointee
+            let object = memory.load(fromByteOffset: offset, as: TA_3DO_OBJECT.self)
             if object.offsetToSiblingObject != 0 { offset = Int(object.offsetToSiblingObject) }
             else { break }
         }
@@ -218,9 +217,9 @@ private extension UnitModel {
 
 private extension UnitModel.Texture {
     
-    init(of raw: TA_3DO_PRIMITIVE, in memory: UnsafePointer<UInt8>) {
+    init(of raw: TA_3DO_PRIMITIVE, in memory: UnsafeRawBufferPointer) {
         if raw.offsetToTextureName != 0 {
-            self = .image(String(cString: memory + raw.offsetToTextureName))
+            self = .image(memory.loadCString(fromByteOffset: Int(raw.offsetToTextureName)))
         }
         else {
             self = .color(Int(raw.color))
@@ -258,9 +257,9 @@ extension UnitModel.ModelCounts {
         vertices = Int(object.numberOfVertexes)
     }
     
-    init(startingAt offset: Int, in memory: UnsafePointer<UInt8>) {
+    init(startingAt offset: Int, in memory: UnsafeRawBufferPointer) {
         
-        let object = UnsafeRawPointer(memory + offset).bindMemory(to: TA_3DO_OBJECT.self, capacity: 1).pointee
+        let object = memory.load(fromByteOffset: offset, as: TA_3DO_OBJECT.self)
         
         let siblings: UnitModel.ModelCounts
         if object.offsetToSiblingObject != 0 {

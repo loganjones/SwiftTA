@@ -44,20 +44,17 @@ extension FileReadHandle {
     }
     
     func readData<T>(ofType type: T.Type, count: Int) throws -> Data {
-        return try readData(verifyingLength: MemoryLayout<T>.size * count)
+        return try readData(verifyingLength: MemoryLayout<T>.stride * count)
     }
     
     func readValue<T>(ofType type: T.Type) throws -> T {
         let data = try readData(verifyingLength: MemoryLayout<T>.size)
-        return data.withUnsafeBytes { $0.pointee }
+        return data.withUnsafeBytes { $0.load(as: type) }
     }
     
     func readArray<T>(ofType type: T.Type, count: Int) throws -> [T] {
-        let data = try readData(verifyingLength: MemoryLayout<T>.size * count)
-        return data.withUnsafeBytes { (p: UnsafePointer<UInt8>) -> [T] in
-            let buffer = UnsafeBufferPointer<T>(rebinding: p, capacity: count)
-            return Array(buffer)
-        }
+        let data = try readData(verifyingLength: MemoryLayout<T>.stride * count)
+        return data.withUnsafeBytes { Array($0.bindMemory(to: type)) }
     }
     
     func readData(ofLength length: UInt32) -> Data {

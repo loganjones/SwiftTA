@@ -391,8 +391,8 @@ extension TaMapModel {
         func eachIndex<R>(inColumns columns: R, rows: R, visit: (_ index: Int, _ column: Int, _ row: Int) -> ())
             where R: Sequence, R.Element == Int
         {
-            indices.withUnsafeBytes() { (buffer: UnsafePointer<UInt8>) in
-                let p = UnsafeRawPointer(buffer).bindMemoryBuffer(to: UInt16.self, capacity: size.area)
+            indices.withUnsafeBytes() {
+                let p = $0.bindMemory(to: UInt16.self)
                 for row in rows {
                     if row >= size.height { break }
                     for column in columns {
@@ -420,7 +420,7 @@ extension TaMapModel {
         let tileBuffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: tileSet.count * tntTileSize.area * 4)
         
         tileSet.tiles.withUnsafeBytes() {
-            (sourceTiles: UnsafePointer<UInt8>) in
+            (sourceTiles: UnsafeRawBufferPointer) in
             let sourceCount = tntTileSize.area * tileSet.count
             for sourceIndex in 0..<sourceCount {
                 let destinationIndex = sourceIndex * 4

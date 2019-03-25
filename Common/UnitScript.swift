@@ -74,15 +74,11 @@ private extension UnitScript {
         var staticCount: Int
     }
     
-    static func loadScript(from memory: UnsafePointer<UInt8>) -> ScriptData {
+    static func loadScript(from memory: UnsafeRawBufferPointer) -> ScriptData {
         
-        let header = UnsafeRawPointer(memory).bindMemory(to: TA_COB_HEADER.self, capacity: 1).pointee
-        
-        let code = UnsafeRawPointer(memory + Int(header.offsetToFirstModule))
-            .bindMemoryBuffer(to: CodeUnit.self, capacity: Int(header.lengthOfAllModules))
-        
-        let moduleOffsets = UnsafeRawPointer(memory + Int(header.offsetToModulePointerArray))
-            .bindMemoryBuffer(to: UInt32.self, capacity: Int(header.numberOfModules))
+        let header = memory.load(fromByteOffset: 0, as: TA_COB_HEADER.self)
+        let code = memory.bindMemory(atByteOffset: Int(header.offsetToFirstModule), count: Int(header.lengthOfAllModules), to: CodeUnit.self)
+        let moduleOffsets = memory.bindMemory(atByteOffset: Int(header.offsetToModulePointerArray), count: Int(header.numberOfModules), to: UInt32.self)
         
         let moduleNames = UnitScript.collectStrings(at: Int(header.offsetToModuleNameOffsetArray), in: memory, count: Int(header.numberOfModules))
         let pieceNames = UnitScript.collectStrings(at: Int(header.offsetToPieceNameOffsetArray), in: memory, count: Int(header.numberOfPieces))
@@ -97,16 +93,15 @@ private extension UnitScript {
                           staticCount: Int(header.numberOfStaticVars))
     }
     
-    static func collectStrings(at offset: Int, in memory: UnsafePointer<UInt8>, count: Int = 1) -> [String] {
+    static func collectStrings(at offset: Int, in memory: UnsafeRawBufferPointer, count: Int = 1) -> [String] {
         
         var strings: [String] = []
         strings.reserveCapacity(count)
         
-        let offsets = UnsafeRawPointer(memory + offset)
-            .bindMemoryBuffer(to: UInt32.self, capacity: count)
-        
+        let offsets = memory.bindMemory(atByteOffset: offset, count: count, to: UInt32.self)
+
         for offset in offsets {
-            let string = String(cString: memory + offset)
+            let string = memory.loadCString(fromByteOffset: Int(offset))
             strings.append(string)
         }
         

@@ -253,9 +253,9 @@ private extension BasicMetalUnitViewRenderer {
             throw TextureError.badTextureDescriptor
         }
         
-        data.withUnsafeBytes { (p: UnsafePointer<UInt8>) -> () in
+        data.withUnsafeBytes {
             let r = MTLRegion(origin: MTLOrigin(x: 0, y: 0, z: 0), size: MTLSize(width: textureAtlas.size.width, height: textureAtlas.size.height, depth: 1))
-            texture.replace(region: r, mipmapLevel: 0, withBytes: p, bytesPerRow: textureAtlas.size.width * 4)
+            texture.replace(region: r, mipmapLevel: 0, withBytes: $0.baseAddress!, bytesPerRow: textureAtlas.size.width * 4)
         }
         
         return texture

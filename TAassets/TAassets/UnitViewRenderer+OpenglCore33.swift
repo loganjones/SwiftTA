@@ -100,7 +100,7 @@ private extension Core33OpenglUnitViewRenderer {
                 0,
                 GLenum(GL_RGBA),
                 GLenum(GL_UNSIGNED_BYTE),
-                $0)
+                $0.baseAddress!)
         }
         
         printGlErrors(prefix: "Model Texture: ")

@@ -230,7 +230,7 @@ extension TaMapModel {
         let tileBuffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: tileSet.count * tntTileSize.area * 4)
         
         tileSet.tiles.withUnsafeBytes() {
-            (sourceTiles: UnsafePointer<UInt8>) in
+            (sourceTiles: UnsafeRawBufferPointer) in
             let sourceCount = tntTileSize.area * tileSet.count
             for sourceIndex in 0..<sourceCount {
                 let destinationIndex = sourceIndex * 4

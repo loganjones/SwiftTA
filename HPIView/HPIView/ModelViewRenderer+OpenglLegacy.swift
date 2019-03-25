@@ -75,7 +75,7 @@ private extension LegacyOpenglModelViewRenderer {
                 0,
                 GLenum(GL_RGBA),
                 GLenum(GL_UNSIGNED_BYTE),
-                $0)
+                $0.baseAddress!)
         }
         
         printGlErrors(prefix: "Model Texture: ")

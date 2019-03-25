@@ -253,8 +253,8 @@ class UnitDetailViewController: NSViewController {
     private func tempSaveAtlasToFile(_ atlas: UnitTextureAtlas, _ palette: Palette) throws {
         let pixelData = atlas.build(from: shared.filesystem, using: palette)
         
-        let cfdata = pixelData.withUnsafeBytes { (pixels: UnsafePointer<UInt8>) -> CFData in
-            return CFDataCreate(kCFAllocatorDefault, pixels, pixelData.count)
+        let cfdata = pixelData.withUnsafeBytes { (pixels: UnsafeRawBufferPointer) -> CFData in
+            return CFDataCreate(kCFAllocatorDefault, pixels.bindMemory(to: UInt8.self).baseAddress!, pixelData.count)
         }
         let image = CGImage(width: atlas.size.width,
                             height: atlas.size.height,

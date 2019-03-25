@@ -50,12 +50,7 @@ extension Palette {
     }
     
     init(palData data: Data) {
-        colors = data.withUnsafeBytes { (bytes: UnsafePointer<UInt8>) -> Array<Color> in
-            let raw = UnsafeRawPointer(bytes)
-            let p = raw.bindMemory(to: Color.self, capacity: 256)
-            let buf = UnsafeBufferPointer<Color>(start: p, count: 256)
-            return Array(buf)
-        }
+        colors = data.withUnsafeBytes { Array($0.bindMemory(to: Color.self)) }
         
         // The TA .pal files have every color with a 0 alpha value ಠ_ಠ
         for i in colors.indices {
@@ -121,17 +116,17 @@ extension Palette {
     func mapIndicesRgb(_ imageIndices: Data, size: Size2<Int>) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 3)
-        pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
-            imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
-                var pixel = pixels
-                var raw = indices
+        pixelData.withUnsafeMutableBytes() { (destination: UnsafeMutableRawBufferPointer) in
+            imageIndices.withUnsafeBytes { (source: UnsafeRawBufferPointer) in
+                var destinationIndex = destination.startIndex
+                var sourceIndex = source.startIndex
                 for _ in 0..<(size.width * size.height) {
-                    let colorIndex = raw.pointee
-                    pixel[0] = palette[colorIndex].red
-                    pixel[1] = palette[colorIndex].green
-                    pixel[2] = palette[colorIndex].blue
-                    pixel += 3
-                    raw += 1
+                    let colorIndex = source[sourceIndex]
+                    destination[destinationIndex+0] = palette[colorIndex].red
+                    destination[destinationIndex+1] = palette[colorIndex].green
+                    destination[destinationIndex+2] = palette[colorIndex].blue
+                    destinationIndex += 3
+                    sourceIndex += 1
                 }
             }
         }
@@ -141,21 +136,20 @@ extension Palette {
     func mapIndicesRgbFlipped(_ imageIndices: Data, size: Size2<Int>) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 3)
-        pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
-            imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
-                var line = pixels + ((size.area - size.width) * 3)
-                var raw = indices
+        pixelData.withUnsafeMutableBytes() { (destination: UnsafeMutableRawBufferPointer) in
+            imageIndices.withUnsafeBytes { (source: UnsafeRawBufferPointer) in
+                var destinationIndex = destination.endIndex - (size.width * 3)
+                var sourceIndex = source.startIndex
                 for _ in 0..<size.height {
-                    var pixel = line
                     for _ in 0..<size.width {
-                        let colorIndex = raw.pointee
-                        pixel[0] = palette[colorIndex].red
-                        pixel[1] = palette[colorIndex].green
-                        pixel[2] = palette[colorIndex].blue
-                        pixel += 3
-                        raw += 1
+                        let colorIndex = source[sourceIndex]
+                        destination[destinationIndex+0] = palette[colorIndex].red
+                        destination[destinationIndex+1] = palette[colorIndex].green
+                        destination[destinationIndex+2] = palette[colorIndex].blue
+                        destinationIndex += 3
+                        sourceIndex += 1
                     }
-                    line -= size.width * 3
+                    destinationIndex -= (size.width * 3) * 2
                 }
             }
         }
@@ -165,18 +159,18 @@ extension Palette {
     func mapIndicesRgba(_ imageIndices: Data, size: Size2<Int>) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 4)
-        pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
-            imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
-                var pixel = pixels
-                var raw = indices
+        pixelData.withUnsafeMutableBytes() { (destination: UnsafeMutableRawBufferPointer) in
+            imageIndices.withUnsafeBytes { (source: UnsafeRawBufferPointer) in
+                var destinationIndex = destination.startIndex
+                var sourceIndex = source.startIndex
                 for _ in 0..<(size.width * size.height) {
-                    let colorIndex = raw.pointee
-                    pixel[0] = palette[colorIndex].red
-                    pixel[1] = palette[colorIndex].green
-                    pixel[2] = palette[colorIndex].blue
-                    pixel[3] = palette[colorIndex].alpha
-                    pixel += 4
-                    raw += 1
+                    let colorIndex = source[sourceIndex]
+                    destination[destinationIndex+0] = palette[colorIndex].red
+                    destination[destinationIndex+1] = palette[colorIndex].green
+                    destination[destinationIndex+2] = palette[colorIndex].blue
+                    destination[destinationIndex+3] = palette[colorIndex].alpha
+                    destinationIndex += 4
+                    sourceIndex += 1
                 }
             }
         }
@@ -186,22 +180,21 @@ extension Palette {
     func mapIndicesRgbaFlipped(_ imageIndices: Data, size: Size2<Int>) -> Data {
         let palette = self
         var pixelData = Data(count: size.area * 4)
-        pixelData.withUnsafeMutableBytes() { (pixels: UnsafeMutablePointer<UInt8>) in
-            imageIndices.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
-                var line = pixels + ((size.area - size.width) * 4)
-                var raw = indices
+        pixelData.withUnsafeMutableBytes() { (destination: UnsafeMutableRawBufferPointer) in
+            imageIndices.withUnsafeBytes { (source: UnsafeRawBufferPointer) in
+                var destinationIndex = destination.endIndex - (size.width * 4)
+                var sourceIndex = source.startIndex
                 for _ in 0..<size.height {
-                    var pixel = line
                     for _ in 0..<size.width {
-                        let colorIndex = raw.pointee
-                        pixel[0] = palette[colorIndex].red
-                        pixel[1] = palette[colorIndex].green
-                        pixel[2] = palette[colorIndex].blue
-                        pixel[3] = palette[colorIndex].alpha
-                        pixel += 4
-                        raw += 1
+                        let colorIndex = source[sourceIndex]
+                        destination[destinationIndex+0] = palette[colorIndex].red
+                        destination[destinationIndex+1] = palette[colorIndex].green
+                        destination[destinationIndex+2] = palette[colorIndex].blue
+                        destination[destinationIndex+3] = palette[colorIndex].alpha
+                        destinationIndex += 4
+                        sourceIndex += 1
                     }
-                    line -= size.width * 4
+                    destinationIndex -= (size.width * 4) * 2
                 }
             }
         }

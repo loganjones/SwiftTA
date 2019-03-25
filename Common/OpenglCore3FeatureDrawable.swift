@@ -165,8 +165,7 @@ private extension OpenglCore3FeatureDrawable {
         
         let image = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: gafFrame.size.area * 4)
         defer { image.deallocate() }
-        gafFrame.data.withUnsafeBytes() {
-            (source: UnsafePointer<UInt8>) in
+        gafFrame.data.withUnsafeBytes() { (source) in
             for sourceIndex in 0..<gafFrame.size.area {
                 let destinationIndex = sourceIndex * 4
                 let colorIndex = Int(source[sourceIndex])

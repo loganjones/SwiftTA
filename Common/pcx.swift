@@ -39,7 +39,7 @@ extension Pcx {
         
         // Read in the rest of the file and get decodin'
         let rawData = pcxFile.readDataToEndOfFile()
-        try rawData.withUnsafeBytes { (p: UnsafePointer<UInt8>) throws in
+        try rawData.withUnsafeBytes { (p: UnsafeRawBufferPointer) throws in
             
             // Do a simple check for the end-of-file palette.
             // If it's not there, bail; we don't support any other type of PCX.
@@ -47,7 +47,7 @@ extension Pcx {
                 else { throw DecodeError.noPalette }
             
             // Decode the PCX bytes into our `pixelBuffer`.
-            decode(header, bytes: p, palette: p + (rawData.count - 768), into: pixelBuffer)
+            decode(header, bytes: p, palette: p[(rawData.count - 768)...], into: pixelBuffer)
         }
         
         return (output, size)
@@ -69,7 +69,7 @@ extension Pcx {
         
         var colors = [Palette.Color](repeating: .white, count: 256)
         
-        data.withUnsafeBytes() { (bytes: UnsafePointer<UInt8>) in
+        data.withUnsafeBytes() { (bytes: UnsafeRawBufferPointer) in
             var pcxIndex = 1
             for colorsIndex in 0..<256 {
                 colors[colorsIndex].red     = bytes[pcxIndex + 0]
@@ -85,23 +85,23 @@ extension Pcx {
     /**
      Decodes the RLE compressed data in `bytes` using the provided `palette` and `header` information.
      */
-    private static func decode(_ header: PCX_HEADER, bytes: UnsafePointer<UInt8>, palette: UnsafePointer<UInt8>,
+    private static func decode(_ header: PCX_HEADER, bytes: UnsafeRawBufferPointer, palette: UnsafeRawBufferPointer.SubSequence,
                         into pixelBuffer: UnsafeMutablePointer<UInt8>) {
         
         let size = header.imageSize
         
-        var pcxBytes = bytes
+        var pcxIndex = bytes.startIndex
         var line = pixelBuffer
         for _ in 0..<size.height {
             var x = 0
             var pixelX = 0
             while x < size.width {
-                let byte = pcxBytes.pointee
-                pcxBytes += 1
+                let byte = bytes[pcxIndex]
+                pcxIndex += 1
                 if 0xC0 == (0xC0 & byte) {
                     let count = 0x3F & byte
-                    let byte2 = pcxBytes.pointee
-                    pcxBytes += 1
+                    let byte2 = bytes[pcxIndex]
+                    pcxIndex += 1
                     for _ in 0..<count {
                         setPixel(line + pixelX, to: byte2, palette: palette)
                         x += 1
@@ -129,11 +129,12 @@ extension Pcx {
     
 }
 
-private func setPixel(_ pixel: UnsafeMutablePointer<UInt8>, to colorIndex: UInt8, palette: UnsafePointer<UInt8>) {
+private func setPixel(_ pixel: UnsafeMutablePointer<UInt8>, to colorIndex: UInt8, palette: UnsafeRawBufferPointer.SubSequence) {
     let colorOffset = Int(colorIndex) * 3
-    pixel[0] = palette[colorOffset + 0]
-    pixel[1] = palette[colorOffset + 1]
-    pixel[2] = palette[colorOffset + 2]
+    let paletteOffset = palette.startIndex + colorOffset
+    pixel[0] = palette[paletteOffset + 0]
+    pixel[1] = palette[paletteOffset + 1]
+    pixel[2] = palette[paletteOffset + 2]
 }
 
 // MARK:- Analysis (Image or Palette)

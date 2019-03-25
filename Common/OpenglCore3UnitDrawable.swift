@@ -298,7 +298,7 @@ private func makeTexture(_ textureAtlas: UnitTextureAtlas, _ palette: Palette, _
             0,
             GLenum(GL_RGBA),
             GLenum(GL_UNSIGNED_BYTE),
-            $0)
+            $0.baseAddress!)
     }
     
     printGlErrors(prefix: "Model Texture: ")

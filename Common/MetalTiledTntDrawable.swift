@@ -317,11 +317,10 @@ private extension MetalTiledTntDrawable.TaTntTileSet {
         textures = try Self.allocateTextures(device: device, tileCount: tileSet.count, tntTileSize: tileSet.tileSize)
         
         let tilePixelCount = tileSet.tileSize.area
-        let tileBuffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: tilePixelCount * 4)
+        let tileBuffer = UnsafeMutableRawBufferPointer.allocate(byteCount: tilePixelCount * 4, alignment: 1)
         defer { tileBuffer.deallocate() }
         
-        tileSet.tiles.withUnsafeBytes() {
-            (sourceTiles: UnsafePointer<UInt8>) in
+        tileSet.tiles.withUnsafeBytes() { (sourceTiles) in
             
             var textureIndex = 0
             var runningTileCount = 0

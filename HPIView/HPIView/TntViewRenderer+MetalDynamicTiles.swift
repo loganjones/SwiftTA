@@ -340,7 +340,7 @@ private extension DynamicTileMetalTntViewRenderer.TaTntTileSet {
         defer { tileBuffer.deallocate() }
         
         tileSet.tiles.withUnsafeBytes() {
-            (sourceTiles: UnsafePointer<UInt8>) in
+            (sourceTiles: UnsafeRawBufferPointer) in
             
             var textureIndex = 0
             var runningTileCount = 0
