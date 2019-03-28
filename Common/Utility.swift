@@ -259,11 +259,15 @@ extension Int {
  */
 protocol StringlyIdentifier: ExpressibleByStringLiteral, Hashable, CustomStringConvertible {
     var name: String { get }
+    var hashValue: Int { get }
     init(named: String)
 }
 extension StringlyIdentifier {
     init(stringLiteral value: String) {
         self.init(named: value)
+    }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(hashValue)
     }
     static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.hashValue == rhs.hashValue
