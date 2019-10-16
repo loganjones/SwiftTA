@@ -12,11 +12,6 @@ import Foundation
 infix operator •: MultiplicationPrecedence
 infix operator ×: MultiplicationPrecedence
 
-public typealias Point2 = Vector2
-public typealias Point3 = Vector3
-public typealias Vertex2 = Vector2
-public typealias Vertex3 = Vector3
-
 
 // MARK:- Division Protocol
 
@@ -47,98 +42,23 @@ extension Double: TrigonometricFloatingPoint {
     @inlinable public var arccosine: Double { return acos(self) }
 }
 
-
-// MARK:- Vector Protocols
-
-protocol Vector2Protocol {
-    associatedtype Element: Numeric
-    var x: Element { get set }
-    var y: Element { get set }
-    init(x: Element, y: Element)
-}
-
-extension Vector2Protocol {
-    init<Other>(_ copy: Other) where Other: Vector2Protocol, Other.Element == Self.Element {
-        self.init(x: copy.x, y: copy.y)
-    }
-}
-extension Vector2Protocol where Element: BinaryFloatingPoint {
-    init<Other>(_ convert: Other) where Other: Vector2Protocol, Other.Element: BinaryInteger {
-        self.init(x: Element(convert.x), y: Element(convert.y))
-    }
-}
-extension Vector2Protocol where Element: BinaryInteger {
-    init<Other>(_ convert: Other) where Other: Vector2Protocol, Other.Element: BinaryFloatingPoint {
-        self.init(x: Element(convert.x), y: Element(convert.y))
-    }
-}
-
-protocol Vector3Protocol {
-    associatedtype Element: Numeric
-    var x: Element { get set }
-    var y: Element { get set }
-    var z: Element { get set }
-    init(x: Element, y: Element, z: Element)
-}
-
-extension Vector3Protocol {
-    init<Other>(_ copy: Other) where Other: Vector3Protocol, Other.Element == Self.Element {
-        self.init(x: copy.x, y: copy.y, z: copy.z)
-    }
-}
-extension Vector3Protocol where Element: BinaryFloatingPoint {
-    init<Other>(_ convert: Other) where Other: Vector3Protocol, Other.Element: BinaryInteger {
-        self.init(x: Element(convert.x), y: Element(convert.y), z: Element(convert.z))
-    }
-}
-extension Vector3Protocol where Element: BinaryInteger {
-    init<Other>(_ convert: Other) where Other: Vector3Protocol, Other.Element: BinaryFloatingPoint {
-        self.init(x: Element(convert.x), y: Element(convert.y), z: Element(convert.z))
-    }
-}
-
-protocol Vector4Protocol {
-    associatedtype Element: Numeric
-    var x: Element { get set }
-    var y: Element { get set }
-    var z: Element { get set }
-    var w: Element { get set }
-    init(x: Element, y: Element, z: Element, w: Element)
-}
-
-extension Vector4Protocol {
-    init<Other>(_ copy: Other) where Other: Vector4Protocol, Other.Element == Self.Element {
-        self.init(x: copy.x, y: copy.y, z: copy.z, w: copy.w)
-    }
-}
-extension Vector4Protocol where Element: BinaryFloatingPoint {
-    init<Other>(_ convert: Other) where Other: Vector4Protocol, Other.Element: BinaryInteger {
-        self.init(x: Element(convert.x), y: Element(convert.y), z: Element(convert.z), w: Element(convert.w))
-    }
-}
-extension Vector4Protocol where Element: BinaryInteger {
-    init<Other>(_ convert: Other) where Other: Vector4Protocol, Other.Element: BinaryFloatingPoint {
-        self.init(x: Element(convert.x), y: Element(convert.y), z: Element(convert.z), w: Element(convert.w))
-    }
-}
-
 // Size
 
-extension Vector2Protocol {
-    init(_ size: Size2<Element>) {
-        self.init(x: size.width, y: size.height)
-    }
-}
-extension Vector2Protocol where Element: BinaryFloatingPoint {
-    init<OtherElement>(_ convert: Size2<OtherElement>) where OtherElement: BinaryInteger {
-        self.init(x: Element(convert.width), y: Element(convert.height))
-    }
-}
-extension Vector2Protocol where Element: BinaryInteger {
-    init<OtherElement>(_ convert: Size2<OtherElement>) where OtherElement: BinaryFloatingPoint {
-        self.init(x: Element(convert.width), y: Element(convert.height))
-    }
-}
+//extension Vector2Protocol {
+//    init(_ size: Size2<Element>) {
+//        self.init(x: size.width, y: size.height)
+//    }
+//}
+//extension Vector2Protocol where Element: BinaryFloatingPoint {
+//    init<OtherElement>(_ convert: Size2<OtherElement>) where OtherElement: BinaryInteger {
+//        self.init(x: Element(convert.width), y: Element(convert.height))
+//    }
+//}
+//extension Vector2Protocol where Element: BinaryInteger {
+//    init<OtherElement>(_ convert: Size2<OtherElement>) where OtherElement: BinaryFloatingPoint {
+//        self.init(x: Element(convert.width), y: Element(convert.height))
+//    }
+//}
 
 
 // MARK:- Utility Functions

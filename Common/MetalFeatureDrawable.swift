@@ -260,17 +260,17 @@ private extension MetalFeatureDrawable.Feature {
 
 private extension MapModel {
     func worldPosition(ofMapIndex index: Int) -> Point2<Int> {
-        return Point2<Int>(index: index, stride: self.mapSize.width) * 16
+        return Point2<Int>(index: index, stride: self.mapSize.width) &* 16
     }
 }
 private extension Point2 where Element == Int {
     
     func center(inFootprint footprint: Size2<Int>) -> Point2<Int> {
-        return self + Point2(footprint * 8)
+        return self &+ Point2(footprint * 8)
     }
     
     func offset(by offset: Point2<Int>) -> Point2<Int> {
-        return Point2(self - offset)
+        return self &- offset
     }
     
     func adjust(forHeight height: Int) -> Point2f {

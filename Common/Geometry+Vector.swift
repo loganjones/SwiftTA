@@ -8,25 +8,26 @@
 
 import Foundation
 
+public typealias Point2 = SIMD2
+public typealias Point3 = SIMD3
+public typealias Vertex2 = SIMD2
+public typealias Vertex3 = SIMD3
+public typealias Vector2 = SIMD2
+public typealias Vector3 = SIMD3
+public typealias Vector4 = SIMD4
 
-public struct Vector2<Element: Numeric>: Vector2Protocol {
-    public var values: (Element, Element)
-    @inlinable public var x: Element { get { return values.0 } set(s) { values.0 = s } }
-    @inlinable public var y: Element { get { return values.1 } set(s) { values.1 = s } }
-    @inlinable public init(values: (Element, Element)) { self.values = values }
-}
+
+// MARK:- Vector2
 
 public extension Vector2 {
     
-    @inlinable init(_ x: Element, _ y: Element) { self.init(values: (x, y)) }
-    @inlinable init(x: Element, y: Element) { self.init(values: (x, y)) }
-    @inlinable init(_ scalar: Element) { self.init(values: (scalar, scalar)) }
-    @inlinable init() { self.init(0) }
+    typealias Element = Scalar
     
-    @inlinable static var zero: Vector2 { return Vector2() }
-    @inlinable static var null: Vector2 { return Vector2() }
+    @inlinable init(_ size: Size2<Element>) {
+        self = size.values
+    }
     
-    @inlinable func map(transform: (Element) throws -> Element) rethrows -> Vector2 {
+    @inlinable func map(transform: (Element) throws -> Element) rethrows -> Vector2<Element> {
         return Vector2(try transform(x), try transform(y))
     }
     @inlinable func map<OtherElement: Numeric>(transform: (Element) throws -> OtherElement) rethrows -> Vector2<OtherElement> {
@@ -39,14 +40,7 @@ public extension Vector2 {
     
 }
 
-extension Vector2: CustomStringConvertible {
-    @inlinable public var description: String { return "(\(x), \(y))" }
-}
-
-public extension Vector2 where Element: Comparable {
-    
-    @inlinable var min: Element { return Swift.min(x, y) }
-    @inlinable var max: Element { return Swift.max(x, y) }
+public extension Vector2 where Element: SignedNumeric & Comparable {
     
     @inlinable func clamped(to rect: Rect4<Element>) -> Vector2<Element> {
         return Vector2(
@@ -57,191 +51,81 @@ public extension Vector2 where Element: Comparable {
     
 }
 
-public extension Vector2 where Element: BinaryInteger {
-    @inlinable func index(rowStride: Element) -> Element {
-        return (rowStride * y) + x
-    }
-}
-
-extension Vector2: Equatable {
-    @inlinable public static func == (lhs: Vector2, rhs: Vector2) -> Bool { return lhs.values == rhs.values }
-}
-extension Vector2: Hashable where Element: Hashable {
-    @inlinable public func hash(into hasher: inout Hasher) { hasher.combine(x); hasher.combine(y) }
-}
-
-public extension Vector2 {
+public extension Vector2 where Element: FixedWidthInteger {
     
-    @inlinable static func + (lhs: Vector2, rhs: Element) -> Vector2 {
-        return Vector2(
-            lhs.x + rhs,
-            lhs.y + rhs
-        )
-    }
-    @inlinable static func += (lhs: inout Vector2, rhs: Element) {
-        lhs.x += rhs
-        lhs.y += rhs
+    @inlinable init<Other>(_ size: Size2<Other>) where Other: SIMDScalar & BinaryFloatingPoint {
+        self.init(size.values)
     }
     
-    @inlinable static func + (lhs: Vector2, rhs: Vector2) -> Vector2 {
-        return Vector2(
-            lhs.x + rhs.x,
-            lhs.y + rhs.y
-        )
-    }
-    @inlinable static func += (lhs: inout Vector2, rhs: Vector2) {
-        lhs.x += rhs.x
-        lhs.y += rhs.y
+    @inlinable init(index: Element, stride: Element) {
+        let y = index / stride
+        let x = index - (y * stride)
+        self.init(x, y)
     }
     
-    @inlinable static func - (lhs: Vector2, rhs: Vector2) -> Vector2 {
-        return Vector2(
-            lhs.x - rhs.x,
-            lhs.y - rhs.y)
+    @inlinable static func * (lhs: Vector2<Element>, rhs: Size2<Element>) -> Vector2<Element> {
+        return lhs &* rhs.values
     }
-    @inlinable static func -= (lhs: inout Vector2, rhs: Vector2) {
-        lhs.x -= rhs.x
-        lhs.y -= rhs.y
+    @inlinable static func *= (lhs: inout Vector2<Element>, rhs: Size2<Element>) {
+        lhs &*= rhs.values
     }
     
-    @inlinable static func * (lhs: Vector2, rhs: Element) -> Vector2 {
-        return Vector2(
-            lhs.x * rhs,
-            lhs.y * rhs)
+    @inlinable static func / (lhs: Vector2<Element>, rhs: Size2<Element>) -> Vector2<Element> {
+        return lhs / rhs.values
     }
-    @inlinable static func *= (lhs: inout Vector2, rhs: Element) {
-        lhs.x *= rhs
-        lhs.y *= rhs
+    @inlinable static func /= (lhs: inout Vector2<Element>, rhs: Size2<Element>) {
+        lhs /= rhs.values
     }
     
-    @inlinable static func * (lhs: Vector2, rhs: Vector2) -> Vector2 {
-        return Vector2(
-            lhs.x * rhs.x,
-            lhs.y * rhs.y)
-    }
-    @inlinable static func *= (lhs: inout Vector2, rhs: Vector2) {
-        lhs.x *= rhs.x
-        lhs.y *= rhs.y
-    }
-    @inlinable static func * (lhs: Vector2, rhs: Size2<Element>) -> Vector2 {
-        return Vector2(
-            lhs.x * rhs.width,
-            lhs.y * rhs.height)
-    }
-    @inlinable static func *= (lhs: inout Vector2, rhs: Size2<Element>) {
-        lhs.x *= rhs.width
-        lhs.y *= rhs.height
-    }
-    
-    @inlinable static func • (lhs: Vector2, rhs: Vector2) -> Element {
-        return lhs.x * rhs.x + lhs.y * rhs.y
+    @inlinable static func • (lhs: Vector2<Element>, rhs: Vector2<Element>) -> Element {
+        return (lhs &* rhs).wrappedSum()
     }
     
     @inlinable var lengthSquared: Element {
-        return (x * x) + (y * y)
+        return (self &* self).wrappedSum()
     }
     
-}
-
-public extension Vector2 where Element: SignedNumeric {
-    @inlinable static prefix func - (rhs: Vector2) -> Vector2 {
-        return Vector2(
-            -rhs.x,
-            -rhs.y)
-    }
-}
-
-public extension Vector2 where Element: BinaryInteger {
-    
-    @inlinable static func / (lhs: Vector2, rhs: Element) -> Vector2 {
-        return Vector2(
-            lhs.x / rhs,
-            lhs.y / rhs)
-    }
-    @inlinable static func /= (lhs: inout Vector2, rhs: Element) {
-        lhs.x /= rhs
-        lhs.y /= rhs
-    }
-    
-    @inlinable static func / (lhs: Vector2, rhs: Vector2) -> Vector2 {
-        return Vector2(
-            lhs.x / rhs.x,
-            lhs.y / rhs.y)
-    }
-    @inlinable static func /= (lhs: inout Vector2, rhs: Vector2) {
-        lhs.x /= rhs.x
-        lhs.y /= rhs.y
-    }
-    
-    @inlinable static func / (lhs: Vector2, rhs: Size2<Element>) -> Vector2 {
-        return Vector2(
-            lhs.x / rhs.width,
-            lhs.y / rhs.height)
-    }
-    @inlinable static func /= (lhs: inout Vector2, rhs: Size2<Element>) {
-        lhs.x /= rhs.width
-        lhs.y /= rhs.height
-    }
-    
-    @inlinable static func % (lhs: Vector2, rhs: Element) -> Vector2 {
-        return Vector2(
-            lhs.x % rhs,
-            lhs.y % rhs)
-    }
-    @inlinable static func %= (lhs: inout Vector2, rhs: Element) {
-        lhs.x %= rhs
-        lhs.y %= rhs
-    }
-    
-    @inlinable static func % (lhs: Vector2, rhs: Vector2) -> Vector2 {
-        return Vector2(
-            lhs.x % rhs.x,
-            lhs.y % rhs.y)
-    }
-    @inlinable static func %= (lhs: inout Vector2, rhs: Vector2) {
-        lhs.x %= rhs.x
-        lhs.y %= rhs.y
+    @inlinable func index(rowStride: Element) -> Element {
+        return (rowStride * y) + x
     }
     
 }
 
 public extension Vector2 where Element: FloatingPoint {
     
-    @inlinable static func / (lhs: Vector2, rhs: Element) -> Vector2 {
-        return Vector2(
-            lhs.x / rhs,
-            lhs.y / rhs)
-    }
-    @inlinable static func /= (lhs: inout Vector2, rhs: Element) {
-        lhs.x /= rhs
-        lhs.y /= rhs
+    @inlinable init(index: Element, stride: Element) {
+        let y = index / stride
+        let x = index - (y * stride)
+        self.init(x, y)
     }
     
-    @inlinable static func / (lhs: Vector2, rhs: Vector2) -> Vector2 {
-        return Vector2(
-            lhs.x / rhs.x,
-            lhs.y / rhs.y)
+    @inlinable static func * (lhs: Vector2<Element>, rhs: Size2<Element>) -> Vector2<Element> {
+        return lhs * rhs.values
     }
-    @inlinable static func /= (lhs: inout Vector2, rhs: Vector2) {
-        lhs.x /= rhs.x
-        lhs.y /= rhs.y
+    @inlinable static func *= (lhs: inout Vector2<Element>, rhs: Size2<Element>) {
+        lhs *= rhs.values
     }
     
-    @inlinable static func / (lhs: Vector2, rhs: Size2<Element>) -> Vector2 {
-        return Vector2(
-            lhs.x / rhs.width,
-            lhs.y / rhs.height)
+    @inlinable static func / (lhs: Vector2<Element>, rhs: Size2<Element>) -> Vector2<Element> {
+        return lhs / rhs.values
     }
-    @inlinable static func /= (lhs: inout Vector2, rhs: Size2<Element>) {
-        lhs.x /= rhs.width
-        lhs.y /= rhs.height
+    @inlinable static func /= (lhs: inout Vector2<Element>, rhs: Size2<Element>) {
+        lhs /= rhs.values
+    }
+    
+    @inlinable static func • (lhs: Vector2<Element>, rhs: Vector2<Element>) -> Element {
+        return (lhs * rhs).sum()
     }
     
     @inlinable var length: Element {
-        return sqrt( (x * x) + (y * y) )
+        return self.lengthSquared.squareRoot()
     }
     
-    @inlinable var normalized: Vector2 {
+    @inlinable var lengthSquared: Element {
+        return (self * self).sum()
+    }
+    
+    @inlinable var normalized: Vector2<Element> {
         let f = 1 / self.length
         return self * f
     }
@@ -250,20 +134,31 @@ public extension Vector2 where Element: FloatingPoint {
         self *= f
     }
     
-    @inlinable func truncated(to maxLength: Element) -> Vector2 {
+    @inlinable func truncated(to maxLength: Element) -> Vector2<Element> {
         guard lengthSquared > sqr(maxLength) else { return self }
         let f = maxLength / length
         return self * f
     }
     
+    @inlinable func clamped(to rect: Rect4<Element>) -> Vector2<Element> {
+        return Vector2(
+            Swift.min(Swift.max(rect.minX, x), rect.maxX),
+            Swift.min(Swift.max(rect.minY, y), rect.maxY)
+        )
+    }
+    
 }
 
-public extension Vector2 where Element: Division {
-    @inlinable init(index: Element, stride: Element) {
-        let y = index / stride
-        let x = index - (y * stride)
-        self.init(x, y)
+public extension Vector2 where Element: BinaryFloatingPoint {
+    
+    @inlinable init<Other>(_ size: Size2<Other>) where Other: SIMDScalar & FixedWidthInteger {
+        self.init(size.values)
     }
+    
+    @inlinable init<Other>(_ size: Size2<Other>) where Other: SIMDScalar & BinaryFloatingPoint {
+        self.init(size.values)
+    }
+    
 }
 
 public extension Vector2 where Element: TrigonometricFloatingPoint {
@@ -285,30 +180,16 @@ public extension Vector2 where Element: TrigonometricFloatingPoint {
 
 // MARK:- Vector3
 
-public struct Vector3<Element: Numeric>: Vector3Protocol {
-    public var values: (Element, Element, Element)
-    @inlinable public var x: Element { get { return values.0 } set(s) { values.0 = s } }
-    @inlinable public var y: Element { get { return values.1 } set(s) { values.1 = s } }
-    @inlinable public var z: Element { get { return values.2 } set(s) { values.2 = s } }
-    @inlinable public init(values: (Element, Element, Element)) { self.values = values }
-}
-
 public extension Vector3 {
     
-    @inlinable init(_ x: Element, _ y: Element, _ z: Element) { self.init(values: (x, y, z)) }
-    @inlinable init(x: Element, y: Element, z: Element) { self.init(values: (x, y, z)) }
-    @inlinable init(_ scalar: Element) { self.init(values: (scalar, scalar, scalar)) }
-    @inlinable init() { self.init(0) }
+    typealias Element = Scalar
     
-    @inlinable init(xy v: Vector2<Element>, z: Element = 0) { self.init(values: (v.x, v.y, z)) }
-    
-    @inlinable static var zero: Vector3 { return Vector3() }
-    @inlinable static var null: Vector3 { return Vector3() }
+    @inlinable init(xy v: Vector2<Element>, z: Element) { self.init(v.x, v.y, z) }
     
     @inlinable var xy: Vector2<Element> { get { return Vector2(x,y) } set(v) { x = v.x; y = v.y } }
     
-    @inlinable func map(transform: (Element) throws -> Element) rethrows -> Vector3 {
-        return Vector3(try transform(x), try transform(y), try transform(z))
+    @inlinable func map(transform: (Element) throws -> Element) rethrows -> Vector3<Element> {
+        return Vector3<Element>(try transform(x), try transform(y), try transform(z))
     }
     @inlinable func map<OtherElement: Numeric>(transform: (Element) throws -> OtherElement) rethrows -> Vector3<OtherElement> {
         return Vector3<OtherElement>(try transform(x), try transform(y), try transform(z))
@@ -316,207 +197,49 @@ public extension Vector3 {
     
 }
 
-extension Vector3: CustomStringConvertible {
-    @inlinable public var description: String { return "(\(x), \(y)), \(z))" }
-}
-
-public extension Vector3 where Element: Comparable {
-    @inlinable var min: Element { return Swift.min(x,y,z) }
-    @inlinable var max: Element { return Swift.max(x,y,z) }
-}
-
-extension Vector3: Equatable {
-    @inlinable public static func == (lhs: Vector3, rhs: Vector3) -> Bool { return lhs.values == rhs.values }
-}
-extension Vector3: Hashable where Element: Hashable {
-    @inlinable public func hash(into hasher: inout Hasher) { hasher.combine(x); hasher.combine(y); hasher.combine(z) }
-}
-
-public extension Vector3 {
+public extension Vector3 where Element: FixedWidthInteger {
     
-    @inlinable static func + (lhs: Vector3, rhs: Element) -> Vector3 {
-        return Vector3(
-            lhs.x + rhs,
-            lhs.y + rhs,
-            lhs.z + rhs
-        )
-    }
-    @inlinable static func += (lhs: inout Vector3, rhs: Element) {
-        lhs.x += rhs
-        lhs.y += rhs
-        lhs.z += rhs
+    @inlinable static func • (lhs: Vector3<Element>, rhs: Vector3<Element>) -> Element {
+        return (lhs &* rhs).wrappedSum()
     }
     
-    @inlinable static func + (lhs: Vector3, rhs: Vector3) -> Vector3 {
-        return Vector3(
-            lhs.x + rhs.x,
-            lhs.y + rhs.y,
-            lhs.z + rhs.z
-        )
-    }
-    @inlinable static func += (lhs: inout Vector3, rhs: Vector3) {
-        lhs.x += rhs.x
-        lhs.y += rhs.y
-        lhs.z += rhs.z
-    }
-    
-    @inlinable static func - (lhs: Vector3, rhs: Element) -> Vector3 {
-        return Vector3(
-            lhs.x - rhs,
-            lhs.y - rhs,
-            lhs.z - rhs
-        )
-    }
-    @inlinable static func -= (lhs: inout Vector3, rhs: Element) {
-        lhs.x -= rhs
-        lhs.y -= rhs
-        lhs.z -= rhs
-    }
-    
-    @inlinable static func - (lhs: Vector3, rhs: Vector3) -> Vector3 {
-        return Vector3(
-            lhs.x - rhs.x,
-            lhs.y - rhs.y,
-            lhs.z - rhs.z
-        )
-    }
-    @inlinable static func -= (lhs: inout Vector3, rhs: Vector3) {
-        lhs.x -= rhs.x
-        lhs.y -= rhs.y
-        lhs.z -= rhs.z
-    }
-    
-    @inlinable static func * (lhs: Vector3, rhs: Element) -> Vector3 {
-        return Vector3(
-            lhs.x * rhs,
-            lhs.y * rhs,
-            lhs.z * rhs)
-    }
-    @inlinable static func *= (lhs: inout Vector3, rhs: Element) {
-        lhs.x *= rhs
-        lhs.y *= rhs
-        lhs.z *= rhs
-    }
-    
-    @inlinable static func * (lhs: Vector3, rhs: Vector3) -> Vector3 {
-        return Vector3(
-            lhs.x * rhs.x,
-            lhs.y * rhs.y,
-            lhs.z * rhs.z)
-    }
-    @inlinable static func *= (lhs: inout Vector3, rhs: Vector3) {
-        lhs.x *= rhs.x
-        lhs.y *= rhs.y
-        lhs.z *= rhs.z
-    }
-    
-    @inlinable static func • (lhs: Vector3, rhs: Vector3) -> Element {
-        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z
-    }
-    
-    @inlinable static func × (lhs: Vector3, rhs: Vector3) -> Vector3 {
-        return Vector3(values: (
+    @inlinable static func × (lhs: Vector3<Element>, rhs: Vector3<Element>) -> Vector3<Element> {
+        return Vector3<Element>(
             lhs.y * rhs.z - lhs.z * rhs.y,
             lhs.z * rhs.x - lhs.x * rhs.z,
             lhs.x * rhs.y - lhs.y * rhs.x
-        ))
+        )
     }
     
     @inlinable var lengthSquared: Element {
-        return (x * x) + (y * y) + (z * z)
-    }
-    
-}
-
-public extension Vector3 where Element: SignedNumeric {
-    @inlinable static prefix func - (rhs: Vector3) -> Vector3 {
-        return Vector3(-rhs.x, -rhs.y, -rhs.z)
-    }
-}
-
-public extension Vector3 where Element: BinaryInteger {
-    
-    @inlinable static func / (lhs: Vector3, rhs: Element) -> Vector3 {
-        return Vector3(
-            lhs.x / rhs,
-            lhs.y / rhs,
-            lhs.z / rhs)
-    }
-    @inlinable static func /= (lhs: inout Vector3, rhs: Element) {
-        lhs.x /= rhs
-        lhs.y /= rhs
-        lhs.z /= rhs
-    }
-    
-    @inlinable static func / (lhs: Vector3, rhs: Vector3) -> Vector3 {
-        return Vector3(
-            lhs.x / rhs.x,
-            lhs.y / rhs.y,
-            lhs.z / rhs.z)
-    }
-    @inlinable static func /= (lhs: inout Vector3, rhs: Vector3) {
-        lhs.x /= rhs.x
-        lhs.y /= rhs.y
-        lhs.z /= rhs.z
-    }
-    
-    @inlinable static func % (lhs: Vector3, rhs: Element) -> Vector3 {
-        return Vector3(
-            lhs.x % rhs,
-            lhs.y % rhs,
-            lhs.z % rhs)
-    }
-    @inlinable static func %= (lhs: inout Vector3, rhs: Element) {
-        lhs.x %= rhs
-        lhs.y %= rhs
-        lhs.z %= rhs
-    }
-    
-    @inlinable static func % (lhs: Vector3, rhs: Vector3) -> Vector3 {
-        return Vector3(
-            lhs.x % rhs.x,
-            lhs.y % rhs.y,
-            lhs.z % rhs.z)
-    }
-    @inlinable static func %= (lhs: inout Vector3, rhs: Vector3) {
-        lhs.x %= rhs.x
-        lhs.y %= rhs.y
-        lhs.z %= rhs.z
+        return (self &* self).wrappedSum()
     }
     
 }
 
 public extension Vector3 where Element: FloatingPoint {
     
-    @inlinable static func / (lhs: Vector3, rhs: Element) -> Vector3 {
-        return Vector3(
-            lhs.x / rhs,
-            lhs.y / rhs,
-            lhs.z / rhs)
-    }
-    @inlinable static func /= (lhs: inout Vector3, rhs: Element) {
-        lhs.x /= rhs
-        lhs.y /= rhs
-        lhs.z /= rhs
+    @inlinable static func • (lhs: Vector3<Element>, rhs: Vector3<Element>) -> Element {
+        return (lhs * rhs).sum()
     }
     
-    @inlinable static func / (lhs: Vector3, rhs: Vector3) -> Vector3 {
-        return Vector3(
-            lhs.x / rhs.x,
-            lhs.y / rhs.y,
-            lhs.z / rhs.z)
-    }
-    @inlinable static func /= (lhs: inout Vector3, rhs: Vector3) {
-        lhs.x /= rhs.x
-        lhs.y /= rhs.y
-        lhs.z /= rhs.z
+    @inlinable static func × (lhs: Vector3<Element>, rhs: Vector3<Element>) -> Vector3<Element> {
+        return Vector3<Element>(
+            lhs.y * rhs.z - lhs.z * rhs.y,
+            lhs.z * rhs.x - lhs.x * rhs.z,
+            lhs.x * rhs.y - lhs.y * rhs.x
+        )
     }
     
     @inlinable var length: Element {
-        return sqrt( (x * x) + (y * y) + (z * z) )
+        return self.lengthSquared.squareRoot()
     }
     
-    @inlinable var normalized: Vector3 {
+    @inlinable var lengthSquared: Element {
+        return (self * self).sum()
+    }
+    
+    @inlinable var normalized: Vector3<Element> {
         let f = 1 / self.length
         return self * f
     }
@@ -530,32 +253,16 @@ public extension Vector3 where Element: FloatingPoint {
 
 // MARK:- Vector4
 
-public struct Vector4<Element: Numeric>: Vector4Protocol {
-    public var values: (Element, Element, Element, Element)
-    @inlinable public var x: Element { get { return values.0 } set(s) { values.0 = s } }
-    @inlinable public var y: Element { get { return values.1 } set(s) { values.1 = s } }
-    @inlinable public var z: Element { get { return values.2 } set(s) { values.2 = s } }
-    @inlinable public var w: Element { get { return values.3 } set(s) { values.3 = s } }
-    @inlinable public init(values: (Element, Element, Element, Element)) { self.values = values }
-}
-
 public extension Vector4 {
     
-    @inlinable init(_ x: Element, _ y: Element, _ z: Element, _ w: Element) { self.init(values: (x, y, z, w)) }
-    @inlinable init(x: Element, y: Element, z: Element, w: Element) { self.init(values: (x, y, z, w)) }
-    @inlinable init(_ scalar: Element) { self.init(values: (scalar, scalar, scalar, scalar)) }
-    @inlinable init() { self.init(0) }
-    @inlinable init(_ copy: Vector4) { self.init(values: copy.values) }
+    typealias Element = Scalar
     
-    @inlinable init(xyz v: Vector3<Element>, w: Element = 0) { self.init(values: (v.x, v.y, v.z, w)) }
-    
-    @inlinable static var zero: Vector4 { return Vector4() }
-    @inlinable static var null: Vector4 { return Vector4() }
+    @inlinable init(xyz v: Vector3<Element>, w: Element) { self.init(v.x, v.y, v.z, w) }
     
     @inlinable var xyz: Vector3<Element> { return Vector3(x,y,z) }
     
-    @inlinable func map(transform: (Element) throws -> Element) rethrows -> Vector4 {
-        return Vector4(try transform(x), try transform(y), try transform(z), try transform(w))
+    @inlinable func map(transform: (Element) throws -> Element) rethrows -> Vector4<Element> {
+        return Vector4<Element>(try transform(x), try transform(y), try transform(z), try transform(w))
     }
     @inlinable func map<OtherElement: Numeric>(transform: (Element) throws -> OtherElement) rethrows -> Vector4<OtherElement> {
         return Vector4<OtherElement>(try transform(x), try transform(y), try transform(z), try transform(w))
@@ -563,223 +270,33 @@ public extension Vector4 {
     
 }
 
-extension Vector4: CustomStringConvertible {
-    @inlinable public var description: String { return "(\(x), \(y)), \(z), \(w))" }
-}
-
-public extension Vector4 where Element: Comparable {
-    @inlinable var min: Element { return Swift.min(x,y,z,w) }
-    @inlinable var max: Element { return Swift.max(x,y,z,w) }
-}
-
-extension Vector4: Equatable {
-    @inlinable public static func == (lhs: Vector4, rhs: Vector4) -> Bool { return lhs.values == rhs.values }
-}
-extension Vector4: Hashable where Element: Hashable {
-    @inlinable public func hash(into hasher: inout Hasher) { hasher.combine(x); hasher.combine(y); hasher.combine(z); hasher.combine(w) }
-}
-
-public extension Vector4 {
+public extension Vector4 where Element: FixedWidthInteger {
     
-    @inlinable static func + (lhs: Vector4, rhs: Element) -> Vector4 {
-        return Vector4(
-            lhs.x + rhs,
-            lhs.y + rhs,
-            lhs.z + rhs,
-            lhs.w + rhs
-        )
-    }
-    @inlinable static func += (lhs: inout Vector4, rhs: Element) {
-        lhs.x += rhs
-        lhs.y += rhs
-        lhs.z += rhs
-        lhs.w += rhs
-    }
-    
-    @inlinable static func + (lhs: Vector4, rhs: Vector4) -> Vector4 {
-        return Vector4(
-            lhs.x + rhs.x,
-            lhs.y + rhs.y,
-            lhs.z + rhs.z,
-            lhs.w + rhs.w
-        )
-    }
-    @inlinable static func += (lhs: inout Vector4, rhs: Vector4) {
-        lhs.x += rhs.x
-        lhs.y += rhs.y
-        lhs.z += rhs.z
-        lhs.w += rhs.w
-    }
-    
-    @inlinable static func - (lhs: Vector4, rhs: Element) -> Vector4 {
-        return Vector4(
-            lhs.x - rhs,
-            lhs.y - rhs,
-            lhs.z - rhs,
-            lhs.w - rhs
-        )
-    }
-    @inlinable static func -= (lhs: inout Vector4, rhs: Element) {
-        lhs.x -= rhs
-        lhs.y -= rhs
-        lhs.z -= rhs
-        lhs.w -= rhs
-    }
-    
-    @inlinable static func - (lhs: Vector4, rhs: Vector4) -> Vector4 {
-        return Vector4(
-            lhs.x - rhs.x,
-            lhs.y - rhs.y,
-            lhs.z - rhs.z,
-            lhs.w - rhs.w
-        )
-    }
-    @inlinable static func -= (lhs: inout Vector4, rhs: Vector4) {
-        lhs.x -= rhs.x
-        lhs.y -= rhs.y
-        lhs.z -= rhs.z
-        lhs.w -= rhs.w
-    }
-    
-    @inlinable static func * (lhs: Vector4, rhs: Element) -> Vector4 {
-        return Vector4(
-            lhs.x * rhs,
-            lhs.y * rhs,
-            lhs.z * rhs,
-            lhs.w * rhs)
-    }
-    @inlinable static func *= (lhs: inout Vector4, rhs: Element) {
-        lhs.x *= rhs
-        lhs.y *= rhs
-        lhs.z *= rhs
-        lhs.w *= rhs
-    }
-    
-    @inlinable static func * (lhs: Vector4, rhs: Vector4) -> Vector4 {
-        return Vector4(
-            lhs.x * rhs.x,
-            lhs.y * rhs.y,
-            lhs.z * rhs.z,
-            lhs.w * rhs.w)
-    }
-    @inlinable static func *= (lhs: inout Vector4, rhs: Vector4) {
-        lhs.x *= rhs.x
-        lhs.y *= rhs.y
-        lhs.z *= rhs.z
-        lhs.w *= rhs.w
-    }
-    
-    @inlinable static func • (lhs: Vector4, rhs: Vector4) -> Element {
-        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w
+    @inlinable static func • (lhs: Vector4<Element>, rhs: Vector4<Element>) -> Element {
+        return (lhs &* rhs).wrappedSum()
     }
     
     @inlinable var lengthSquared: Element {
-        return (x * x) + (y * y) + (z * z) + (w * w)
-    }
-    
-}
-
-public extension Vector4 where Element: SignedNumeric {
-    @inlinable static prefix func - (rhs: Vector4) -> Vector4 {
-        return Vector4(-rhs.x, -rhs.y, -rhs.z, -rhs.w)
-    }
-}
-
-public extension Vector4 where Element: BinaryInteger {
-    
-    @inlinable static func / (lhs: Vector4, rhs: Element) -> Vector4 {
-        return Vector4(
-            lhs.x / rhs,
-            lhs.y / rhs,
-            lhs.z / rhs,
-            lhs.w / rhs)
-    }
-    @inlinable static func /= (lhs: inout Vector4, rhs: Element) {
-        lhs.x /= rhs
-        lhs.y /= rhs
-        lhs.z /= rhs
-        lhs.w /= rhs
-    }
-    
-    @inlinable static func / (lhs: Vector4, rhs: Vector4) -> Vector4 {
-        return Vector4(
-            lhs.x / rhs.x,
-            lhs.y / rhs.y,
-            lhs.z / rhs.z,
-            lhs.w / rhs.w)
-    }
-    @inlinable static func /= (lhs: inout Vector4, rhs: Vector4) {
-        lhs.x /= rhs.x
-        lhs.y /= rhs.y
-        lhs.z /= rhs.z
-        lhs.w /= rhs.w
-    }
-    
-    @inlinable static func % (lhs: Vector4, rhs: Element) -> Vector4 {
-        return Vector4(
-            lhs.x % rhs,
-            lhs.y % rhs,
-            lhs.z % rhs,
-            lhs.w % rhs)
-    }
-    @inlinable static func %= (lhs: inout Vector4, rhs: Element) {
-        lhs.x %= rhs
-        lhs.y %= rhs
-        lhs.z %= rhs
-        lhs.w %= rhs
-    }
-    
-    @inlinable static func % (lhs: Vector4, rhs: Vector4) -> Vector4 {
-        return Vector4(
-            lhs.x % rhs.x,
-            lhs.y % rhs.y,
-            lhs.z % rhs.z,
-            lhs.w % rhs.w)
-    }
-    @inlinable static func %= (lhs: inout Vector4, rhs: Vector4) {
-        lhs.x %= rhs.x
-        lhs.y %= rhs.y
-        lhs.z %= rhs.z
-        lhs.w %= rhs.w
+        return (self &* self).wrappedSum()
     }
     
 }
 
 public extension Vector4 where Element: FloatingPoint {
     
-    @inlinable static func / (lhs: Vector4, rhs: Element) -> Vector4 {
-        return Vector4(
-            lhs.x / rhs,
-            lhs.y / rhs,
-            lhs.z / rhs,
-            lhs.w / rhs)
-    }
-    @inlinable static func /= (lhs: inout Vector4, rhs: Element) {
-        lhs.x /= rhs
-        lhs.y /= rhs
-        lhs.z /= rhs
-        lhs.w /= rhs
+    @inlinable static func • (lhs: Vector4<Element>, rhs: Vector4<Element>) -> Element {
+        return (lhs * rhs).sum()
     }
     
-    @inlinable static func / (lhs: Vector4, rhs: Vector4) -> Vector4 {
-        return Vector4(
-            lhs.x / rhs.x,
-            lhs.y / rhs.y,
-            lhs.z / rhs.z,
-            lhs.w / rhs.w)
-    }
-    @inlinable static func /= (lhs: inout Vector4, rhs: Vector4) {
-        lhs.x /= rhs.x
-        lhs.y /= rhs.y
-        lhs.z /= rhs.z
-        lhs.w /= rhs.w
+    @inlinable var lengthSquared: Element {
+        return (self * self).sum()
     }
     
     @inlinable var length: Element {
-        return sqrt( (x * x) + (y * y) + (z * z) + (w * w) )
+        return self.lengthSquared.squareRoot()
     }
 
-    @inlinable var normalized: Vector4 {
+    @inlinable var normalized: Vector4<Element> {
         let f = 1 / self.length
         return self * f
     }
@@ -789,12 +306,3 @@ public extension Vector4 where Element: FloatingPoint {
     }
     
 }
-
-
-// MARK:- Free Functions
-
-@inlinable public func dotProduct<T: Numeric>(_ a: Vector2<T>, _ b: Vector2<T>) -> T { return a • b }
-@inlinable public func dotProduct<T: Numeric>(_ a: Vector3<T>, _ b: Vector3<T>) -> T { return a • b }
-@inlinable public func dotProduct<T: Numeric>(_ a: Vector4<T>, _ b: Vector4<T>) -> T { return a • b }
-
-@inlinable public func crossProduct<T: Numeric>(_ a: Vector3<T>, _ b: Vector3<T>) -> Vector3<T> { return a × b }

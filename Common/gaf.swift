@@ -325,7 +325,7 @@ extension GafItem {
             return
         }
         
-        let offset = destination.offset - source.offset
+        let offset = destination.offset &- source.offset
         let pixelLength = source.format.pixelLength
         
         destination.data.withUnsafeMutableBytes() { (dstBuffer: UnsafeMutableRawBufferPointer) in

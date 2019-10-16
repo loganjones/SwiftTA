@@ -133,7 +133,7 @@ extension MetalTiledTntDrawable {
         
         let visibleTileGrid = computeTileGrid(for: viewState.viewport, boundedBy: map.gridBounds)
         
-        let modelMatrix = matrix_float4x4.translation(xy: vector_float2(visibleTileGrid.origin * screenTileSize))
+        let modelMatrix = matrix_float4x4.translation(xy: vector_float2(visibleTileGrid.origin &* screenTileSize))
         let viewMatrix = matrix_float4x4.translation(xy: -vector_float2(viewState.viewport.origin))
         let projectionMatrix = matrix_float4x4.ortho(Rect4(size: viewState.viewport.size), -1024, 256)
         
@@ -230,12 +230,12 @@ extension MetalTiledTntDrawable {
     private func fillScreenTile(_ tilePosition: Point2<Int>, into screenTexture: MTLTexture, slice screenSlice: Int, tileSet: TaTntTileSet, layout: TaMapModel.TileIndexMap, using blitEncoder: MTLBlitCommandEncoder) {
         
         let tileSize = layout.tileSize
-        let tntRect = Rect4<Int>(origin: (tilePosition * screenTileSize) / tileSize, size: Size2(screenTileSize) / tileSize)
+        let tntRect = Rect4<Int>(origin: (tilePosition &* screenTileSize) / tileSize, size: Size2(screenTileSize) / tileSize)
         
         layout.eachIndex(in: tntRect) {
             (index, column, row) in
             
-            let patch = (Point2(column, row) - tntRect.origin) * tileSize
+            let patch = (Point2(column, row) &- tntRect.origin) * tileSize
             let t = tileSet.lookup(tileIndex: index)
             
             blitEncoder.copy(from: t.texture, sourceSlice: t.slice, sourceLevel: 0, sourceOrigin: .zero, sourceSize: MTLSize(tileSize),
@@ -247,7 +247,7 @@ extension MetalTiledTntDrawable {
     private func fillScreenTile(_ tilePosition: Point2<Int>, into screenTexture: MTLTexture, slice screenSlice: Int, terrain: TakTntTerrainSet, layout: TakMapModel.TileIndexMap, using blitEncoder: MTLBlitCommandEncoder) {
         
         let tileSize = layout.tileSize
-        let tntRect = Rect4<Int>(origin: (tilePosition * screenTileSize) / tileSize, size: Size2(screenTileSize) / tileSize)
+        let tntRect = Rect4<Int>(origin: (tilePosition &* screenTileSize) / tileSize, size: Size2(screenTileSize) / tileSize)
         
         layout.eachTile(in: tntRect) {
             (imageName, imageColumn, imageRow, mapColumn, mapRow) in
@@ -255,7 +255,7 @@ extension MetalTiledTntDrawable {
             guard let texture = terrain[imageName] else { return }
             
             let terrainTilePosition = Point2(imageColumn, imageRow) * tileSize
-            let screenTilePosition = (Point2(mapColumn, mapRow) - tntRect.origin) * tileSize
+            let screenTilePosition = (Point2(mapColumn, mapRow) &- tntRect.origin) * tileSize
             
             blitEncoder.copy(from: texture, sourceSlice: 0, sourceLevel: 0, sourceOrigin: MTLOrigin(xy: terrainTilePosition), sourceSize: MTLSize(tileSize),
                              to: screenTexture, destinationSlice: screenSlice, destinationLevel: 0, destinationOrigin: MTLOrigin(xy: screenTilePosition))

@@ -147,8 +147,8 @@ extension StaticTextureSetMetalTntViewRenderer {
             let mapPosition = Point2<Int>(x: column, y: row) * tntTileSize
             let tileXY = mapPosition / textureTileSize
             let tileIndex = tileXY.index(rowStride: tileCount.width)
-            let tilePosition = tileXY * textureTileSize
-            r.origin = MTLOrigin(xy: mapPosition - tilePosition)
+            let tilePosition = tileXY &* textureTileSize
+            r.origin = MTLOrigin(xy: mapPosition &- tilePosition)
             let tile = tileBuffer.baseAddress! + (index * tntTileSize.area * 4)
             texture.replace(region: r, mipmapLevel: 0, slice: tileIndex, withBytes: tile, bytesPerRow: tileStride, bytesPerImage: 0)
         }

@@ -243,7 +243,7 @@ class FinderView<Item: FinderViewItem>: NSView {
             
             /* Check the scroll direction only at the beginning of a gesture for modern scrolling devices */
             /* Check every event for legacy scrolling devices */
-            if event.phase == .began || (event.phase == .none && event.momentumPhase == .none) {
+            if event.phase == .began || (event.phase == [] && event.momentumPhase == []) {
                 currentScrollIsVertical = abs(event.scrollingDeltaY) > abs(event.scrollingDeltaX)
             }
             if currentScrollIsVertical {

@@ -76,7 +76,7 @@ class MetalTntView: NSView, TntViewLoader, MTKViewDelegate {
         guard let device = metalView.device else { return }
         
         let renderer: MetalTntRenderer
-        if map.resolution.max > device.maximum2dTextureSize {
+        if map.resolution.max() > device.maximum2dTextureSize {
             print("Using tiled tnt renderer")
             renderer = DynamicTileMetalTntViewRenderer(device)
         }

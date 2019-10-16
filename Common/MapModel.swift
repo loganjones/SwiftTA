@@ -196,7 +196,7 @@ extension HeightMap {
      */
     func height(atWorldPosition p: Point2f) -> GameFloat {
         
-        let ps = p / Size2f(sampleSize)
+        let ps = p / Point2f(sampleSize)
         let sc = Size2f(sampleCount)
         
         // If the position is outside one of the map's bounds,
