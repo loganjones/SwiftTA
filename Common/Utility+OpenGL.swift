@@ -144,7 +144,7 @@ func glGetShaderInfoLog(_ shader: GLuint) -> String? {
     
     var data = Data(count: Int(logLength))
     data.withUnsafeMutableBytes() {
-        glGetShaderInfoLog(shader, GLsizei(logLength), nil, $0)
+        glGetShaderInfoLog(shader, GLsizei(logLength), nil, $0.bindMemory(to: GLchar.self).baseAddress)
     }
     
     return String(data: data, encoding: .utf8) ?? String(data: data, encoding: .ascii)
@@ -180,7 +180,7 @@ func glGetProgramInfoLog(_ program: GLuint) -> String? {
     
     var data = Data(count: Int(logLength))
     data.withUnsafeMutableBytes() {
-        glGetProgramInfoLog(program, GLsizei(logLength), nil, $0)
+        glGetProgramInfoLog(program, GLsizei(logLength), nil, $0.bindMemory(to: GLchar.self).baseAddress)
     }
     
     return String(data: data, encoding: .utf8) ?? String(data: data, encoding: .ascii)

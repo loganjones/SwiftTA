@@ -17,8 +17,8 @@ class FileSystem {
     init(mergingHpisIn searchDirectory: URL, extensions: [String] = FileSystem.weightedArchiveExtensions) throws {
 
         let weighArchives: (URL, URL) -> Bool = { (a,b) in
-            let weightA = extensions.index(of: a.pathExtension) ?? -1
-            let weightB = extensions.index(of: b.pathExtension) ?? -1
+            let weightA = extensions.firstIndex(of: a.pathExtension) ?? -1
+            let weightB = extensions.firstIndex(of: b.pathExtension) ?? -1
             return weightA < weightB
         }
         

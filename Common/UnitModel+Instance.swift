@@ -217,9 +217,9 @@ extension UnitModel.Instance {
     
 }
 
-private extension Vector3 where Element == GameFloat {
+private extension Vector3 {
     
-    subscript(axis: UnitScript.Axis) -> GameFloat {
+    subscript(axis: UnitScript.Axis) -> Element {
         get {
             switch axis {
             case .x: return x
@@ -238,13 +238,13 @@ private extension Vector3 where Element == GameFloat {
     
 }
 
-private extension Vector2 where Element == GameFloat {
+private extension Vector2f {
     
     init(polarAngle angle: GameFloat, magnitude: GameFloat = 1) {
-        self.init(values: (
+        self.init(
             cos(angle) * magnitude,
             sin(angle) * magnitude
-        ))
+        )
     }
     
     var angle: GameFloat {
@@ -252,7 +252,7 @@ private extension Vector2 where Element == GameFloat {
         else { return -acos(x) }
     }
     
-    func rotated(by angle: GameFloat) -> Vector2 {
+    func rotated(by angle: GameFloat) -> Vector2f {
         let c = cos(angle)
         let s = sin(angle)
         return Vector2f(

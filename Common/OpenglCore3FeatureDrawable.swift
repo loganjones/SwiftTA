@@ -121,7 +121,7 @@ private extension OpenglCore3FeatureDrawable {
         MapFeatureInfo.collateFeatureGafItems(featureInfo, from: filesystem) {
             (name, info, item, gafHandle, gafListing) in
             
-            guard let featureIndex = map.features.index(of: name) else { return }//.firstIndex(of: name) else { return }
+            guard let featureIndex = map.features.firstIndex(of: name) else { return }
             guard let occurrences = occurrences[featureIndex], !occurrences.isEmpty else { return }
             guard let gafFrames = try? item.extractFrames(from: gafHandle) else { return }
             guard let palette = palettes[info.world ?? ""] else { return }
@@ -165,8 +165,7 @@ private extension OpenglCore3FeatureDrawable {
         
         let image = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: gafFrame.size.area * 4)
         defer { image.deallocate() }
-        gafFrame.data.withUnsafeBytes() {
-            (source: UnsafePointer<UInt8>) in
+        gafFrame.data.withUnsafeBytes() { (source) in
             for sourceIndex in 0..<gafFrame.size.area {
                 let destinationIndex = sourceIndex * 4
                 let colorIndex = Int(source[sourceIndex])
@@ -275,17 +274,17 @@ private extension OpenglCore3FeatureDrawable.Feature {
 
 private extension MapModel {
     func worldPosition(ofMapIndex index: Int) -> Point2<Int> {
-        return Point2<Int>(index: index, stride: self.mapSize.width) * 16
+        return Point2<Int>(index: index, stride: self.mapSize.width) &* 16
     }
 }
-private extension Point2 where Element == Int {
+private extension Point2 where Scalar == Int {
     
     func center(inFootprint footprint: Size2<Int>) -> Point2<Int> {
-        return self + Point2(footprint * 8)
+        return self &+ Point2(footprint * 8)
     }
     
     func offset(by offset: Point2<Int>) -> Point2<Int> {
-        return Point2(self - offset)
+        return self &- offset
     }
     
     func adjust(forHeight height: Int) -> Point2f {

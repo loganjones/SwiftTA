@@ -76,7 +76,7 @@ enum MTLDeviceInitializationError: Swift.Error {
 
 extension MTLOrigin {
     
-    init<V2>(xy: V2, z: Int = 0) where V2: Vector2Protocol, V2.Element == Int {
+    init(xy: Vector2<Int>, z: Int = 0) {
         self.init(x: xy.x, y: xy.y, z: z)
     }
     

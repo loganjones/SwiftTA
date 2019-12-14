@@ -65,7 +65,7 @@ extension GafListing {
     subscript(name: String) -> GafItem? {
         get { return items.first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) }
         set(new) {
-            if let index = items.index(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) {
+            if let index = items.firstIndex(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) {
                 if let new = new {
                     items[index] = new
                 }
@@ -249,19 +249,21 @@ extension GafItem {
     
     private static func decompressTaImageBits(_ data: Data, decompressedSize size: Size2<Int>) -> Data {
         
-        let outputEnd = size.area
-        var imageData = Data(count: outputEnd)
-        imageData.withUnsafeMutableBytes { (output: UnsafeMutablePointer<UInt8>) -> Void in
-            data.withUnsafeBytes { (input: UnsafePointer<UInt8>) in
+        var imageData = Data(count: size.area)
+        imageData.withUnsafeMutableBytes { (output: UnsafeMutableRawBufferPointer) -> Void in
+            data.withUnsafeBytes { (input: UnsafeRawBufferPointer) in
                 
-                var inputLine = input
-                var outputIndex = 0
+                var inputLine = input.startIndex
+                var outputIndex = output.startIndex
                 
                 // Decompress one line at a time
                 for _ in 0..<size.height {
                     
                     // Get the length of the compressed line
-                    let lineLength = Int(inputLine.withMemoryRebound(to: UInt16.self, capacity: 1) { $0.pointee })
+                    guard inputLine+2 < input.endIndex else { break }
+                    let byte1 = input[inputLine + 0]
+                    let byte2 = input[inputLine + 1]
+                    let lineLength = Int((UInt16(byte2) << 8) | UInt16(byte1))
                     
                     guard lineLength <= size.width*2 else {
                         print("!!! Warning, bad line length detected while decompressing GAF frame. [lineLength: \(lineLength)]")
@@ -271,11 +273,11 @@ extension GafItem {
                     let lineBits = inputLine + MemoryLayout<UInt16>.size
                     
                     var inputLineIndex = 0
-                    while inputLineIndex < lineLength {
+                    while inputLineIndex < lineLength && (lineBits + inputLineIndex) < input.endIndex {
                         
                         // The first byte tells us how to
                         // handle the next few pixels.
-                        let controlByte = lineBits[inputLineIndex]
+                        let controlByte = input[lineBits + inputLineIndex]
                         inputLineIndex += 1
                         
                         if (controlByte & 1) == 1 {
@@ -283,23 +285,23 @@ extension GafItem {
                             // The rest of the byte is the length of the run (ie. how many successive pixels are transparent).
                             let count = Int(controlByte >> 1)
                             outputIndex += count
-                            guard outputIndex < outputEnd else { break }
+                            guard outputIndex < output.endIndex else { break }
                         }
                         else if (controlByte & 2) == 2 {
                             // A controlByte of 2 denotes a run of a specific color.
                             // The rest of the control byte is the length of the run (ie. how many successive pixels are the color),
                             // and the next input byte is the color to use for the run.
-                            let colorIndex = lineBits[inputLineIndex]
+                            let colorIndex = input[lineBits + inputLineIndex]
                             inputLineIndex += 1
-                            let count = min(Int(controlByte >> 2) + 1, outputEnd - outputIndex)
+                            let count = min(Int(controlByte >> 2) + 1, output.endIndex - outputIndex)
                             for i in 0..<count { output[outputIndex + i] = colorIndex }
                             outputIndex += count
                         }
                         else {
                             // A controlByte of aything else is a direct copy of some number of pixels.
                             // The rest of the control byte is the length of the copy (ie. how many successive pixels are copied).
-                            let count = min(Int(controlByte >> 2) + 1, outputEnd - outputIndex)
-                            for i in 0..<count { output[outputIndex + i] = lineBits[inputLineIndex + i] }
+                            let count = min(Int(controlByte >> 2) + 1, output.endIndex - outputIndex, input.endIndex - (lineBits + inputLineIndex))
+                            for i in 0..<count { output[outputIndex + i] = input[lineBits + inputLineIndex + i] }
                             inputLineIndex += count
                             outputIndex += count
                         }
@@ -323,11 +325,11 @@ extension GafItem {
             return
         }
         
-        let offset = destination.offset - source.offset
+        let offset = destination.offset &- source.offset
         let pixelLength = source.format.pixelLength
         
-        destination.data.withUnsafeMutableBytes() { (dstBuffer: UnsafeMutablePointer<UInt8>) in
-            source.data.withUnsafeBytes() { (srcBuffer: UnsafePointer<UInt8>) in
+        destination.data.withUnsafeMutableBytes() { (dstBuffer: UnsafeMutableRawBufferPointer) in
+            source.data.withUnsafeBytes() { (srcBuffer: UnsafeRawBufferPointer) in
                 
                 let dstStart_y = max(0, offset.y)
                 let srcStart_y = offset.y < 0 ? -offset.y : 0
@@ -339,8 +341,8 @@ extension GafItem {
                 
                 let dstEnd_x = min(destination.size.width, offset.x+source.size.width)
                 
-                var dstLine = dstBuffer + (destination.size.width * dstStart_y)
-                var srcLine = srcBuffer + (source.size.width * srcStart_y)
+                var dstLine = destination.size.width * dstStart_y
+                var srcLine = source.size.width * srcStart_y
                 
                 for _ in dstStart_y..<dstEnd_y {
                     
@@ -349,12 +351,12 @@ extension GafItem {
                     
                     for _ in dstStart_x..<dstEnd_x {
                         if pixelLength == 1 {
-                            let value = srcPixel.pointee
-                            if value > 0 { dstPixel.pointee = value }
+                            let value = srcBuffer[srcPixel]
+                            if value > 0 { dstBuffer[dstPixel] = value }
                         }
                         else {
                             for i in 0..<pixelLength {
-                                dstPixel[i] = srcPixel[i]
+                                dstBuffer[dstPixel+i] = srcBuffer[srcPixel+i]
                             }
                         }
                         dstPixel += pixelLength
@@ -588,8 +590,8 @@ extension GafItem.Frame {
         case .raw4444:
             let output = UnsafeMutablePointer<Palette.Color>.allocate(capacity: size.area)
             defer { output.deallocate() }
-            data.withUnsafeBytes() { (bytes: UnsafePointer<UInt8>) in
-                let input = UnsafePointer<UInt16>(rebinding: bytes)
+            data.withUnsafeBytes() {
+                let input = $0.bindMemory(to: UInt16.self)
                 for i in 0..<size.area {
                     output[i] = Palette.Color(argb4444: input[i])
                 }
@@ -599,8 +601,8 @@ extension GafItem.Frame {
         case .raw1555:
             let output = UnsafeMutablePointer<Palette.Color>.allocate(capacity: size.area)
             defer { output.deallocate() }
-            data.withUnsafeBytes() { (bytes: UnsafePointer<UInt8>) in
-                let input = UnsafePointer<UInt16>(rebinding: bytes)
+            data.withUnsafeBytes() {
+                let input = $0.bindMemory(to: UInt16.self)
                 for i in 0..<size.area {
                     output[i] = Palette.Color(decompose(argb1555: input[i]))
                 }

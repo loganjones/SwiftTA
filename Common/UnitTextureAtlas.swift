@@ -93,18 +93,18 @@ private extension UnitTextureAtlas {
             let file = try! filesystem.openFile(gaf.file)
             let offsetToFrameData = gaf.item.frameOffsets[0]
             if let frame = try? GafItem.extractFrame(from: file, at: offsetToFrameData) {
-                frame.data.withUnsafeBytes { (indices: UnsafePointer<UInt8>) in
-                    var raw = indices
+                frame.data.withUnsafeBytes { (source: UnsafeRawBufferPointer) in
+                    var sourceIndex = source.startIndex
                     for row in texture.location.top ..< texture.location.bottom {
                         for col in texture.location.left ..< texture.location.right {
-                            let paletteIndex = raw.pointee
+                            let paletteIndex = source[sourceIndex]
                             let color = palette[paletteIndex]
                             let i = (row * pitch) + (col * bytesPerPixel)
                             bytes[i+0] = color.red
                             bytes[i+1] = color.green
                             bytes[i+2] = color.blue
                             bytes[i+3] = color.alpha
-                            raw += 1
+                            sourceIndex += 1
                         }
                     }
                 }
@@ -217,7 +217,7 @@ private class RectFiller {
     func findSuitableRect(ofSize size: Size2<Int>) -> _Rect? {
         
         // Find the first rect where `size` would fit inside
-        guard let index = rects.index(where: { size.width <= $0.width && size.height <= $0.height })
+        guard let index = rects.firstIndex(where: { size.width <= $0.width && size.height <= $0.height })
             else { return nil }
         
         // This rect can fit a rect of `size`

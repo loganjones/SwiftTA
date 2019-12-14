@@ -15,18 +15,15 @@ extension FileHandle {
         return readData(ofLength: MemoryLayout<T>.size)
     }
     func readData<T>(ofType type: T.Type, count: Int) -> Data {
-        return readData(ofLength: MemoryLayout<T>.size * count)
+        return readData(ofLength: MemoryLayout<T>.stride * count)
     }
     func readValue<T>(ofType type: T.Type) -> T {
         let data = readData(ofLength: MemoryLayout<T>.size)
-        return data.withUnsafeBytes { $0.pointee }
+        return data.withUnsafeBytes { $0.load(as: type) }
     }
     func readArray<T>(ofType type: T.Type, count: Int) -> [T] {
-        let data = readData(ofLength: MemoryLayout<T>.size * count)
-        return data.withUnsafeBytes { (p: UnsafePointer<UInt8>) -> [T] in
-            let buffer = UnsafeBufferPointer<T>(rebinding: p, capacity: count)
-            return Array(buffer)
-        }
+        let data = readData(ofLength: MemoryLayout<T>.stride * count)
+        return data.withUnsafeBytes { Array($0.bindMemory(to: type)) }
     }
     @nonobjc func readData(ofLength length: UInt32) -> Data {
         return readData(ofLength: Int(length))
@@ -36,14 +33,6 @@ extension FileHandle {
     }
     @nonobjc func seek(toFileOffset offset: Int) {
         seek(toFileOffset: UInt64(offset))
-    }
-}
-
-// MARK:- Data Extensions
-
-extension Data {
-    func withUnsafeRawBytes<ResultType>(_ body: (UnsafeRawPointer) throws -> ResultType) rethrows -> ResultType {
-        return try self.withUnsafeBytes { return try body(UnsafeRawPointer($0)) }
     }
 }
 
@@ -71,6 +60,31 @@ extension UnsafeRawPointer {
     }
     public func bindMemoryBuffer<T>(to type: T.Type, capacity count: UInt32) -> UnsafeBufferPointer<T> {
         return bindMemoryBuffer(to: type, capacity: Int(count))
+    }
+}
+
+extension UnsafeRawBufferPointer {
+    
+    public func bindMemory<T>(atByteOffset offset: Int, count: Int, to type: T.Type) -> UnsafeBufferPointer<T> {
+        let region = Range(start: offset, length: count * MemoryLayout<T>.stride)
+        let newBuffer = UnsafeRawBufferPointer(rebasing: self[region])
+        return newBuffer.bindMemory(to: type)
+    }
+    
+    public func loadCString(fromByteOffset offset: Int = 0) -> String {
+        var nullIndex = offset
+        while self[nullIndex] != 0 { nullIndex += 1 }
+        let stringMemory = self[offset...nullIndex].bindMemory(to: UInt8.self)
+        guard let pointer = stringMemory.baseAddress else { return "" }
+        return String(cString: pointer)
+    }
+    
+}
+
+extension UnsafeRawBufferPointer.SubSequence {
+    public func bindMemory<T>(to type: T.Type) -> UnsafeBufferPointer<T> {
+        let newBuffer = UnsafeRawBufferPointer(rebasing: self)
+        return newBuffer.bindMemory(to: type)
     }
 }
 
@@ -259,11 +273,15 @@ extension Int {
  */
 protocol StringlyIdentifier: ExpressibleByStringLiteral, Hashable, CustomStringConvertible {
     var name: String { get }
+    var hashValue: Int { get }
     init(named: String)
 }
 extension StringlyIdentifier {
     init(stringLiteral value: String) {
         self.init(named: value)
+    }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(hashValue)
     }
     static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.hashValue == rhs.hashValue
@@ -301,4 +319,10 @@ func getCurrentTime() -> Double {
     var tz = timezone()
     gettimeofday(&tv, &tz)
     return Double(tv.tv_sec) + (Double(tv.tv_usec) / 1000000.0)
+}
+
+extension Range where Bound: Numeric {
+    init(start: Bound, length: Bound) {
+        self = (start ..< (start + length))
+    }
 }

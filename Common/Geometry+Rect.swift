@@ -9,48 +9,23 @@
 import Foundation
 
 
-public struct Rect4<Element: Numeric> {
-    public var values: (Element, Element, Element, Element)
-    @inlinable public var origin: Point2<Element>  { get { return Point2(values.0, values.1) } set(p) { values.0 = p.x; values.1 = p.y } }
-    @inlinable public var size: Size2<Element>  { get { return Size2(values.2, values.3) } set(sz) { values.2 = sz.width; values.3 = sz.height } }
-    @inlinable public init(values: (Element, Element, Element, Element)) { self.values = values }
+public struct Rect4<Element: SIMDScalar> {
+    @usableFromInline internal var values: SIMD4<Element>
+    @inlinable public var origin: Point2<Element>  { get { return Point2(values.x, values.y) } set(p) { values.x = p.x; values.y = p.y } }
+    @inlinable public var size: Size2<Element>  { get { return Size2(values.z, values.w) } set(sz) { values.z = sz.width; values.w = sz.height } }
+    @inlinable public init(values: SIMD4<Element>) { self.values = values }
+    @inlinable public init(values: (Element, Element, Element, Element)) { self.values = SIMD4<Element>(values.0, values.1, values.2, values.3) }
 }
 
 public extension Rect4 {
     
-    @inlinable init(_ x: Element, _ y: Element, _ width: Element, _ height: Element) { self.init(values: (x, y, width, height)) }
-    @inlinable init(origin: Point2<Element> = .zero, size: Size2<Element>) { self.init(values: (origin.x, origin.y, size.width, size.height)) }
-    @inlinable init(x: Element, y: Element, width: Element, height: Element) { self.init(values: (x, y, width, height)) }
-    @inlinable init() { self.init(values: (0,0,0,0)) }
-    @inlinable init(_ copy: Rect4) { self.init(values: copy.values) }
-    
-    @inlinable init(left: Element, top: Element, right: Element, bottom: Element) {
-        self.init(left, top, right - left, bottom - top)
-    }
+    @inlinable init(_ x: Element, _ y: Element, _ width: Element, _ height: Element) { self.values = SIMD4<Element>(x, y, width, height) }
+    @inlinable init(origin: Point2<Element> = .init(), size: Size2<Element>) { self.values = SIMD4<Element>(origin.x, origin.y, size.width, size.height) }
+    @inlinable init(x: Element, y: Element, width: Element, height: Element) { self.values = SIMD4<Element>(x, y, width, height) }
+    @inlinable init() { self.values = SIMD4<Element>() }
+    @inlinable init(_ copy: Rect4) { self.values = copy.values }
     
     @inlinable static var zero: Rect4 { return Rect4() }
-    
-    @inlinable var left: Element { return origin.x }
-    @inlinable var right: Element { return origin.x + size.width }
-    @inlinable var top: Element { return origin.y }
-    @inlinable var bottom: Element { return origin.y + size.height }
-    
-    @inlinable var minX: Element { return origin.x }
-    @inlinable var maxX: Element { return origin.x + size.width }
-    @inlinable var minY: Element { return origin.y }
-    @inlinable var maxY: Element { return origin.y + size.height }
-    
-    @inlinable var area: Element { return size.area }
-    
-    @inlinable func insetBy(dx: Element, dy: Element) -> Rect4 {
-        return Rect4(origin.x + dx,
-                     origin.y + dy,
-                     size.width - 2*dx,
-                     size.height - 2*dy)
-    }
-    @inlinable func insetBy(_ ds: Element) -> Rect4 {
-        return insetBy(dx: ds, dy: ds)
-    }
     
 }
 
@@ -76,12 +51,25 @@ extension Rect4: Hashable where Element: Hashable {
     @inlinable public func hash(into hasher: inout Hasher) { hasher.combine(origin.x); hasher.combine(origin.y); hasher.combine(size.width); hasher.combine(size.height) }
 }
 
-public extension Rect4 where Element: Strideable, Element.Stride: SignedInteger {
-    @inlinable var widthRange: CountableRange<Element> { return minX..<maxX }
-    @inlinable var heightRange: CountableRange<Element> { return minY..<maxY }
+public extension Rect4 where Element: SignedNumeric {
+    
+    @inlinable init(left: Element, top: Element, right: Element, bottom: Element) {
+        self.init(left, top, right - left, bottom - top)
+    }
+    
+    @inlinable var left: Element { return origin.x }
+    @inlinable var right: Element { return origin.x + size.width }
+    @inlinable var top: Element { return origin.y }
+    @inlinable var bottom: Element { return origin.y + size.height }
+    
+    @inlinable var minX: Element { return origin.x }
+    @inlinable var maxX: Element { return origin.x + size.width }
+    @inlinable var minY: Element { return origin.y }
+    @inlinable var maxY: Element { return origin.y + size.height }
+    
 }
 
-public extension Rect4 where Element: Comparable  {
+public extension Rect4 where Element: SignedNumeric & Comparable {
     
     func clamp(within bounds: Rect4) -> Rect4 {
         var rect = self
@@ -100,6 +88,43 @@ public extension Rect4 where Element: Comparable  {
             rect.size.height = bounds.bottom - rect.origin.y
         }
         return rect
+    }
+    
+}
+
+public extension Rect4 where Element: Strideable & SignedNumeric, Element.Stride: SignedInteger {
+    @inlinable var widthRange: CountableRange<Element> { return minX..<maxX }
+    @inlinable var heightRange: CountableRange<Element> { return minY..<maxY }
+}
+
+public extension Rect4 where Element: FixedWidthInteger  {
+    
+    @inlinable var area: Element { return size.area }
+    
+    @inlinable func insetBy(dx: Element, dy: Element) -> Rect4 {
+        return Rect4(origin.x + dx,
+                     origin.y + dy,
+                     size.width - 2*dx,
+                     size.height - 2*dy)
+    }
+    @inlinable func insetBy(_ ds: Element) -> Rect4 {
+        return insetBy(dx: ds, dy: ds)
+    }
+    
+}
+
+public extension Rect4 where Element: FloatingPoint  {
+    
+    @inlinable var area: Element { return size.area }
+    
+    @inlinable func insetBy(dx: Element, dy: Element) -> Rect4 {
+        return Rect4(origin.x + dx,
+                     origin.y + dy,
+                     size.width - 2*dx,
+                     size.height - 2*dy)
+    }
+    @inlinable func insetBy(_ ds: Element) -> Rect4 {
+        return insetBy(dx: ds, dy: ds)
     }
     
 }

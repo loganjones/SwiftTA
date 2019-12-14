@@ -213,8 +213,8 @@ extension HpiItem {
         // Parse the contents of the filesystem directory by recursively iterating
         // over its contents with `loadDirectory()`. We start with the root directory
         // which should be the first item at to beginning of the filesystem directory.
-        return try fsData.withUnsafeBytes { (p: UnsafePointer<UInt8>) throws -> HpiItem.Directory in
-            let fileSystem = FileSystem(memory: p, offset: ext.offsetToDirectory)
+        return try fsData.withUnsafeBytes { (buffer) throws -> HpiItem.Directory in
+            let fileSystem = OffsetBuffer(buffer: buffer, offset: Int(ext.offsetToDirectory))
             let rootItems = try HpiItem.loadDirectoryItems(atOffset: ext.offsetToDirectory, in: fileSystem)
             return Directory(name: "", items: rootItems)
         }
@@ -224,25 +224,25 @@ extension HpiItem {
      A convenience structure that represents the filesystem directory in memory.
      `loadDirectory()` uses this to seek around the filesystem directory and bind
      various HPI structures.
+     
+     We could just use a `UnsafeRawBufferPointer` but every offset needs to be
+     subtracted by `offsetToDirectory`. This struct is a wrapper that does
+     just that.
      */
-    private struct FileSystem {
-        var memory: UnsafePointer<UInt8>
-        var offset: UInt32
-        func at(_ offset: UInt32) -> UnsafePointer<UInt8> {
-            return memory + (Int(offset) - Int(self.offset))
+    private struct OffsetBuffer {
+        var buffer: UnsafeRawBufferPointer
+        var offset: Int
+        
+        @inlinable func load<T>(fromByteOffset offset: UInt32, as type: T.Type) -> T {
+            return buffer.load(fromByteOffset: Int(offset) - self.offset, as: type)
         }
-        func rawMemory(at offset: UInt32) -> UnsafeRawPointer {
-            return UnsafeRawPointer(memory + (Int(offset) - Int(self.offset)))
+        
+        @inlinable func bindMemory<T>(atByteOffset offset: UInt32, count: UInt32, to type: T.Type) -> UnsafeBufferPointer<T> {
+            return buffer.bindMemory(atByteOffset: Int(offset) - self.offset, count: Int(count), to: type)
         }
-        /// Bind a single instance of T structure in memory.
-        func bindMemory<T>(to type: T.Type, at offset: UInt32) -> UnsafePointer<T> {
-            return UnsafeRawPointer(memory + (Int(offset) - Int(self.offset))).bindMemory(to: type, capacity: 1)
-        }
-        /// Bind a sequence of T structures in memory.
-        public func bindMemoryBuffer<T>(to type: T.Type, capacity count: UInt32, at offset: UInt32) -> UnsafeBufferPointer<T> {
-            let raw = UnsafeRawPointer(memory + (Int(offset) - Int(self.offset)))
-            let p = raw.bindMemory(to: type, capacity: Int(count))
-            return UnsafeBufferPointer<T>(start: p, count: Int(count))
+        
+        @inlinable func loadCString(fromByteOffset offset: UInt32) -> String {
+            return buffer.loadCString(fromByteOffset: Int(offset) - self.offset)
         }
     }
     
@@ -250,17 +250,15 @@ extension HpiItem {
      This is the recursive workhorse of the loading code.
      `loadDirectoryItems()` is called repeatedly for each directory in the HPI's filesystem.
      */
-    private static func loadDirectoryItems(atOffset offset: UInt32, in fileSystem: FileSystem) throws -> [HpiItem] {
+    private static func loadDirectoryItems(atOffset offset: UInt32, in fileSystem: OffsetBuffer) throws -> [HpiItem] {
         
-        let header = fileSystem.bindMemory(to: TA_HPI_DIR_HEADER.self, at: offset).pointee
-        let entries = fileSystem.bindMemoryBuffer(to: TA_HPI_ENTRY.self,
-                                                  capacity: header.numberOfEntries,
-                                                  at: header.offsetToEntryArray)
+        let header = fileSystem.load(fromByteOffset: offset, as: TA_HPI_DIR_HEADER.self)
+        let entries = fileSystem.bindMemory(atByteOffset: header.offsetToEntryArray, count: header.numberOfEntries, to: TA_HPI_ENTRY.self)
         
         // Map each header entry of this directory into an HPIItem.
         return try entries.map({ (entry) throws -> HpiItem in
             
-            let name = String(cString: fileSystem.at(entry.offsetToName))
+            let name = fileSystem.loadCString(fromByteOffset: entry.offsetToName)
             let flags = HpiFormat.EntryFlags(rawValue: entry.entryFlag)
             
             // An entry is either a subdirectory or a file.
@@ -271,7 +269,7 @@ extension HpiItem {
             }
             else {
                 // A file is just a collection of properties; and can be returned immediately.
-                let file = fileSystem.bindMemory(to: TA_HPI_FILE_ENTRY.self, at: entry.offsetToEntryData).pointee
+                let file = fileSystem.load(fromByteOffset: entry.offsetToEntryData, as: TA_HPI_FILE_ENTRY.self)
                 return .file(File(
                     name: name,
                     size: Int(file.fileSize),
@@ -307,17 +305,19 @@ extension HpiItem {
             let chunkSizeData = hpiFile.readAndDecryptData(ofLength: MemoryLayout<UInt32>.size * chunkCount,
                                                            offset: UInt32(fileInfo.offset),
                                                            key: key)
-            let chunkSizes = chunkSizeData.withUnsafeBytes {
-                Array(UnsafeBufferPointer<UInt32>(start: $0, count: chunkCount))
-            }
+            
             var chunkOffset = UInt32(fileInfo.offset + chunkSizeData.count)
-            for chunkSize in chunkSizes {
-                let chunkData = hpiFile.readAndDecryptData(ofLength: Int(chunkSize),
-                                                           offset: chunkOffset,
-                                                           key: key)
-                let decompressed = try deSqsh(chunk: chunkData)
-                data.append(decompressed)
-                chunkOffset += chunkSize
+            
+            try chunkSizeData.withUnsafeBytes { (buffer) in
+                let chunkSizes = buffer.bindMemory(to: UInt32.self)
+                for chunkSize in chunkSizes {
+                    let chunkData = hpiFile.readAndDecryptData(ofLength: Int(chunkSize),
+                                                               offset: chunkOffset,
+                                                               key: key)
+                    let decompressed = try deSqsh(chunk: chunkData)
+                    data.append(decompressed)
+                    chunkOffset += chunkSize
+                }
             }
             
             return data
@@ -345,7 +345,7 @@ private extension FileHandle {
     
     func readAndDecryptValue<T>(ofType type: T.Type, offset: UInt32, key: Int32) -> T {
         let data = readAndDecryptData(ofLength: MemoryLayout<T>.size, offset: offset, key: key)
-        return data.withUnsafeBytes { $0.pointee }
+        return data.withUnsafeBytes { (buffer) -> T in buffer.load(as: type) }
     }
     
 }
@@ -369,8 +369,8 @@ extension HpiItem {
         let rawNamesData = file.readData(ofLength: ext.fileNameSize)
         let namesData = HpiItem.isSqsh(chunk: rawNamesData) ? try HpiItem.deSqsh(chunk: rawNamesData) : rawNamesData
         
-        let rootItems = try fsData.withUnsafeRawBytes { (fs: UnsafeRawPointer) throws -> [HpiItem] in
-            return try namesData.withUnsafeBytes { (names: UnsafePointer<UInt8>) throws -> [HpiItem] in
+        let rootItems = try fsData.withUnsafeBytes { (fs) throws -> [HpiItem] in
+            return try namesData.withUnsafeBytes { (names) throws -> [HpiItem] in
                 return try HpiItem.loadTakDirectoryItems(atOffset: 0, in: fs, with: names)
             }
         }
@@ -378,19 +378,19 @@ extension HpiItem {
         return Directory(name: "", items: rootItems)
     }
     
-    private static func loadTakDirectoryItems(atOffset offset: UInt32,
-                                              in fileSystem: UnsafeRawPointer,
-                                              with names: UnsafePointer<UInt8>) throws -> [HpiItem] {
+    private static func loadTakDirectoryItems(atOffset offset: Int,
+                                              in fileSystem: UnsafeRawBufferPointer,
+                                              with names: UnsafeRawBufferPointer) throws -> [HpiItem] {
         
-        let header = (fileSystem + offset).bindMemory(to: TAK_HPI_DIR_ENTRY.self, capacity: 1)
+        let header = fileSystem.load(fromByteOffset: offset, as: TAK_HPI_DIR_ENTRY.self)
         
         let files: [HpiItem]
-        if header.pointee.numberOfFileEntries > 0 {
-            files = try (fileSystem + header.pointee.offsetToFileEntryArray)
-                .bindMemoryBuffer(to: TAK_HPI_FILE_ENTRY.self, capacity: header.pointee.numberOfFileEntries)
+        if header.numberOfFileEntries > 0 {
+            files = try fileSystem
+                .bindMemory(atByteOffset: Int(header.offsetToFileEntryArray), count: Int(header.numberOfFileEntries), to: TAK_HPI_FILE_ENTRY.self)
                 .map { (file: TAK_HPI_FILE_ENTRY) throws -> HpiItem in
                     .file(File(
-                        name: String(cString: names + file.offsetToFileName),
+                        name: names.loadCString(fromByteOffset: Int(file.offsetToFileName)),
                         size: Int(file.decompressedSize),
                         offset: Int(file.offsetToFileData),
                         compression: file.compressedSize == 0 ? .none : .zlib,
@@ -403,13 +403,13 @@ extension HpiItem {
         }
         
         var subdirectories: [HpiItem] = []
-        var subOffset = header.pointee.offsetToSubDirectoryArray
-        for _ in 0..<header.pointee.numberOfSubDirectories {
-            let subheader = (fileSystem + subOffset).bindMemory(to: TAK_HPI_DIR_ENTRY.self, capacity: 1)
-            let name = String(cString: names + subheader.pointee.offsetToDirectoryName)
+        var subOffset = Int(header.offsetToSubDirectoryArray)
+        for _ in 0..<header.numberOfSubDirectories {
+            let subheader = fileSystem.load(fromByteOffset: subOffset, as: TAK_HPI_DIR_ENTRY.self)
+            let name = names.loadCString(fromByteOffset: Int(subheader.offsetToDirectoryName))
             let children = try loadTakDirectoryItems(atOffset: subOffset, in: fileSystem, with: names)
             subdirectories.append(.directory(Directory(name: name, items: children)))
-            subOffset += UInt32(MemoryLayout<TAK_HPI_DIR_ENTRY>.size)
+            subOffset += MemoryLayout<TAK_HPI_DIR_ENTRY>.stride
         }
         
         return subdirectories + files
@@ -437,50 +437,46 @@ extension HpiItem {
 extension HpiItem {
     
     fileprivate static func isSqsh(chunk rawData: Data) -> Bool {
-        return rawData.withUnsafeBytes { (p: UnsafePointer<UInt8>) -> Bool in
-            let chunkHeader = UnsafePointer<TA_HPI_CHUNK>(rebinding: p)
-            return chunkHeader.pointee.marker == TA_HPI_CHUNK_MARKER
+        return rawData.withUnsafeBytes { (buffer) -> Bool in
+            return buffer.load(as: TA_HPI_CHUNK.self).marker == TA_HPI_CHUNK_MARKER
         }
     }
     
     fileprivate static func deSqsh(chunk rawData: Data) throws -> Data {
-        return try rawData.withUnsafeBytes { (p: UnsafePointer<UInt8>) throws -> Data in
-            let chunkHeader = UnsafePointer<TA_HPI_CHUNK>(rebinding: p)
-            guard chunkHeader.pointee.marker == TA_HPI_CHUNK_MARKER
-                else { throw ExtractError.badChunkMarker(Int(chunkHeader.pointee.marker)) }
-            guard let compression = HpiFormat.ChunckCompression(rawValue: chunkHeader.pointee.compressionType)
-                else { throw ExtractError.badCompressionType(Int(chunkHeader.pointee.compressionType)) }
+        return try rawData.withUnsafeBytes { (buffer) throws -> Data in
+            let chunkHeader = buffer.load(as: TA_HPI_CHUNK.self)
+            guard chunkHeader.marker == TA_HPI_CHUNK_MARKER
+                else { throw ExtractError.badChunkMarker(Int(chunkHeader.marker)) }
+            guard let compression = HpiFormat.ChunckCompression(rawValue: chunkHeader.compressionType)
+                else { throw ExtractError.badCompressionType(Int(chunkHeader.compressionType)) }
             
-            if chunkHeader.pointee.encryptionFlag == 0 && compression == .none {
+            if chunkHeader.encryptionFlag == 0 && compression == .none {
                 let start = MemoryLayout<TA_HPI_CHUNK>.size
-                let end = start + Int(chunkHeader.pointee.decompressedSize)
+                let end = start + Int(chunkHeader.decompressedSize)
                 return rawData.subdata(in: start..<end)
             }
             
-            let compressedSize = Int(chunkHeader.pointee.compressedSize)
-            let raw: UnsafePointer<UInt8>
+            var chunkData = UnsafeRawBufferPointer(rebasing: buffer[MemoryLayout<TA_HPI_CHUNK>.size...])
+            let compressedSize = Int(chunkHeader.compressedSize)
             
-            var toRealease: UnsafeMutablePointer<UInt8>? = nil
+            var toRealease: UnsafeMutableRawBufferPointer? = nil
             defer { if let r = toRealease { r.deallocate() } }
             
-            if chunkHeader.pointee.encryptionFlag != 0 {
-                let enecrypted = p + MemoryLayout<TA_HPI_CHUNK>.size
-                let decrypted = UnsafeMutablePointer<UInt8>.allocate(capacity: compressedSize)
+            if chunkHeader.encryptionFlag != 0 {
+                let enecrypted = chunkData
+                let decrypted = UnsafeMutableRawBufferPointer.allocate(byteCount: compressedSize, alignment: 1)
                 for index in 0..<compressedSize {
                     let x = UInt8(truncatingIfNeeded: index)
                     decrypted[index] = (enecrypted[index] &- x) ^ x
                 }
-                raw = UnsafePointer<UInt8>(decrypted)
+                chunkData = UnsafeRawBufferPointer(decrypted)
                 toRealease = decrypted
-            }
-            else {
-                raw = p + MemoryLayout<TA_HPI_CHUNK>.size
             }
             
             switch compression {
-            case .none: return Data(bytes: raw, count: Int(chunkHeader.pointee.decompressedSize))
-            case .lz77: return decompressLZ77(bytes: raw, decompressedSize: Int(chunkHeader.pointee.decompressedSize))
-            case .zlib: return decompressZLib(bytes: raw, compressedSize: compressedSize, decompressedSize: Int(chunkHeader.pointee.decompressedSize))
+            case .none: return Data(chunkData[..<Int(chunkHeader.decompressedSize)])
+            case .lz77: return decompressLZ77(bytes: chunkData, decompressedSize: Int(chunkHeader.decompressedSize))
+            case .zlib: return decompressZLib(bytes: chunkData, compressedSize: compressedSize, decompressedSize: Int(chunkHeader.decompressedSize))
             }
         }
     }
@@ -493,13 +489,13 @@ extension HpiItem {
  This bit of code could use some inspection. It's been copied around and translated so many times;
  I don't even know the original source.
  */
-private func decompressLZ77(bytes _in:UnsafePointer<UInt8>, decompressedSize: Int) -> Data {
+private func decompressLZ77(bytes _in: UnsafeRawBufferPointer, decompressedSize: Int) -> Data {
     
     var outptr = 0
-    var out = UnsafeMutablePointer<UInt8>.allocate(capacity:  decompressedSize)
+    let out = UnsafeMutableRawBufferPointer.allocate(byteCount: decompressedSize, alignment: 1)
     defer { out.deallocate() }
     
-    let DBuff = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
+    let DBuff = UnsafeMutableRawBufferPointer.allocate(byteCount: 4096, alignment: 1)
     defer { DBuff.deallocate() }
         
     var work1 = 1
@@ -516,7 +512,9 @@ private func decompressLZ77(bytes _in:UnsafePointer<UInt8>, decompressedSize: In
             outptr += 1
         }
         else {
-            var count = (_in + inptr).withMemoryRebound(to: UInt16.self, capacity: 1) { $0.pointee }
+            let byte1 = _in[inptr + 0]
+            let byte2 = _in[inptr + 1]
+            var count = (UInt16(byte2) << 8) | UInt16(byte1)
             inptr += 2
             var DPtr = Int(count >> 4)
             if DPtr == 0 {
@@ -543,19 +541,19 @@ private func decompressLZ77(bytes _in:UnsafePointer<UInt8>, decompressedSize: In
         }
     }
     
-    return Data(bytes: out, count: outptr)
+    return Data(out[..<outptr])
 }
 
 /**
  Decompresses the input bytes using ZLib deflate.
  */
-private func decompressZLib(bytes _in:UnsafePointer<UInt8>, compressedSize: Int, decompressedSize: Int) -> Data {
+private func decompressZLib(bytes _in: UnsafeRawBufferPointer, compressedSize: Int, decompressedSize: Int) -> Data {
     
     let out = UnsafeMutablePointer<UInt8>.allocate(capacity: decompressedSize)
     defer { out.deallocate() }
     
     var zs = z_stream(
-        next_in: UnsafeMutablePointer(mutating: _in),
+        next_in: UnsafeMutablePointer(mutating: _in.bindMemory(to: UInt8.self).baseAddress!),
         avail_in: uInt(compressedSize),
         total_in: 0,
         next_out: out,

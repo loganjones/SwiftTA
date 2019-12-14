@@ -13,16 +13,16 @@ import Foundation
 
 typealias GameFloat = Float
 
-typealias Point2f = Point2<GameFloat>
-typealias Point3f = Point2<GameFloat>
+typealias Point2f = SIMD2<GameFloat>
+typealias Point3f = SIMD3<GameFloat>
 typealias Size2f = Size2<GameFloat>
 typealias Rect4f = Rect4<GameFloat>
 
-typealias Vertex2f = Vertex2<GameFloat>
-typealias Vertex3f = Vertex3<GameFloat>
-typealias Vector2f = Vector2<GameFloat>
-typealias Vector3f = Vector3<GameFloat>
-typealias Vector4f = Vector4<GameFloat>
+typealias Vertex2f = SIMD2<GameFloat>
+typealias Vertex3f = SIMD3<GameFloat>
+typealias Vector2f = SIMD2<GameFloat>
+typealias Vector3f = SIMD3<GameFloat>
+typealias Vector4f = SIMD4<GameFloat>
 
 typealias Matrix3x3f = Matrix3x3<GameFloat>
 typealias Matrix4x4f = Matrix4x4<GameFloat>

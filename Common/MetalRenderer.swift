@@ -104,7 +104,7 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
         let tntStyle: PreferredTnt
         
         if case .tak = map { tntStyle = .tiled }
-        else if map.resolution.max > metalDevice.maximum2dTextureSize { tntStyle = .tiled }
+        else if map.resolution.max() > metalDevice.maximum2dTextureSize { tntStyle = .tiled }
         else { tntStyle = .simple }
         
         switch tntStyle {

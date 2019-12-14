@@ -172,7 +172,9 @@ struct GameObjectId: ExpressibleByIntegerLiteral, Equatable, Hashable, CustomStr
     init(integerLiteral value: Int) {
         self.value = value
     }
-    var hashValue: Int { return value }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(value)
+    }
     var description: String { return "Object(\(value))" }
 }
 

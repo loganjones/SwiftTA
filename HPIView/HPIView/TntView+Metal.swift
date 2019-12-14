@@ -76,7 +76,7 @@ class MetalTntView: NSView, TntViewLoader, MTKViewDelegate {
         guard let device = metalView.device else { return }
         
         let renderer: MetalTntRenderer
-        if map.resolution.max > device.maximum2dTextureSize {
+        if map.resolution.max() > device.maximum2dTextureSize {
             print("Using tiled tnt renderer")
             renderer = DynamicTileMetalTntViewRenderer(device)
         }
@@ -230,7 +230,7 @@ extension TaMapModel {
         let tileBuffer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: tileSet.count * tntTileSize.area * 4)
         
         tileSet.tiles.withUnsafeBytes() {
-            (sourceTiles: UnsafePointer<UInt8>) in
+            (sourceTiles: UnsafeRawBufferPointer) in
             let sourceCount = tntTileSize.area * tileSet.count
             for sourceIndex in 0..<sourceCount {
                 let destinationIndex = sourceIndex * 4

@@ -145,7 +145,7 @@ extension DynamicTileMetalTntViewRenderer {
         
         let viewportSize = vector_float2(viewState.viewport.size)
         let viewportPosition = vector_float2(viewState.viewport.origin)
-        let tileGridOffset = vector_float2(visibleTileGrid.origin * screenTileSize)
+        let tileGridOffset = vector_float2(visibleTileGrid.origin &* screenTileSize)
         
         let modelMatrix = matrix_float4x4.translation(xy: tileGridOffset)
         let viewMatrix = matrix_float4x4.translation(xy: -viewportPosition)
@@ -244,7 +244,7 @@ extension DynamicTileMetalTntViewRenderer {
     private func fillScreenTile(_ tilePosition: Point2<Int>, into screenTexture: MTLTexture, slice screenSlice: Int, tileSet: TaTntTileSet, layout: TaMapModel.TileIndexMap, using blitEncoder: MTLBlitCommandEncoder) {
         
         let tileSize = layout.tileSize
-        let tntRect = Rect4<Int>(origin: (tilePosition * screenTileSize) / tileSize,
+        let tntRect = Rect4<Int>(origin: (tilePosition &* screenTileSize) / tileSize,
                              size: Size2<Int>(width: screenTileSize/tileSize.width, height: screenTileSize/tileSize.height))
         
         layout.eachIndex(in: tntRect) {
@@ -263,7 +263,7 @@ extension DynamicTileMetalTntViewRenderer {
     private func fillScreenTile(_ tilePosition: Point2<Int>, into screenTexture: MTLTexture, slice screenSlice: Int, terrain: TakTntTerrainSet, layout: TakMapModel.TileIndexMap, using blitEncoder: MTLBlitCommandEncoder) {
         
         let tileSize = layout.tileSize
-        let tntRect = Rect4<Int>(origin: (tilePosition * screenTileSize) / tileSize,
+        let tntRect = Rect4<Int>(origin: (tilePosition &* screenTileSize) / tileSize,
                              size: Size2<Int>(width: screenTileSize/tileSize.width, height: screenTileSize/tileSize.height))
         
         layout.eachTile(in: tntRect) {
@@ -340,7 +340,7 @@ private extension DynamicTileMetalTntViewRenderer.TaTntTileSet {
         defer { tileBuffer.deallocate() }
         
         tileSet.tiles.withUnsafeBytes() {
-            (sourceTiles: UnsafePointer<UInt8>) in
+            (sourceTiles: UnsafeRawBufferPointer) in
             
             var textureIndex = 0
             var runningTileCount = 0

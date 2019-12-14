@@ -100,6 +100,11 @@ public extension Matrix4x4 {
                              0, 0, 1, 0,
                              x, y, z, 1))
     }
+    
+}
+
+public extension Matrix4x4 where Element: SIMDScalar {
+    
     @inlinable static func translation(_ v: Vector3<Element>) -> Matrix4x4 {
         return Matrix4x4(m: (1, 0, 0, 0,
                              0, 1, 0, 0,
@@ -115,7 +120,7 @@ public extension Matrix4x4 {
     
 }
 
-public extension Matrix4x4 where Element: TrigonometricFloatingPoint {
+public extension Matrix4x4 where Element: TrigonometricFloatingPoint, Element: SIMDScalar {
     
     @inlinable static func rotation(radians: Element, axis: Vector3<Element>) -> Matrix4x4 {
         let unitAxis = axis.normalized
@@ -153,7 +158,7 @@ public extension Matrix4x4 where Element: BinaryFloatingPoint {
     }
 }
 
-public extension Matrix4x4 where Element: Division & SignedNumeric {
+public extension Matrix4x4 where Element: Division & SignedNumeric & SIMDScalar {
     
     @inlinable static func ortho(_ left: Element, _ right: Element, _ bottom: Element, _ top: Element, _ nearZ: Element, _ farZ: Element) -> Matrix4x4 {
         
