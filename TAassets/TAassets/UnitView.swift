@@ -70,8 +70,8 @@ class UnitViewController: NSViewController {
     }
     
     private func computeSceneSize() {
-        let w = Float( ((unit?.info.footprint.width ?? 2) + 8) * ModelViewState.gridSize )
-        viewState.sceneSize = (width: w, height: w * viewState.aspectRatio)
+        let w = GameFloat( ((unit?.info.footprint.width ?? 2) + 8) * ModelViewState.gridSize )
+        viewState.sceneSize = Size2f(width: w, height: w * viewState.aspectRatio)
     }
     
 }
@@ -91,8 +91,8 @@ private extension UnitViewController {
 extension UnitViewController: UnitViewStateProvider {
     
     func viewportChanged(to size: CGSize) {
-        viewState.viewportSize = size
-        viewState.aspectRatio = Float(viewState.viewportSize.height) / Float(viewState.viewportSize.width)
+        viewState.viewportSize = Size2f(size)
+        viewState.aspectRatio = viewState.viewportSize.height / viewState.viewportSize.width
         computeSceneSize()
     }
     
@@ -133,7 +133,7 @@ extension UnitViewController: UnitViewStateProvider {
         unit.scriptContext.applyAnimations(to: &unit.modelInstance, for: GameFloat(deltaTime))
         
         if viewState.isMoving {
-            let dt = deltaTime * 10
+            let dt = GameFloat(deltaTime * 10)
             let acceleration = unit.info.acceleration
             let maxSpeed = unit.info.maxVelocity
             var speed = viewState.speed
@@ -144,7 +144,7 @@ extension UnitViewController: UnitViewStateProvider {
             viewState.movement += dt * speed
             viewState.speed = speed
             
-            let gridSize = Double(UnitViewState.gridSize)
+            let gridSize = GameFloat(UnitViewState.gridSize)
             if viewState.movement > gridSize {
                 viewState.movement -= gridSize
             }
@@ -166,9 +166,9 @@ extension UnitViewController: ScriptMachine {
 
 struct UnitViewState {
     
-    var viewportSize = CGSize()
-    var aspectRatio: Float = 1
-    var sceneSize: (width: Float, height: Float) = (0,0)
+    var viewportSize: Size2f = .zero
+    var aspectRatio: GameFloat = 1
+    var sceneSize: Size2f = .zero
     
     static let gridSize = 16
     
@@ -184,8 +184,8 @@ struct UnitViewState {
     var modelInstance: UnitModel.Instance?
     
     var isMoving = false
-    var speed: Double = 0
-    var movement: Double = 0
+    var speed: GameFloat = 0
+    var movement: GameFloat = 0
     
     enum DrawMode: Int {
         case solid

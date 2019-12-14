@@ -32,3 +32,7 @@ struct UnitTypeId: StringlyIdentifier {
     }
     
 }
+
+extension UnitData {
+    var id: UnitTypeId { return UnitTypeId(for: info) }
+}

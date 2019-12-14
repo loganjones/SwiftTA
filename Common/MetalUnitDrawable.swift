@@ -26,7 +26,6 @@ class MetalUnitDrawable {
     private var depthState: MTLDepthStencilState!
     
     private let maxBuffersInFlight: Int
-    private var modelsTEMP: [UnitTypeId: UnitModel] = [:]
     private var models: [UnitTypeId: Model] = [:]
     
     struct FrameState {
@@ -68,7 +67,6 @@ class MetalUnitDrawable {
     func load(_ units: [UnitTypeId: UnitData], sides: [SideInfo], filesystem: FileSystem) {
         let textures = ModelTexturePack(loadFrom: filesystem)
         models = units.mapValues { try! Model($0, device, textures, sides, filesystem) }
-        modelsTEMP = units.mapValues { $0.model }
     }
     
     func setupNextFrame(_ viewState: GameViewState, _ commandBuffer: MTLCommandBuffer) -> FrameState {
@@ -83,15 +81,15 @@ class MetalUnitDrawable {
         var transformations = UnsafeMutableBufferPointer(start: (contents + offset).bindMemory(to: matrix_float4x4.self, capacity: 40), count: 40)
         
         for case let .unit(unit) in viewState.objects {
-            guard let model = modelsTEMP[unit.type] else { continue }
             
-            let viewMatrix = matrix_float4x4.translation(xy: vector_float2(unit.position.xy - viewState.viewport.origin), z: 0) * matrix_float4x4.taPerspective
+            let screenPosition = unit.position.xy - Vector2f(0, unit.position.z / 2.0)
+            let viewMatrix = matrix_float4x4.translation(xy: vector_float2(screenPosition - viewState.viewport.origin), z: 0) * matrix_float4x4.taPerspective
             
             uniforms.pointee.vpMatrix = projectionMatrix * viewMatrix
             uniforms.pointee.normalMatrix = matrix_float3x3(topLeftOf: viewMatrix).inverse.transpose
-            MetalUnitDrawable.Instance.applyPieceTransformations(model: model, instance: unit.pose, transformations: &transformations)
+            MetalUnitDrawable.Instance.applyPieceTransformations(orientation: unit.orientation, model: unit.type.model, instance: unit.pose, transformations: &transformations)
             
-            instances[unit.type, default: []].append(uniforms.move())
+            instances[unit.type.id, default: []].append(uniforms.move())
         }
         
         return FrameState(instances)
@@ -290,23 +288,11 @@ private extension MetalUnitDrawable.Instance {
         uniformBuffer = device.makeRingBuffer(length: MemoryLayout<Uniforms>.size, count: maxBuffersInFlight, options: [.storageModeShared])!
     }
     
-    mutating func set(vpMatrix: matrix_float4x4, normalMatrix: matrix_float3x3, transformations modelInstance: UnitModel.Instance, for model: UnitModel) {
-        
-        let contents = uniformBuffer.next().contents
-        let uniforms = contents.bindMemory(to: Uniforms.self, capacity: 1)
-        uniforms.pointee.vpMatrix = vpMatrix
-        uniforms.pointee.normalMatrix = normalMatrix
-        
-        let offset = MemoryLayout<Uniforms>.offset(of: \Uniforms.pieces) ?? 0
-        var transformations = UnsafeMutableBufferPointer(start: (contents + offset).bindMemory(to: matrix_float4x4.self, capacity: modelInstance.pieces.count),
-                                                         count: modelInstance.pieces.count)
-        MetalUnitDrawable.Instance.applyPieceTransformations(model: model, instance: modelInstance, transformations: &transformations)
-    }
-    
-    static func applyPieceTransformations<S>(model: UnitModel, instance: UnitModel.Instance, transformations: inout S)
+    static func applyPieceTransformations<S>(orientation: Vector3f, model: UnitModel, instance: UnitModel.Instance, transformations: inout S)
         where S: MutableCollection, S.Element == matrix_float4x4, S.Index == Int
     {
-        applyPieceTransformations(pieceIndex: model.root, p: matrix_float4x4.identity, model: model, instance: instance, transformations: &transformations)
+        let initial = matrix_float4x4.rotation(radians: -orientation.z, axis: vector_float3(0,0,1))
+        applyPieceTransformations(pieceIndex: model.root, p: initial, model: model, instance: instance, transformations: &transformations)
     }
     
     static func applyPieceTransformations<S>(pieceIndex: UnitModel.Pieces.Index, p: matrix_float4x4, model: UnitModel, instance: UnitModel.Instance, transformations: inout S)

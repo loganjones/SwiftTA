@@ -44,9 +44,19 @@ extension Vector2: CustomStringConvertible {
 }
 
 public extension Vector2 where Element: Comparable {
+    
     @inlinable var min: Element { return Swift.min(x, y) }
     @inlinable var max: Element { return Swift.max(x, y) }
+    
+    @inlinable func clamped(to rect: Rect4<Element>) -> Vector2<Element> {
+        return Vector2(
+            Swift.min(Swift.max(rect.minX, x), rect.maxX),
+            Swift.min(Swift.max(rect.minY, y), rect.maxY)
+        )
+    }
+    
 }
+
 public extension Vector2 where Element: BinaryInteger {
     @inlinable func index(rowStride: Element) -> Element {
         return (rowStride * y) + x
@@ -62,14 +72,26 @@ extension Vector2: Hashable where Element: Hashable {
 
 public extension Vector2 {
     
+    @inlinable static func + (lhs: Vector2, rhs: Element) -> Vector2 {
+        return Vector2(
+            lhs.x + rhs,
+            lhs.y + rhs
+        )
+    }
+    @inlinable static func += (lhs: inout Vector2, rhs: Element) {
+        lhs.x += rhs
+        lhs.y += rhs
+    }
+    
     @inlinable static func + (lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(
             lhs.x + rhs.x,
-            lhs.y + rhs.y)
+            lhs.y + rhs.y
+        )
     }
-    @inlinable static func += (lhs: inout Vector2, rhs: Element) {
-        lhs.values.0 += rhs
-        lhs.values.1 += rhs
+    @inlinable static func += (lhs: inout Vector2, rhs: Vector2) {
+        lhs.x += rhs.x
+        lhs.y += rhs.y
     }
     
     @inlinable static func - (lhs: Vector2, rhs: Vector2) -> Vector2 {
@@ -228,6 +250,12 @@ public extension Vector2 where Element: FloatingPoint {
         self *= f
     }
     
+    @inlinable func truncated(to maxLength: Element) -> Vector2 {
+        guard lengthSquared > sqr(maxLength) else { return self }
+        let f = maxLength / length
+        return self * f
+    }
+    
 }
 
 public extension Vector2 where Element: Division {
@@ -236,6 +264,22 @@ public extension Vector2 where Element: Division {
         let x = index - (y * stride)
         self.init(x, y)
     }
+}
+
+public extension Vector2 where Element: TrigonometricFloatingPoint {
+    
+    init(polar angle: Element, length: Element = 1) {
+        self.init(angle.cosine * length, angle.sine * length)
+    }
+    
+    var angle: Element {
+        return (y >= 0) ? x.arccosine : -x.arccosine
+    }
+    
+}
+
+@inlinable public func determinant<T: Numeric>(_ a: Vector2<T>, _ b: Vector2<T>) -> T {
+    return (a.x * b.y) - (a.y * b.x)
 }
 
 
@@ -261,7 +305,7 @@ public extension Vector3 {
     @inlinable static var zero: Vector3 { return Vector3() }
     @inlinable static var null: Vector3 { return Vector3() }
     
-    @inlinable var xy: Vector2<Element> { return Vector2(x,y) }
+    @inlinable var xy: Vector2<Element> { get { return Vector2(x,y) } set(v) { x = v.x; y = v.y } }
     
     @inlinable func map(transform: (Element) throws -> Element) rethrows -> Vector3 {
         return Vector3(try transform(x), try transform(y), try transform(z))

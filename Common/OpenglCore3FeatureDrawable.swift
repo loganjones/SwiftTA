@@ -217,7 +217,7 @@ private extension OpenglCore3FeatureDrawable {
             let boundingBox = map.worldPosition(ofMapIndex: i)
                 .center(inFootprint: feature.footprint)
                 .offset(by: feature.offset)
-                .adjust(forHeight: map.heightMap[i])
+                .adjust(forHeight: map.heightMap.samples[i])
                 .makeRect(size: Size2f(feature.size))
             
             createRect(boundingBox, in: &vertices, &index)

@@ -45,7 +45,7 @@ protocol MapModelType {
     var resolution: Size2<Int> { get }
     
     var seaLevel: Int { get }
-    var heightMap: [Int] { get }
+    var heightMap: HeightMap { get }
     
     var features: [FeatureTypeId] { get }
     var featureMap: [Int?] { get }
@@ -61,8 +61,7 @@ extension MapModelType {
     }
     
     func height(at point: Point2<Int>) -> Int {
-        let index = (point.y * mapSize.width) + point.x
-        return heightMap[index]
+        return heightMap.height(atMapPosition: point)
     }
     
     func featureIndex(at point: Point2<Int>) -> Int? {
@@ -95,7 +94,7 @@ extension MapModel: MapModelType {
         }
     }
     
-    var heightMap: [Int] {
+    var heightMap: HeightMap {
         switch self {
         case .ta(let model): return model.heightMap
         case .tak(let model): return model.heightMap
@@ -131,6 +130,141 @@ private extension TA_TNT_HEADER {
     }
 }
 
+// MARK:- Height Map
+
+/**
+ A collection of height samples across a 2D map grid.
+ 
+ Use `height(atMapPosition:)` to get a specific height sample for a particular point on the map;
+ 
+ or use `height(atWorldPosition:)` to interpolate the nearby height samples of a world position.
+ */
+struct HeightMap {
+    
+    /// The collection of height values that make up this height map.
+    var samples: [Int]
+    
+    /// The number of samples in each dimension (width and height) of the 2D map grid.
+    /// (where width * height denote the total count of samples)
+    var sampleCount: Size2<Int>
+    
+    /// The size of each grid square in world space.
+    /// (Usually 16x16)
+    let sampleSize: Size2<Int>
+    
+    /// Initialize a height map with some samples.
+    init(samples: [Int], count: Size2<Int>, sampleSize: Size2<Int> = Size2(16,16)) {
+        self.samples = samples
+        self.sampleCount = count
+        self.sampleSize = sampleSize
+    }
+    
+}
+
+extension HeightMap {
+    
+    /// Computes the map index of the given point in map space.
+    /// NOTE: No bounds checking is performed. A point out of bounds will not result in a valid map index.
+    func index(ofMapPosition point: Point2<Int>) -> Int {
+        return point.index(rowStride: sampleSize.width)
+    }
+    
+    /// The height sample of the given map index.
+    /// NOTE: No bounds checking is performed. An index out of bounds will trap when the sample access is attempted.
+    func height(atMapIndex index: Int) -> Int {
+        return samples[index]
+    }
+    
+    /// The height sample of the given point in map space.
+    /// NOTE: No bounds checking is performed. A point out of bounds will trap when the sample access is attempted.
+    func height(atMapPosition point: Point2<Int>) -> Int {
+        let index = point.index(rowStride: sampleSize.width)
+        return samples[index]
+    }
+    
+    /**
+     Approximates the height of a given world position from the height map.
+     
+     The world position is mapped into a grid square of the height map. Each of the nearest four corner's samples is then interpolated to estimate the height at `p`.
+     ```
+     a-------b
+     |       |
+     |   p   |   ->   bilinearInterpolation(a,b,c,d)   ->   height
+     |       |
+     c-------d
+     ```
+     */
+    func height(atWorldPosition p: Point2f) -> GameFloat {
+        
+        let ps = p / Size2f(sampleSize)
+        let sc = Size2f(sampleCount)
+        
+        // If the position is outside one of the map's bounds,
+        // try to do a simpler linear interpolation.
+        
+        // Outside of the width?
+        guard ps.x > 0 else { return height(atSamplePositionY: ps.y, x0: 0) }
+        guard ps.x < sc.width-1 else { return height(atSamplePositionY: ps.y, x0: sampleCount.width-1) }
+        // Outside of the height?
+        guard ps.y > 0 else { return height(atSamplePositionX: ps.x, y0: 0) }
+        guard ps.y < sc.height-1 else { return height(atSamplePositionX: ps.x, y0: sampleCount.height-1) }
+        
+        // The nearest top-left map point is `p0`.
+        // We will interpolate `p0`, the point right of it, the point beneath it, and the point beneath and to the right of it.
+        
+        let p0 = ps.map { Int(floor($0)) }
+        let w = sampleCount.width
+        let i = p0.index(rowStride: w)
+        
+        let h00 = GameFloat(samples[i])
+        let h10 = GameFloat(samples[i+1])
+        let h01 = GameFloat(samples[i+w])
+        let h11 = GameFloat(samples[i+w+1])
+        
+        return bilinearInterpolation(h00, h10, h01, h11, ps.x - GameFloat(p0.x), ps.y - GameFloat(p0.y))
+    }
+    
+    /// With the `x` position fixed, reduce the approximation to a linear interpolation between a sample above and below.
+    private func height(atSamplePositionY ys: GameFloat, x0: Int) -> GameFloat {
+        
+        // If the 'y' position is outside of the map's height bounds,
+        // then just return the sample at the nearest corner.
+        guard ys > 0 else { return GameFloat(height(atMapPosition: Point2(x0,0))) }
+        guard ys < GameFloat(sampleCount.height) else { return GameFloat(height(atMapPosition: Point2(x0,sampleCount.height-1))) }
+        
+        // The nearest top-left map point is `x0,y0`.
+        // We will interpolate `x0,y0` and the point beneath it.
+        
+        let y0 = Int(floor(ys))
+        let w = sampleCount.width
+        let i = Point2(x0,y0).index(rowStride: w)
+        
+        let h0 = GameFloat(samples[i])
+        let h1 = GameFloat(samples[i+w])
+        
+        return linearInterpolation(h0, h1, ys - GameFloat(y0))
+    }
+    
+    /// With the `y` position fixed, reduce the approximation to a linear interpolation between a sample left and right.
+    private func height(atSamplePositionX xs: GameFloat, y0: Int) -> GameFloat {
+        
+        // NOTE: height(atWorldPosition:) should have already checked the `x` position against the map's width bounds, no need to do it again.
+        
+        // The nearest top-left map point is `x0,y0`.
+        // We will interpolate `x0,y0` and the point right of it.
+        
+        let x0 = Int(floor(xs))
+        let w = sampleCount.width
+        let i = Point2(x0,y0).index(rowStride: w)
+        
+        let h0 = GameFloat(samples[i])
+        let h1 = GameFloat(samples[i+1])
+        
+        return linearInterpolation(h0, h1, xs - GameFloat(x0))
+    }
+    
+}
+
 // MARK:- TA
 
 struct TaMapModel: MapModelType {
@@ -141,7 +275,7 @@ struct TaMapModel: MapModelType {
     var tileIndexMap: TileIndexMap
     
     var seaLevel: Int
-    var heightMap: [Int]
+    var heightMap: HeightMap
     var featureMap: [Int?]
     var features: [FeatureTypeId]
     
@@ -194,7 +328,7 @@ private extension TaMapModel {
         
         tntFile.seek(toFileOffset: header.offsetToMapInfoArray)
         let entries = try tntFile.readArray(ofType: TA_TNT_MAP_ENTRY.self, count: mapSize.area)
-        heightMap = entries.map { Int($0.elevation) }
+        heightMap = HeightMap(samples: entries.map { Int($0.elevation) }, count: mapSize)
         
         tntFile.seek(toFileOffset: header.offsetToTileArray)
         let tiles = try tntFile.readData(verifyingLength: Int(header.numberOfTiles) * tileSize.area)
@@ -309,7 +443,7 @@ struct TakMapModel: MapModelType {
     var mapSize: Size2<Int>
     
     var seaLevel: Int
-    var heightMap: [Int]
+    var heightMap: HeightMap
     var featureMap: [Int?]
     var features: [FeatureTypeId]
     
@@ -359,7 +493,8 @@ private extension TakMapModel {
         seaLevel = Int(header.seaLevel)
         
         tntFile.seek(toFileOffset: header.offsetToHeightMap)
-        heightMap = try tntFile.readArray(ofType: UInt8.self, count: mapSize.area).map { Int($0) }
+        let heights = try tntFile.readArray(ofType: UInt8.self, count: mapSize.area).map { Int($0) }
+        heightMap = HeightMap(samples: heights, count: mapSize)
         
         tntFile.seek(toFileOffset: header.offsetToFeatureEntryArray)
         features = try tntFile.readArray(ofType: TA_TNT_FEATURE_ENTRY.self, count: Int(header.numberOfFeatures)).map { FeatureTypeId(named: $0.nameString) }

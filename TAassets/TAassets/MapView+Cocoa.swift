@@ -167,7 +167,7 @@ private extension CocoaMapView {
             
             let y = i / map.mapSize.width
             let x = i - (y * map.mapSize.width)
-            let h = CGFloat(map.heightMap[i]) / 2.0
+            let h = CGFloat(map.heightMap.samples[i]) / 2.0
             let size = feature.frames[0].image.size
             let offset = feature.frames[0].offset
             
