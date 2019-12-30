@@ -240,7 +240,7 @@ extension GafItem {
         case .takUncompressed4444, .takUncompressed1555:
             frameData = try gaf.readData(verifyingLength: frame.size.area * 2)
         case .taRunLengthEncoding:
-            let compressed = gaf.readData(ofLength: frame.size.area)
+            let compressed = gaf.readData(ofLength: frame.size.area * 2)
             frameData = decompressTaImageBits(compressed, decompressedSize: frame.size)
         }
         
@@ -257,7 +257,7 @@ extension GafItem {
                 var outputIndex = output.startIndex
                 
                 // Decompress one line at a time
-                for _ in 0..<size.height {
+                for lineNo in 0..<size.height {
                     
                     // Get the length of the compressed line
                     guard inputLine+2 < input.endIndex else { break }
@@ -266,14 +266,14 @@ extension GafItem {
                     let lineLength = Int((UInt16(byte2) << 8) | UInt16(byte1))
                     
                     guard lineLength <= size.width*2 else {
-                        print("!!! Warning, bad line length detected while decompressing GAF frame. [lineLength: \(lineLength)]")
+                        print("!!! Warning, bad line length detected while decompressing GAF frame. [line: \(lineNo+1), length: \(lineLength)]")
                         break
                     }
                     
                     let lineBits = inputLine + MemoryLayout<UInt16>.size
                     
                     var inputLineIndex = 0
-                    while inputLineIndex < lineLength && (lineBits + inputLineIndex) < input.endIndex {
+                    while inputLineIndex < lineLength && (lineBits + inputLineIndex) < input.endIndex && outputIndex < output.endIndex {
                         
                         // The first byte tells us how to
                         // handle the next few pixels.
@@ -285,12 +285,12 @@ extension GafItem {
                             // The rest of the byte is the length of the run (ie. how many successive pixels are transparent).
                             let count = Int(controlByte >> 1)
                             outputIndex += count
-                            guard outputIndex < output.endIndex else { break }
                         }
                         else if (controlByte & 2) == 2 {
                             // A controlByte of 2 denotes a run of a specific color.
                             // The rest of the control byte is the length of the run (ie. how many successive pixels are the color),
                             // and the next input byte is the color to use for the run.
+                            guard (lineBits + inputLineIndex) < input.endIndex else { print("!!! GAF decoding ended prematurely at line \(lineNo+1) of \(size.height)"); break }
                             let colorIndex = input[lineBits + inputLineIndex]
                             inputLineIndex += 1
                             let count = min(Int(controlByte >> 2) + 1, output.endIndex - outputIndex)
@@ -305,7 +305,7 @@ extension GafItem {
                             inputLineIndex += count
                             outputIndex += count
                         }
-                        
+
                     }
                     
                     // Move to the next input line
