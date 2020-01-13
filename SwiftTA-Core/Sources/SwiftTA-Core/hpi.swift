@@ -7,10 +7,10 @@
 //
 
 import Foundation
-#if canImport(Ctypes)
-import Ctypes
-#endif
-#if canImport(Czlib)
+import SwiftTA_Ctypes
+#if canImport(zlib)
+import zlib
+#elseif canImport(Czlib)
 import Czlib
 #endif
 

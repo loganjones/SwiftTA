@@ -7,9 +7,7 @@
 //
 
 import Foundation
-#if canImport(Ctypes)
-import Ctypes
-#endif
+import SwiftTA_Ctypes
 
 enum Pcx { }
 

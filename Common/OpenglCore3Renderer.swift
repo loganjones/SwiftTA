@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftTA_Core
 
 #if canImport(OpenGL)
 import OpenGL
@@ -15,7 +16,7 @@ import Cgl
 #endif
 
 
-class OpenglCore3Renderer: RunLoopGameRenderer {
+class OpenglCore3Renderer: SwiftTA_Core.RunLoopGameRenderer {
     
     var viewState: GameViewState
     private var tnt: OpenglCore3TntDrawable?
