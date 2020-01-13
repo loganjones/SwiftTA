@@ -8,28 +8,28 @@
 
 import Foundation
 
-struct Palette {
+public struct Palette {
     
     private var colors: [Color]
     
-    struct Color {
+    public struct Color {
         var red: UInt8
         var green: UInt8
         var blue: UInt8
         var alpha: UInt8
     }
     
-    init(_ colors: [Color]) {
+    public init(_ colors: [Color]) {
         self.colors = colors
     }
     
-    init() { colors = Array(repeating: Color.white, count: 255) }
+    public init() { colors = Array(repeating: Color.white, count: 255) }
     
-    subscript(index: Int) -> Color {
+    public subscript(index: Int) -> Color {
         return colors[index]
     }
     
-    subscript(index: UInt8) -> Color {
+    public subscript(index: UInt8) -> Color {
         return colors[Int(index)]
     }
     
@@ -37,7 +37,7 @@ struct Palette {
 
 // MARK:- PAL Support
 
-extension Palette {
+public extension Palette {
     
     init(palContentsOf url: URL, applyStandardTransparencies: Bool = true) throws {
         let data = try Data(contentsOf: url)
@@ -62,13 +62,13 @@ extension Palette {
 
 // MARK:- Simple Color Accessors
 
-extension Palette.Color {
+public extension Palette.Color {
     static let white = Palette.Color(red: UInt8.max, green: UInt8.max, blue: UInt8.max, alpha: UInt8.max)
     static let black = Palette.Color(red: UInt8.min, green: UInt8.min, blue: UInt8.min, alpha: UInt8.max)
     static let shadow = Palette.Color(red: 0, green: 0, blue: 0, alpha: 100)
 }
 
-extension Palette {
+public extension Palette {
     
     static let shadow: Palette = {
         var colors = Array(repeating: Color.shadow, count: 255)
@@ -81,7 +81,7 @@ extension Palette {
 
 // MARK:- Chorma Keys (Transparency)
 
-extension Palette {
+public extension Palette {
     
     mutating func applyChromaKeys(_ indices: Set<Int>, alpha: UInt8 = 0) {
         for i in indices {

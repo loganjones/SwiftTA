@@ -9,45 +9,45 @@
 import Foundation
 
 
-struct GameViewState {
-    var viewport = Rect4f.zero
-    var objects: [GameViewObject] = []
+public struct GameViewState {
+    public var viewport = Rect4f.zero
+    public var objects: [GameViewObject] = []
 }
 
-protocol GameRenderer: class {
+public protocol GameRenderer: class {
     var viewState: GameViewState { get set }
     init?(loadedState: GameState, viewState: GameViewState)
 }
 
-protocol RunLoopGameRenderer: GameRenderer {
+public protocol RunLoopGameRenderer: GameRenderer {
     func drawFrame()
 }
 
 #if canImport(AppKit)
 import AppKit
-protocol GameViewProvider {
+public protocol GameViewProvider {
     var view: NSView { get }
 }
 
 #elseif canImport(UIKit)
 import UIKit
-protocol GameViewProvider {
+public protocol GameViewProvider {
     var view: UIView { get }
 }
 
 #endif
 
-enum GameViewObject {
+public enum GameViewObject {
     case unit(GameViewUnit)
 }
 
-struct GameViewUnit {
-    var type: UnitData
-    var position: Vertex3f
-    var orientation: Vector3f
-    var pose: UnitModel.Instance
+public struct GameViewUnit {
+    public var type: UnitData
+    public var position: Vertex3f
+    public var orientation: Vector3f
+    public var pose: UnitModel.Instance
 }
-extension GameViewUnit {
+public extension GameViewUnit {
     init(_ unit: UnitInstance) {
         type = unit.type
         position = unit.worldPosition
@@ -56,7 +56,7 @@ extension GameViewUnit {
     }
 }
 
-func viewport(ofSize size: Size2<Int>, centeredOn start: Point2<Int>, in map: MapModel) -> Rect4<Int> {
+public func viewport(ofSize size: Size2<Int>, centeredOn start: Point2<Int>, in map: MapModel) -> Rect4<Int> {
     
     var rect = Rect4(origin: start, size: size)
     rect.origin.x -= size.width / 2

@@ -7,22 +7,22 @@
 //
 
 import Cocoa
-
+import SwiftTA_Core
 
 class GameViewController: NSViewController {
     
-    let game: GameManager
-    let renderer: GameRenderer & GameViewProvider
+    let game: SwiftTA_Core.GameManager
+    let renderer: SwiftTA_Core.GameRenderer & SwiftTA_Core.GameViewProvider
     
     private let scrollView: NSScrollView
     private let emptyView: NSView
     
-    required init(_ state: GameState) {
-        let initialViewState = state.generateInitialViewState(viewportSize: Size2<Int>(1024, 768))
+    required init(_ state: SwiftTA_Core.GameState) {
+        let initialViewState = state.generateInitialViewState(viewportSize: SwiftTA_Core.Size2<Int>(1024, 768))
         
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!
         //self.renderer = OpenglCore3CocoaRenderer(loadedState: state, viewState: initialViewState)!
-        self.game = GameManager(state: state, renderer: renderer)
+        self.game = SwiftTA_Core.GameManager(state: state, renderer: renderer)
         
         let defaultFrameRect = CGRect(size: initialViewState.viewport.size)
         scrollView = NSScrollView(frame: defaultFrameRect)
@@ -76,11 +76,11 @@ class GameViewController: NSViewController {
     }
     
     @objc func contentBoundsDidChange(_ notification: NSNotification) {
-        renderer.viewState.viewport = Rect4f(scrollView.contentView.bounds)
+        renderer.viewState.viewport = SwiftTA_Core.Rect4f(scrollView.contentView.bounds)
     }
     
     @objc func viewFrameDidChange(_ notification: NSNotification) {
-        renderer.viewState.viewport = Rect4f(scrollView.contentView.bounds)
+        renderer.viewState.viewport = SwiftTA_Core.Rect4f(scrollView.contentView.bounds)
     }
 
 }

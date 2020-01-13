@@ -19,17 +19,17 @@ import Foundation
  This identifier is referenced from other features, from TNT files, and other resources.
  These sources often mix up the casing of a feature's identifier; using `FeatureTypeId` with its case-insensitive equality checks will alleviate this issue.
  */
-struct FeatureTypeId: StringlyIdentifier {
+public struct FeatureTypeId: StringlyIdentifier {
     
-    let name: String
-    let hashValue: Int
+    public let name: String
+    public let hashValue: Int
     
-    init(named name: String) {
+    public init(named name: String) {
         self.name = name
         self.hashValue = name.lowercased().hashValue
     }
     
-    init(for featureInfo: MapFeatureInfo) {
+    public init(for featureInfo: MapFeatureInfo) {
         self.init(named: featureInfo.name)
     }
     

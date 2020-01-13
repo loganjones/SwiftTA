@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftTA_Core
 
 #if canImport(OpenGL)
 import OpenGL
@@ -20,10 +21,10 @@ class OpenglCore3OneTextureTntDrawable: OpenglCore3TntDrawable {
     
     private let program: TntProgram
     private let texture: OpenglTextureResource
-    private let textureSize: Size2<Int>
+    private let textureSize: SwiftTA_Core.Size2<Int>
     private let quad: TntQuadModel
     
-    init(for map: MapModel, from filesystem: FileSystem) throws {
+    init(for map: SwiftTA_Core.MapModel, from filesystem: SwiftTA_Core.FileSystem) throws {
         
         program = try makeProgram()
         quad = TntQuadModel()
@@ -31,7 +32,7 @@ class OpenglCore3OneTextureTntDrawable: OpenglCore3TntDrawable {
         switch map {
             
         case .ta(let map):
-            let palette = try Palette.standardTaPalette(from: filesystem)
+            let palette = try SwiftTA_Core.Palette.standardTaPalette(from: filesystem)
             texture = makeTexture(for: map, using: palette)
             textureSize = map.resolution
             
@@ -95,7 +96,7 @@ private func clamp(viewport: Rect4f, to size: Size2f) -> (position: Point2f, off
 
 // MARK:- Texture Loading
 
-private func makeTexture(for map: TaMapModel, using palette: Palette) -> OpenglTextureResource {
+private func makeTexture(for map: SwiftTA_Core.TaMapModel, using palette: SwiftTA_Core.Palette) -> OpenglTextureResource {
     let beginAll = Date()
     
     let mapSize = map.resolution
@@ -176,7 +177,7 @@ private struct TntProgram {
 }
 
 private func loadShaderCode(forResource name: String, withExtension ext: String) throws -> String {
-    guard let url = Bundle.main.url(forResource: name, withExtension: ext) else { throw RuntimeError("Neccessary shader file not found.") }
+    guard let url = Bundle.main.url(forResource: name, withExtension: ext) else { throw SwiftTA_Core.RuntimeError("Neccessary shader file not found.") }
     return try String(contentsOf: url)
 }
 

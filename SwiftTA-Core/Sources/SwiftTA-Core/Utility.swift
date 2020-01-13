@@ -202,11 +202,11 @@ extension String {
 
 // MARK:- Errors
 
-struct RuntimeError: Error, CustomStringConvertible {
+public struct RuntimeError: Error, CustomStringConvertible {
 
-    var description: String
+    public var description: String
     
-    init(_ description: String) {
+    public init(_ description: String) {
         self.description = description
     }
     
@@ -271,12 +271,12 @@ extension Int {
  
  See `UnitTypeId` and `FeatureTypeId` for examples.
  */
-protocol StringlyIdentifier: ExpressibleByStringLiteral, Hashable, CustomStringConvertible {
+public protocol StringlyIdentifier: ExpressibleByStringLiteral, Hashable, CustomStringConvertible {
     var name: String { get }
     var hashValue: Int { get }
     init(named: String)
 }
-extension StringlyIdentifier {
+public extension StringlyIdentifier {
     init(stringLiteral value: String) {
         self.init(named: value)
     }

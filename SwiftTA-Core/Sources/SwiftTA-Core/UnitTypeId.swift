@@ -17,22 +17,22 @@ import Foundation
  
  The identifier name is sourced from a unit's FBI file (the "UnitName" field) or `UnitInfo.name` if loaded.
  */
-struct UnitTypeId: StringlyIdentifier {
+public struct UnitTypeId: StringlyIdentifier {
     
-    let name: String
-    let hashValue: Int
+    public let name: String
+    public let hashValue: Int
     
-    init(named name: String) {
+    public init(named name: String) {
         self.name = name
         self.hashValue = name.lowercased().hashValue
     }
     
-    init(for unitInfo: UnitInfo) {
+    public init(for unitInfo: UnitInfo) {
         self.init(named: unitInfo.name)
     }
     
 }
 
-extension UnitData {
+public extension UnitData {
     var id: UnitTypeId { return UnitTypeId(for: info) }
 }

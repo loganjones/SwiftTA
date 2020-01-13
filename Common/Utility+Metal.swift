@@ -8,6 +8,7 @@
 
 import Metal
 import MetalKit
+import SwiftTA_Core
 
 
 // MARK:- Convenience Functions

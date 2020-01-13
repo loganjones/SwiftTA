@@ -11,41 +11,41 @@ import Foundation
 
 // MARK:- Float Type
 
-typealias GameFloat = Float
+public typealias GameFloat = Float
+ 
+public typealias Point2f = SIMD2<GameFloat>
+public typealias Point3f = SIMD3<GameFloat>
+public typealias Size2f = Size2<GameFloat>
+public typealias Rect4f = Rect4<GameFloat>
 
-typealias Point2f = SIMD2<GameFloat>
-typealias Point3f = SIMD3<GameFloat>
-typealias Size2f = Size2<GameFloat>
-typealias Rect4f = Rect4<GameFloat>
+public typealias Vertex2f = SIMD2<GameFloat>
+public typealias Vertex3f = SIMD3<GameFloat>
+public typealias Vector2f = SIMD2<GameFloat>
+public typealias Vector3f = SIMD3<GameFloat>
+public typealias Vector4f = SIMD4<GameFloat>
 
-typealias Vertex2f = SIMD2<GameFloat>
-typealias Vertex3f = SIMD3<GameFloat>
-typealias Vector2f = SIMD2<GameFloat>
-typealias Vector3f = SIMD3<GameFloat>
-typealias Vector4f = SIMD4<GameFloat>
-
-typealias Matrix3x3f = Matrix3x3<GameFloat>
-typealias Matrix4x4f = Matrix4x4<GameFloat>
+public typealias Matrix3x3f = Matrix3x3<GameFloat>
+public typealias Matrix4x4f = Matrix4x4<GameFloat>
 
 
 // MARK:- The State
 
-class GameState {
+public class GameState {
     
-    let filesystem: FileSystem
-    let map: MapModel
-    let mapInfo: MapInfo
-    let features: [FeatureTypeId: MapFeatureInfo]
-    let units: [UnitTypeId: UnitData]
-    let sides: [SideInfo]
+    public let filesystem: FileSystem
+    public let map: MapModel
+    public let mapInfo: MapInfo
+    public let features: [FeatureTypeId: MapFeatureInfo]
+    public let units: [UnitTypeId: UnitData]
+    public let sides: [SideInfo]
     
-    let startPosition: Point2<Int>
+    public let startPosition: Point2<Int>
     
-    convenience init(loadFrom taDir: URL, mapName: String) throws {
+    public convenience init(loadFrom taDir: URL, mapName: String) throws {
         try self.init(loadFrom: try FileSystem(mergingHpisIn: taDir), mapName: mapName)
     }
     
-    init(loadFrom filesystem: FileSystem, mapName: String) throws {
+    public init(loadFrom filesystem: FileSystem, mapName: String) throws {
         self.filesystem = filesystem
         let beginGame = Date()
         
@@ -95,7 +95,7 @@ class GameState {
      Temporary convenience initializer that loads a simple sandbox game on a predetermined map.
      The game's file tree is assumed to exist in a subdirectory/alias/link (either "Total Annihilation" or "Total Annihilation Kingdoms") of the supplied directory.
      */
-    convenience init(testLoadFromDocumentsDirectory documentsDirectory: URL) throws {
+    public convenience init(testLoadFromDocumentsDirectory documentsDirectory: URL) throws {
         
         let taDirectoryName = "Total Annihilation"
         let mapName = "Coast to Coast"

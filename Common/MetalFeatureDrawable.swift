@@ -9,6 +9,7 @@
 import Metal
 import MetalKit
 import simd
+import SwiftTA_Core
 
 
 private typealias BufferIndex = MetalMapViewRenderer_BufferIndex

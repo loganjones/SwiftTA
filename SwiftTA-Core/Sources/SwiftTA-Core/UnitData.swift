@@ -8,13 +8,13 @@
 
 import Foundation
 
-struct UnitData {
-    var info: UnitInfo
-    var model: UnitModel
-    var script: UnitScript
+public struct UnitData {
+    public var info: UnitInfo
+    public var model: UnitModel
+    public var script: UnitScript
 }
 
-extension UnitData {
+public extension UnitData {
     init(loading unitInfo: UnitInfo, from filesystem: FileSystem) throws {
         info = unitInfo
         let modelFile = try filesystem.openFile(at: "objects3d/" + unitInfo.object + ".3DO")

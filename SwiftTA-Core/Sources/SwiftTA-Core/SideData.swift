@@ -9,19 +9,19 @@
 import Foundation
 
 
-struct SideInfo {
+public struct SideInfo {
     
-    var name: String
-    var namePrefix: String
+    public var name: String
+    public var namePrefix: String
+     
+    public var commander: String?
+    public var palette: String?
     
-    var commander: String?
-    var palette: String?
-    
-    var properties: [String: String]
+    public var properties: [String: String]
     
 }
 
-extension SideInfo {
+public extension SideInfo {
     
     static func load<File>(contentsOf tdf: File) throws -> [SideInfo]
         where File: FileReadHandle

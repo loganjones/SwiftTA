@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol FileReadHandle {
+public protocol FileReadHandle {
     
     func readDataToEndOfFile() -> Data
     

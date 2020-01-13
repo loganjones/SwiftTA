@@ -9,13 +9,12 @@
 import Foundation
 import SwiftTA_Ctypes
 
-
-enum MapModel {
+public enum MapModel {
     case ta(TaMapModel)
     case tak(TakMapModel)
 }
 
-extension MapModel {
+public extension MapModel {
     
     init<File>(contentsOf tntFile: File) throws
         where File: FileReadHandle
@@ -37,7 +36,7 @@ extension MapModel {
     
 }
 
-protocol MapModelType {
+public protocol MapModelType {
     
     var mapSize: Size2<Int> { get }
     var resolution: Size2<Int> { get }
@@ -52,7 +51,7 @@ protocol MapModelType {
     
 }
 
-extension MapModelType {
+public extension MapModelType {
     
     var resolution: Size2<Int> {
         return mapSize * 16
@@ -71,49 +70,49 @@ extension MapModelType {
 
 extension MapModel: MapModelType {
     
-    var mapSize: Size2<Int> {
+    public var mapSize: Size2<Int> {
         switch self {
         case .ta(let model): return model.mapSize
         case .tak(let model): return model.mapSize
         }
     }
     
-    var resolution: Size2<Int> {
+    public var resolution: Size2<Int> {
         switch self {
         case .ta(let model): return model.resolution
         case .tak(let model): return model.resolution
         }
     }
     
-    var seaLevel: Int {
+    public var seaLevel: Int {
         switch self {
         case .ta(let model): return model.seaLevel
         case .tak(let model): return model.seaLevel
         }
     }
     
-    var heightMap: HeightMap {
+    public var heightMap: HeightMap {
         switch self {
         case .ta(let model): return model.heightMap
         case .tak(let model): return model.heightMap
         }
     }
     
-    var features: [FeatureTypeId] {
+    public var features: [FeatureTypeId] {
         switch self {
         case .ta(let model): return model.features
         case .tak(let model): return model.features
         }
     }
     
-    var featureMap: [Int?] {
+    public var featureMap: [Int?] {
         switch self {
         case .ta(let model): return model.featureMap
         case .tak(let model): return model.featureMap
         }
     }
     
-    var minimap: MinimapImage {
+    public var minimap: MinimapImage {
         switch self {
         case .ta(let model): return model.minimap
         case .tak(let model): return model.minimap
@@ -137,21 +136,21 @@ private extension TA_TNT_HEADER {
  
  or use `height(atWorldPosition:)` to interpolate the nearby height samples of a world position.
  */
-struct HeightMap {
+public struct HeightMap {
     
     /// The collection of height values that make up this height map.
-    var samples: [Int]
+    public var samples: [Int]
     
     /// The number of samples in each dimension (width and height) of the 2D map grid.
     /// (where width * height denote the total count of samples)
-    var sampleCount: Size2<Int>
+    public var sampleCount: Size2<Int>
     
     /// The size of each grid square in world space.
     /// (Usually 16x16)
-    let sampleSize: Size2<Int>
+    public let sampleSize: Size2<Int>
     
     /// Initialize a height map with some samples.
-    init(samples: [Int], count: Size2<Int>, sampleSize: Size2<Int> = Size2(16,16)) {
+    public init(samples: [Int], count: Size2<Int>, sampleSize: Size2<Int> = Size2(16,16)) {
         self.samples = samples
         self.sampleCount = count
         self.sampleSize = sampleSize
@@ -265,23 +264,23 @@ extension HeightMap {
 
 // MARK:- TA
 
-struct TaMapModel: MapModelType {
+public struct TaMapModel: MapModelType {
     
-    var mapSize: Size2<Int>
+    public var mapSize: Size2<Int>
     
-    var tileSet: TileSet
-    var tileIndexMap: TileIndexMap
+    public var tileSet: TileSet
+    public var tileIndexMap: TileIndexMap
     
-    var seaLevel: Int
-    var heightMap: HeightMap
-    var featureMap: [Int?]
-    var features: [FeatureTypeId]
+    public var seaLevel: Int
+    public var heightMap: HeightMap
+    public var featureMap: [Int?]
+    public var features: [FeatureTypeId]
     
-    var minimap: MinimapImage
+    public var minimap: MinimapImage
     
 }
 
-extension TaMapModel {
+public extension TaMapModel {
     
     func tileColumns(in rect: Rect4f) -> CountableClosedRange<Int> {
         let tileWidth = tileSet.tileSize.width
@@ -358,7 +357,7 @@ private extension TA_TNT_FEATURE_ENTRY {
     }
 }
 
-extension TaMapModel {
+public extension TaMapModel {
     
     struct TileSet {
         var tiles: Data
@@ -379,9 +378,9 @@ extension TaMapModel {
     
 }
 
-extension TaMapModel {
+public extension TaMapModel {
     
-    struct TileIndexMap {
+    public struct TileIndexMap {
         var indices: Data
         var size: Size2<Int>
         let tileSize: Size2<Int>
@@ -437,23 +436,23 @@ extension TaMapModel {
 
 // MARK:- TAK
 
-struct TakMapModel: MapModelType {
-    var mapSize: Size2<Int>
+public struct TakMapModel: MapModelType {
+    public var mapSize: Size2<Int>
     
-    var seaLevel: Int
-    var heightMap: HeightMap
-    var featureMap: [Int?]
-    var features: [FeatureTypeId]
+    public var seaLevel: Int
+    public var heightMap: HeightMap
+    public var featureMap: [Int?]
+    public var features: [FeatureTypeId]
     
-    var tileIndexMap: TileIndexMap
+    public var tileIndexMap: TileIndexMap
     
-    var largeMinimap: MinimapImage
-    var smallMinimap: MinimapImage
+    public var largeMinimap: MinimapImage
+    public var smallMinimap: MinimapImage
     
-    let tileSize: Size2<Int>
+    public let tileSize: Size2<Int>
 }
 
-extension TakMapModel {
+public extension TakMapModel {
     
     var minimap: MinimapImage {
         return smallMinimap
@@ -461,7 +460,7 @@ extension TakMapModel {
     
 }
 
-extension TakMapModel {
+public extension TakMapModel {
     
     func tileColumns(in rect: Rect4f) -> CountableClosedRange<Int> {
         let tileWidth = tileSize.width
@@ -523,9 +522,9 @@ private extension TakMapModel {
     
 }
 
-extension TakMapModel {
+public extension TakMapModel {
     
-    struct TileIndexMap {
+    public struct TileIndexMap {
         var names: [UInt32]
         var columns: [UInt8]
         var rows: [UInt8]
@@ -562,12 +561,12 @@ extension TakMapModel.TileIndexMap {
 
 // MARK:- MinimapImage
 
-struct MinimapImage {
-    var size: Size2<Int>
-    var data: Data
+public struct MinimapImage {
+    public var size: Size2<Int>
+    public var data: Data
 }
 
-extension MinimapImage {
+public extension MinimapImage {
     
     static func readFrom<File>(file: File) throws -> MinimapImage
     where File: FileReadHandle

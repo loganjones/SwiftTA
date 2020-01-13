@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import SwiftTA_Core
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -36,10 +37,10 @@ class MainWindowController: NSWindowController {
         DispatchQueue(label: "Loading").async {
             do {
                 guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-                    throw RuntimeError("No Documents directory?!")
+                    throw SwiftTA_Core.RuntimeError("No Documents directory?!")
                 }
                 
-                let state = try GameState(testLoadFromDocumentsDirectory: documents)
+                let state = try SwiftTA_Core.GameState(testLoadFromDocumentsDirectory: documents)
                 
                 DispatchQueue.main.async {
                     self.proceedWithLoaded(state)
@@ -51,7 +52,7 @@ class MainWindowController: NSWindowController {
         }
     }
     
-    func proceedWithLoaded(_ state: GameState) {
+    func proceedWithLoaded(_ state: SwiftTA_Core.GameState) {
         let vc = GameViewController(state)
         self.contentViewController = vc
     }

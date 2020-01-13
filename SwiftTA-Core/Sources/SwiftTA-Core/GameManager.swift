@@ -12,7 +12,7 @@ import Foundation
 /**
  I'm not a big fan of manager objects. Consider this a temporary means-to-an-end for getting the update thread up and working.
  */
-class GameManager: ScriptMachine {
+public class GameManager: ScriptMachine {
     
     let loadedState: GameState
     unowned var renderer: GameRenderer
@@ -25,7 +25,7 @@ class GameManager: ScriptMachine {
     private var objectIdGenerator = GameObjectIdGenerator()
     private var objects: [GameObjectId: GameObject] = [:]
     
-    init(state: GameState, renderer: GameRenderer) {
+    public init(state: GameState, renderer: GameRenderer) {
         loadedState = state
         self.renderer = renderer
         
@@ -42,7 +42,7 @@ class GameManager: ScriptMachine {
         objectSyncQueue.asyncAfter(deadline: .now() + 2, execute: self.TEMP_spawn)
     }
     
-    func start() {
+    public func start() {
         isRunningUpdateThread = true
         let thread = Thread(block: {
             [weak self] in
@@ -60,7 +60,7 @@ class GameManager: ScriptMachine {
         self.thread = thread
     }
     
-    func stop() {
+    public func stop() {
         isRunningUpdateThread = false
         thread = nil
     }
@@ -145,7 +145,7 @@ class GameManager: ScriptMachine {
     
 }
 
-extension GameState {
+public extension GameState {
     
     func generateInitialViewState(viewportSize: Size2<Int>) -> GameViewState {
         

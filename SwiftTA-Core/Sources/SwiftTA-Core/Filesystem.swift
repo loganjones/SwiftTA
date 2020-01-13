@@ -8,13 +8,13 @@
 
 import Foundation
 
-class FileSystem {
+public class FileSystem {
     
-    let root: Directory
+    public let root: Directory
     
-    static let weightedArchiveExtensions = ["ufo", "gp3", "ccx", "gpf", "hpi"]
+    public static let weightedArchiveExtensions = ["ufo", "gp3", "ccx", "gpf", "hpi"]
     
-    init(mergingHpisIn searchDirectory: URL, extensions: [String] = FileSystem.weightedArchiveExtensions) throws {
+    public init(mergingHpisIn searchDirectory: URL, extensions: [String] = FileSystem.weightedArchiveExtensions) throws {
 
         let weighArchives: (URL, URL) -> Bool = { (a,b) in
             let weightA = extensions.firstIndex(of: a.pathExtension) ?? -1
@@ -65,19 +65,19 @@ class FileSystem {
     #endif
     
     /// Load a single HPI file's filesystem.
-    init(hpi url: URL) throws {
+    public init(hpi url: URL) throws {
         let hpi = try HpiItem.loadFromArchive(contentsOf: url)
         root = FileSystem.Directory(from: hpi, in: url)
     }
     
     /// Empty `FileSystem`. No files or directories.
-    init() { root = Directory() }
+    public init() { root = Directory() }
     
 }
 
 // MARK:- Item (File & Directory)
 
-extension FileSystem {
+public extension FileSystem {
     
     enum Item {
         
@@ -110,7 +110,7 @@ extension FileSystem {
     
 }
 
-extension FileSystem {
+public extension FileSystem {
     
     static func compareNames(_ a: String, _ b: String) -> Bool {
         return a.caseInsensitiveCompare(b) == .orderedSame
@@ -126,7 +126,7 @@ extension FileSystem {
     
 }
 
-extension FileSystem.Item {
+public extension FileSystem.Item {
     
     var name: String {
         switch self {
@@ -146,7 +146,7 @@ extension FileSystem.Item {
     
 }
 
-extension FileSystem.File {
+public extension FileSystem.File {
     
     var name: String { return info.name }
     
@@ -157,7 +157,7 @@ extension FileSystem.File {
     
 }
 
-extension FileSystem.Directory {
+public extension FileSystem.Directory {
     
     init(from hpiDirectory: HpiItem.Directory, in hpiURL: URL) {
         name = hpiDirectory.name
@@ -219,7 +219,7 @@ extension FileSystem.Directory {
     
 }
 
-extension FileSystem.File {
+public extension FileSystem.File {
     
     func hasExtension(_ ext: String) -> Bool {
         return (name as NSString).pathExtension.caseInsensitiveCompare(ext) == .orderedSame
@@ -235,7 +235,7 @@ extension FileSystem.File {
     
 }
 
-extension FileSystem.Item {
+public extension FileSystem.Item {
     
     func asDirectory() -> FileSystem.Directory? {
         switch self {
@@ -253,7 +253,7 @@ extension FileSystem.Item {
     
 }
 
-extension FileSystem.Directory {
+public extension FileSystem.Directory {
     
     func resolve(path: String) throws -> FileSystem.Item {
         var pathComponenets = path.components(separatedBy: "/")
@@ -284,7 +284,7 @@ extension FileSystem.Directory {
     
 }
 
-extension FileSystem.Directory {
+public extension FileSystem.Directory {
     
     subscript(path p: String) -> FileSystem.Item? {
         return try? resolve(path: p)
@@ -312,7 +312,7 @@ extension FileSystem.Directory {
 
 // MARK:- FileHandle
 
-extension FileSystem {
+public extension FileSystem {
     
     func openFile(at path: String) throws -> FileHandle {
         
@@ -344,7 +344,7 @@ extension FileSystem {
     
 }
 
-extension FileSystem.FileHandle: FileReadHandle {
+public extension FileSystem.FileHandle: FileReadHandle {
     
     func readDataToEndOfFile() -> Data {
         return readData(ofLength: file.info.size - offsetInFile)

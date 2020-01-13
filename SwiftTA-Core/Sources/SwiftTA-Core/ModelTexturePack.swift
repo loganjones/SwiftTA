@@ -9,12 +9,12 @@
 import Foundation
 
 
-class ModelTexturePack {
+public class ModelTexturePack {
     
-    typealias Gaf = UnitTextureAtlas.GafContent
+    public typealias Gaf = UnitTextureAtlas.GafContent
     private let textures: [String: Gaf]
     
-    init(loadFrom filesystem: FileSystem) {
+    public init(loadFrom filesystem: FileSystem) {
         
         let texDirectectory = filesystem.root[directory: "textures"] ?? FileSystem.Directory()
         let list = texDirectectory.items
@@ -34,9 +34,9 @@ class ModelTexturePack {
     }
     
     /// Empty texture set; no textures; nada.
-    init() { textures = [:] }
+    public init() { textures = [:] }
     
-    subscript(name: String) -> Gaf? {
+    public subscript(name: String) -> Gaf? {
         if let tex = textures[name] { return tex }
         else { return nil }
     }

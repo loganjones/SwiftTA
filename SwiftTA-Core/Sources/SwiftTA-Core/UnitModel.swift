@@ -9,24 +9,24 @@
 import Foundation
 import SwiftTA_Ctypes
 
-struct UnitModel {
+public struct UnitModel {
     
-    typealias Pieces = Array<Piece>
-    typealias Primitives = Array<Primitive>
-    typealias Vertices = Array<Vertex3f>
-    typealias Textures = Array<Texture>
+    public typealias Pieces = Array<Piece>
+    public typealias Primitives = Array<Primitive>
+    public typealias Vertices = Array<Vertex3f>
+    public typealias Textures = Array<Texture>
     
-    var pieces: Pieces
-    var primitives: Primitives
-    var vertices: Vertices
-    var textures: Textures
+    public var pieces: Pieces
+    public var primitives: Primitives
+    public var vertices: Vertices
+    public var textures: Textures
     
-    var root: Pieces.Index
-    var groundPlate: Primitives.Index
+    public var root: Pieces.Index
+    public var groundPlate: Primitives.Index
     
-    var nameLookup: [String: Pieces.Index]
-    
-    init<File>(contentsOf file: File) throws
+    public var nameLookup: [String: Pieces.Index]
+     
+    public init<File>(contentsOf file: File) throws
         where File: FileReadHandle
     {
         let fileData = file.readDataToEndOfFile()
@@ -49,31 +49,31 @@ struct UnitModel {
         nameLookup = names
     }
     
-    func piece(named name: String) -> Piece? {
+    public func piece(named name: String) -> Piece? {
         if let index = nameLookup[name] { return pieces[index] }
         else { return nil }
     }
     
-    struct Piece {
-        var name: String
-        var offset: Vector3f
-        var primitives: [Primitives.Index]
-        var children: [Pieces.Index]
+    public struct Piece {
+        public var name: String
+        public var offset: Vector3f
+        public var primitives: [Primitives.Index]
+        public var children: [Pieces.Index]
     }
     
-    struct Primitive {
-        var texture: Textures.Index
-        var indices: [Vertices.Index]
+    public struct Primitive {
+        public var texture: Textures.Index
+        public var indices: [Vertices.Index]
     }
     
-    enum Texture: Equatable {
+    public enum Texture: Equatable {
         case image(String)
         case color(Int)
     }
     
 }
 
-extension UnitModel {
+public extension UnitModel {
     struct PieceMap {
         var pieces: [Piece]
         var root: Array<Piece>.Index

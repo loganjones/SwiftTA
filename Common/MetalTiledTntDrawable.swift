@@ -9,6 +9,7 @@
 import Metal
 import MetalKit
 import simd
+import SwiftTA_Core
 
 
 private let screenTileSize = 512

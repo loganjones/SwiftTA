@@ -9,28 +9,28 @@
 import Foundation
 
 
-struct MapFeatureInfo {
+public struct MapFeatureInfo {
     
-    var name: String
-    var footprint: Size2<Int>
-    var height: Int
+    public var name: String
+    public var footprint: Size2<Int>
+    public var height: Int
     
-    var world: String?
+    public var world: String?
     
-    var gafFilename: String?
-    var primaryGafItemName: String?
-    var shadowGafItemName: String?
+    public var gafFilename: String?
+    public var primaryGafItemName: String?
+    public var shadowGafItemName: String?
     
-    var hitDensity: Int
-    var damage: Int
+    public var hitDensity: Int
+    public var damage: Int
     
-    var energy: Int
-    var metal: Int
+    public var energy: Int
+    public var metal: Int
     
-    var isBlocking: Bool
-    var destructible: Destructible
-    var reclaimable: Reclaimable
-    var flammable: Flammable
+    public var isBlocking: Bool
+    public var destructible: Destructible
+    public var reclaimable: Reclaimable
+    public var flammable: Flammable
     
 }
 
@@ -65,13 +65,13 @@ extension MapFeatureInfo {
 
 // MARK: Destructible
 
-extension MapFeatureInfo {
+public extension MapFeatureInfo {
     
     enum Destructible {
         case no
         case yes(Properties)
         
-        struct Properties {
+        public struct Properties {
             var primaryGafItemName: String?
             var resultingFeature: String
         }
@@ -86,7 +86,8 @@ extension MapFeatureInfo {
     var isIndestructible: Bool { return !isDestructible }
     
 }
-extension MapFeatureInfo.Destructible {
+
+public extension MapFeatureInfo.Destructible {
     
     var properties: Properties? {
         switch self {
@@ -110,7 +111,7 @@ private extension MapFeatureInfo.Destructible.Properties {
 
 // MARK: Reclaimable
 
-extension MapFeatureInfo {
+public extension MapFeatureInfo {
     
     enum Reclaimable {
         case no
@@ -131,7 +132,7 @@ extension MapFeatureInfo {
     
 }
 
-extension MapFeatureInfo.Reclaimable {
+public extension MapFeatureInfo.Reclaimable {
     
     var properties: Properties? {
         switch self {
@@ -156,7 +157,7 @@ private extension MapFeatureInfo.Reclaimable.Properties {
 
 // MARK: Flammable
 
-extension MapFeatureInfo {
+public extension MapFeatureInfo {
     
     enum Flammable {
         case no
@@ -182,7 +183,7 @@ extension MapFeatureInfo {
     
 }
 
-extension MapFeatureInfo.Flammable {
+public extension MapFeatureInfo.Flammable {
     
     var properties: Properties? {
         switch self {
@@ -216,7 +217,7 @@ private extension MapFeatureInfo.Flammable.Properties {
 
 // MARK: Load Features
 
-extension MapFeatureInfo {
+public extension MapFeatureInfo {
     
     typealias FeatureInfoCollection = [FeatureTypeId: MapFeatureInfo]
     

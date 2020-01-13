@@ -12,16 +12,16 @@ import Foundation
 // I tried using Character as the base type but the resulting code ran an order of magnitude slower than the withUnsafeBytes+UInt8 solution.
 
 
-class TdfParser {
+public class TdfParser {
     
-    init<File>(_ file: File) where File: FileReadHandle {
+    public init<File>(_ file: File) where File: FileReadHandle {
         self.data = file.readDataToEndOfFile()
     }
-    init(_ data: Data) {
+    public init(_ data: Data) {
         self.data = data
     }
     
-    enum Token: Equatable {
+    public enum Token: Equatable {
         case objectBegin(String)
         case objectEnd(String)
         case property(String, String)
@@ -33,7 +33,7 @@ class TdfParser {
     fileprivate var context = Context()
 }
 
-extension TdfParser {
+public extension TdfParser {
     
     var isAtEnd: Bool { return scanPosition >= data.count }
     
@@ -119,7 +119,7 @@ extension TdfParser {
     
 }
 
-extension TdfParser {
+public extension TdfParser {
     
     func forEachProperty(perform: (_ key: String, _ value: String) -> ()) {
         
@@ -166,11 +166,11 @@ extension TdfParser {
 
 // MARK:- Dictionary Extract
 
-extension TdfParser {
+public extension TdfParser {
     
-    struct Object {
-        var properties: Dictionary<String, String>
-        var subobjects: Dictionary<String, Object>
+    public struct Object {
+        public var properties: Dictionary<String, String>
+        public var subobjects: Dictionary<String, Object>
     }
     
     func extractAll() -> Dictionary<String, Object> {
@@ -248,7 +248,7 @@ extension TdfParser {
     
 }
 
-extension TdfParser.Object {
+public extension TdfParser.Object {
     
     init() {
         properties = [:]
@@ -275,7 +275,7 @@ extension TdfParser.Object {
     
 }
 
-extension TdfParser.Object {
+public extension TdfParser.Object {
     
     enum LoadError: Error {
         case requiredPropertyNotFound(String)

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,6 +12,8 @@
 		B5CAAF0A20B26BB2003B17D7 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF0920B26BB2003B17D7 /* GameViewController.swift */; };
 		B5CAAF0C20B26BB3003B17D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0B20B26BB3003B17D7 /* Assets.xcassets */; };
 		B5CAAF0F20B26BB3003B17D7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0D20B26BB3003B17D7 /* Main.storyboard */; };
+		B5E6FE8623CBF9540016A704 /* SwiftTA-Core in Frameworks */ = {isa = PBXBuildFile; productRef = B5E6FE8523CBF9540016A704 /* SwiftTA-Core */; };
+		B5E6FE8823CBF9540016A704 /* SwiftTA-Ctypes in Frameworks */ = {isa = PBXBuildFile; productRef = B5E6FE8723CBF9540016A704 /* SwiftTA-Ctypes */; };
 		F02CAF43214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02CAF42214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift */; };
 		F02CAF45214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02CAF44214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift */; };
 		F07131F7215AF1B900952E13 /* MetalFeatureDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07131F6215AF1B900952E13 /* MetalFeatureDrawable.swift */; };
@@ -66,6 +68,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5E6FE8823CBF9540016A704 /* SwiftTA-Ctypes in Frameworks */,
+				B5E6FE8623CBF9540016A704 /* SwiftTA-Core in Frameworks */,
 				F0A9DE2620B49B50007E71C1 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -157,6 +161,8 @@
 			);
 			name = "SwiftTA macOS";
 			packageProductDependencies = (
+				B5E6FE8523CBF9540016A704 /* SwiftTA-Core */,
+				B5E6FE8723CBF9540016A704 /* SwiftTA-Ctypes */,
 			);
 			productName = "SwiftTA macOS";
 			productReference = B5CAAF0420B26BB2003B17D7 /* SwiftTA.app */;
@@ -426,6 +432,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B5E6FE8523CBF9540016A704 /* SwiftTA-Core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "SwiftTA-Core";
+		};
+		B5E6FE8723CBF9540016A704 /* SwiftTA-Ctypes */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "SwiftTA-Ctypes";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B5CAAEFC20B26BB2003B17D7 /* Project object */;
 }

@@ -9,26 +9,26 @@
 import Foundation
 
 
-struct MapInfo {
+public struct MapInfo {
     
-    var name: String
-    var description: String
-    var planet: String?
+    public var name: String
+    public var description: String
+    public var planet: String?
+     
+    public var tidalStrength: Int
+    public var solarStrength: Int
+    public var windSpeed: ClosedRange<Int>
+    public var gravity: Int
     
-    var tidalStrength: Int
-    var solarStrength: Int
-    var windSpeed: ClosedRange<Int>
-    var gravity: Int
+    public var schema: [Schema]
     
-    var schema: [Schema]
-    
-    struct Schema {
-        var type: SchemaType
-        var aiProfile: String
-        var startPositions: [Point2<Int>]
+    public struct Schema {
+        public var type: SchemaType
+        public var aiProfile: String
+        public var startPositions: [Point2<Int>]
     }
     
-    enum SchemaType {
+    public enum SchemaType {
         case sandbox
         case easy
         case medium
@@ -37,7 +37,7 @@ struct MapInfo {
     
 }
 
-extension MapInfo {
+public extension MapInfo {
     
     init(contentsOf ota: FileSystem.File, in filesystem: FileSystem) throws {
         
@@ -87,7 +87,7 @@ extension MapInfo {
     
 }
 
-extension MapInfo.Schema {
+public extension MapInfo.Schema {
     
     init(taFormat info: TdfParser.Object) {
         type = MapInfo.SchemaType(otaValue: info["type"])
@@ -128,7 +128,7 @@ extension MapInfo.Schema {
     
 }
 
-extension MapInfo.SchemaType {
+public extension MapInfo.SchemaType {
     
     init(otaValue: String?) {
         guard let otaValue = otaValue?.lowercased() else { self = .sandbox; return }

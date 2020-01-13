@@ -9,17 +9,17 @@
 import Foundation
 import SwiftTA_Ctypes
 
-struct UnitScript {
+public struct UnitScript {
     
-    typealias CodeUnit = Int32
-    typealias Code = Array<CodeUnit>
+    public typealias CodeUnit = Int32
+    public typealias Code = Array<CodeUnit>
     
-    var modules: [Module]
-    var code: Code
-    var numberOfStaticVariables: Int
-    var pieces: [String]
+    public var modules: [Module]
+    public var code: Code
+    public var numberOfStaticVariables: Int
+    public var pieces: [String]
     
-    init<File>(contentsOf file: File) throws
+    public init<File>(contentsOf file: File) throws
         where File: FileReadHandle
     {
         let fileData = file.readDataToEndOfFile()
@@ -38,12 +38,12 @@ struct UnitScript {
         }
     }
     
-    struct Module {
-        var name: String
-        var offset: Code.Index
-        var localCount: Int = 0
+    public struct Module {
+        public var name: String
+        public var offset: Code.Index
+        public var localCount: Int = 0
         
-        init(name: String, offset: Code.Index) {
+        public init(name: String, offset: Code.Index) {
             self.name = name
             self.offset = offset
         }
@@ -51,7 +51,7 @@ struct UnitScript {
     
 }
 
-extension UnitScript {
+public extension UnitScript {
     
     func module(named name: String) -> Module? {
         guard let index = modules.firstIndex(where: { $0.name == name })
@@ -118,7 +118,7 @@ private extension UnitScript {
     
 }
 
-extension UnitScript {
+public extension UnitScript {
     
     enum Opcode: CodeUnit {
         case movePieceWithSpeed     = 0x10001000
@@ -437,7 +437,7 @@ extension UnitScript {
     
 }
 
-extension UnitScript.UnitValue {
+public extension UnitScript.UnitValue {
     var parameterCount: Int {
         switch self {
         case .unitXZ: fallthrough

@@ -8,27 +8,27 @@
 
 import Foundation
 
-struct UnitInfo {
-    var name: String = ""
-    var side: String = ""
-    var object: String = ""
-    var corpse: String?
+public struct UnitInfo {
+    public var name: String = ""
+    public var side: String = ""
+    public var object: String = ""
+    public var corpse: String?
     
-    var title: String = ""
-    var description: String = ""
+    public var title: String = ""
+    public var description: String = ""
     
-    var footprint: Size2<Int> = Size2<Int>(width: 1 , height: 1)
-    var capabilities: Capabilities = .defaults
-    var categories: Set<String> = []
-    var tedClass: String = ""
+    public var footprint: Size2<Int> = Size2<Int>(width: 1 , height: 1)
+    public var capabilities: Capabilities = .defaults
+    public var categories: Set<String> = []
+    public var tedClass: String = ""
     
-    var acceleration: GameFloat
-    var maxVelocity: GameFloat
-    var brakeRate: GameFloat
-    var turnRate: GameFloat
+    public var acceleration: GameFloat
+    public var maxVelocity: GameFloat
+    public var brakeRate: GameFloat
+    public var turnRate: GameFloat
 }
 
-extension UnitInfo {
+public extension UnitInfo {
     struct Capabilities: OptionSet {
         let rawValue: Int
         
@@ -54,7 +54,7 @@ extension UnitInfo {
     }
 }
 
-extension UnitInfo {
+public extension UnitInfo {
     
     init(contentsOf file: FileSystem.FileHandle) throws {
         
@@ -105,7 +105,7 @@ extension UnitInfo {
     
 }
 
-extension UnitInfo {
+public extension UnitInfo {
     
     var canMove: Bool { return capabilities.contains(.move) }
     var canStop: Bool { return capabilities.contains(.stop) }
@@ -126,7 +126,7 @@ extension UnitInfo {
 
 // MARK: Load Units
 
-extension UnitInfo {
+public extension UnitInfo {
     
     static func collectUnits(from filesystem: FileSystem) -> [UnitInfo] {
         
