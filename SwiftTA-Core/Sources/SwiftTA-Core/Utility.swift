@@ -130,23 +130,23 @@ extension Array {
 
 // MARK:- String Formatters
 
-extension UInt8 {
+public extension UInt8 {
     var hexString: String {
         return "0x"+String(self, radix: 16, uppercase: true).padLeft(with: "0", toLength: 2)
     }
 }
-extension UInt16 {
+public extension UInt16 {
     var hexString: String {
         return "0x"+String(self, radix: 16, uppercase: true).padLeft(with: "0", toLength: 4)
     }
 }
-extension UInt32 {
+public extension UInt32 {
     var hexString: String {
         return "0x"+String(self, radix: 16, uppercase: true).padLeft(with: "0", toLength: 8)
     }
 }
 
-extension UInt8 {
+public extension UInt8 {
     var binaryString: String {
         return "b("
         + String(self, radix: 2, uppercase: true)
@@ -155,7 +155,7 @@ extension UInt8 {
         + ")"
     }
 }
-extension UInt16 {
+public extension UInt16 {
     var binaryString: String {
         return "b("
             + String(self, radix: 2, uppercase: true)
@@ -164,7 +164,7 @@ extension UInt16 {
             + ")"
     }
 }
-extension UInt32 {
+public extension UInt32 {
     var binaryString: String {
         return "b("
             + String(self, radix: 2, uppercase: true)
@@ -174,7 +174,7 @@ extension UInt32 {
     }
 }
 
-extension String {
+public extension String {
     
     func padLeft(with character: String, toLength length: Int) -> String {
         let padCount = length - self.count
@@ -243,7 +243,7 @@ extension UInt64 {
 
 // MARK:- Integer Partitioning
 
-extension Int {
+public extension Int {
     
     func partitions(by divisor: Int) -> [Int] {
         guard divisor < self else { return [self] }

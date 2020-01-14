@@ -8,34 +8,34 @@
 
 import Foundation
 
-class UnitTextureAtlas {
+public class UnitTextureAtlas {
     
-    let size: Size2<Int>
-    let textures: [Texture]
+    public let size: Size2<Int>
+    public let textures: [Texture]
     
-    struct Texture {
+    public struct Texture {
         var location: _Rect
         var content: Content
     }
     
-    enum Content {
+    public enum Content {
         case color(Int)
         case gafItem(GafContent)
         case notFound(String)
     }
     
-    struct GafContent {
+    public struct GafContent {
         var file: FileSystem.File
         var item: GafItem
         var size: Size2<Int>
     }
     
-    init(for modelTextures: [UnitModel.Texture], from texPack: ModelTexturePack) {
+    public init(for modelTextures: [UnitModel.Texture], from texPack: ModelTexturePack) {
         let content = UnitTextureAtlas.content(for: modelTextures, from: texPack)
         (size, textures) = UnitTextureAtlas.pack(content)
     }
     
-    func build(from filesystem: FileSystem, using palette: Palette) -> Data {
+    public func build(from filesystem: FileSystem, using palette: Palette) -> Data {
         
         let bytesPerPixel = 4
         let byteCount = size.area * bytesPerPixel
@@ -48,7 +48,7 @@ class UnitTextureAtlas {
         return Data(bytesNoCopy: bytes, count: byteCount, deallocator: .custom({ (p, i) in p.deallocate() }))
     }
     
-    func textureCoordinates(for index: Int) -> (Vertex2f, Vertex2f, Vertex2f, Vertex2f) {
+    public func textureCoordinates(for index: Int) -> (Vertex2f, Vertex2f, Vertex2f, Vertex2f) {
         
         let texture = textures[index]
         
@@ -166,7 +166,7 @@ private extension UnitTextureAtlas {
     
 }
 
-extension UnitTextureAtlas.Content {
+public extension UnitTextureAtlas.Content {
     var size: Size2<Int> {
         switch self {
         case .color: return Size2<Int>(width: 8, height: 8)

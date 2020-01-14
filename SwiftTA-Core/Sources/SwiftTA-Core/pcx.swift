@@ -9,11 +9,11 @@
 import Foundation
 import SwiftTA_Ctypes
 
-enum Pcx { }
+public enum Pcx { }
 
 // MARK:- Pcx Decoding
 
-extension Pcx {
+public extension Pcx {
     
     static func extractImage<File>(contentsOf pcxFile: File) throws -> (data: Data, size: Size2<Int>)
         where File: FileReadHandle
@@ -137,7 +137,7 @@ private func setPixel(_ pixel: UnsafeMutablePointer<UInt8>, to colorIndex: UInt8
 
 // MARK:- Analysis (Image or Palette)
 
-extension Pcx {
+public extension Pcx {
     
     enum Analysis {
         case image

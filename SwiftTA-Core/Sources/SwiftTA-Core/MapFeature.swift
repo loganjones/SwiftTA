@@ -117,7 +117,7 @@ public extension MapFeatureInfo {
         case no
         case yes(Properties)
         
-        struct Properties {
+        public struct Properties {
             var primaryGafItemName: String?
             var resultingFeature: String
         }
@@ -163,7 +163,7 @@ public extension MapFeatureInfo {
         case no
         case yes(Properties)
         
-        struct Properties {
+        public struct Properties {
             var sparkTime: Int
             var burnTime: ClosedRange<Int>
             var spreadChance: Int
@@ -336,7 +336,7 @@ private extension MapFeatureInfo {
     
 }
 
-extension MapFeatureInfo {
+public extension MapFeatureInfo {
     
     typealias MapFeaturesGafCollator = (_ id: FeatureTypeId, _ info: MapFeatureInfo, _ item: GafItem, _ gafHandle: FileSystem.FileHandle, _ gafListing: GafListing) -> ()
     

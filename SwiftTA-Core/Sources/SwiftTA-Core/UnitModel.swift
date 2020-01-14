@@ -228,7 +228,7 @@ private extension UnitModel.Texture {
 
 extension UnitModel.Texture: CustomStringConvertible {
     
-    var description: String {
+    public var description: String {
         switch self {
         case .color(let c): return "Color:\(c)"
         case .image(let i): return "Texture:"+i

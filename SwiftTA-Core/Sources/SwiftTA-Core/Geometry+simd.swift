@@ -10,7 +10,7 @@ import Foundation
 import simd
 
 
-extension matrix_float3x3 {
+public extension matrix_float3x3 {
     
     init(topLeftOf m44: matrix_float4x4) {
         self.init(columns:(m44.columns.0.xyz,
@@ -24,7 +24,7 @@ extension matrix_float3x3 {
     
 }
 
-extension matrix_float4x4 {
+public extension matrix_float4x4 {
     
     init(_ matrix: Matrix4x4<Float>) {
         let m = matrix.m
@@ -104,7 +104,7 @@ extension matrix_float4x4 {
     
 }
 
-extension Matrix4x4 where Element == Float {
+public extension Matrix4x4 where Element == Float {
     
     init(_ matrix: matrix_float4x4) {
         let c = matrix.columns

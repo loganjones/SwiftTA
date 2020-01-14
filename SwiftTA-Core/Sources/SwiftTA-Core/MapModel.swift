@@ -158,7 +158,7 @@ public struct HeightMap {
     
 }
 
-extension HeightMap {
+public extension HeightMap {
     
     /// Computes the map index of the given point in map space.
     /// NOTE: No bounds checking is performed. A point out of bounds will not result in a valid map index.
@@ -360,17 +360,17 @@ private extension TA_TNT_FEATURE_ENTRY {
 public extension TaMapModel {
     
     struct TileSet {
-        var tiles: Data
-        var count: Int
-        let tileSize: Size2<Int>
+        public var tiles: Data
+        public var count: Int
+        public let tileSize: Size2<Int>
         
-        subscript(index: Int) -> Data {
+        public subscript(index: Int) -> Data {
             let count = tileSize.area
             let offset = index * count
             return tiles.subdata(in: offset..<(offset + count))
         }
         
-        subscript(safe index: Int) -> Data? {
+        public subscript(safe index: Int) -> Data? {
             guard (0..<count).contains(index) else { return nil }
             return self[index]
         }
@@ -378,14 +378,14 @@ public extension TaMapModel {
     
 }
 
-public extension TaMapModel {
+extension TaMapModel {
     
     public struct TileIndexMap {
-        var indices: Data
-        var size: Size2<Int>
-        let tileSize: Size2<Int>
+        public var indices: Data
+        public var size: Size2<Int>
+        public let tileSize: Size2<Int>
         
-        func eachIndex<R>(inColumns columns: R, rows: R, visit: (_ index: Int, _ column: Int, _ row: Int) -> ())
+        public func eachIndex<R>(inColumns columns: R, rows: R, visit: (_ index: Int, _ column: Int, _ row: Int) -> ())
             where R: Sequence, R.Element == Int
         {
             indices.withUnsafeBytes() {
@@ -401,7 +401,7 @@ public extension TaMapModel {
             }
         }
         
-        func eachIndex(in rect: Rect4<Int>, visit: (_ index: Int, _ column: Int, _ row: Int) -> ()) {
+        public func eachIndex(in rect: Rect4<Int>, visit: (_ index: Int, _ column: Int, _ row: Int) -> ()) {
             eachIndex(inColumns: rect.widthRange, rows: rect.heightRange, visit: visit)
         }
         
@@ -409,7 +409,7 @@ public extension TaMapModel {
     
 }
 
-extension TaMapModel {
+public extension TaMapModel {
     
     func convertTilesBGRA(using palette: Palette) -> UnsafeBufferPointer<UInt8> {
         
@@ -524,17 +524,17 @@ private extension TakMapModel {
 
 public extension TakMapModel {
     
-    public struct TileIndexMap {
-        var names: [UInt32]
-        var columns: [UInt8]
-        var rows: [UInt8]
-        var size: Size2<Int>
-        let tileSize: Size2<Int>
+    struct TileIndexMap {
+        public var names: [UInt32]
+        public var columns: [UInt8]
+        public var rows: [UInt8]
+        public var size: Size2<Int>
+        public let tileSize: Size2<Int>
     }
     
 }
 
-extension TakMapModel.TileIndexMap {
+public extension TakMapModel.TileIndexMap {
     
     var uniqueNames: Set<UInt32> {
         return names.reduce(into: Set<UInt32>()) { $0.insert($1) }

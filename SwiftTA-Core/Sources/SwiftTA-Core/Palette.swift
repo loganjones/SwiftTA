@@ -13,10 +13,10 @@ public struct Palette {
     private var colors: [Color]
     
     public struct Color {
-        var red: UInt8
-        var green: UInt8
-        var blue: UInt8
-        var alpha: UInt8
+        public var red: UInt8
+        public var green: UInt8
+        public var blue: UInt8
+        public var alpha: UInt8
     }
     
     public init(_ colors: [Color]) {
@@ -111,7 +111,7 @@ extension Palette {
 
 // MARK:- Image Mapping
 
-extension Palette {
+public extension Palette {
     
     func mapIndicesRgb(_ imageIndices: Data, size: Size2<Int>) -> Data {
         let palette = self

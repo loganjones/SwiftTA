@@ -168,7 +168,7 @@ public extension TdfParser {
 
 public extension TdfParser {
     
-    public struct Object {
+    struct Object {
         public var properties: Dictionary<String, String>
         public var subobjects: Dictionary<String, Object>
     }

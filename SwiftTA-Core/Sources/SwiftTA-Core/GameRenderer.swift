@@ -12,6 +12,11 @@ import Foundation
 public struct GameViewState {
     public var viewport = Rect4f.zero
     public var objects: [GameViewObject] = []
+    
+    public init(viewport: Rect4f = .zero, objects: [GameViewObject] = []) {
+        self.viewport = viewport
+        self.objects = objects
+    }
 }
 
 public protocol GameRenderer: class {

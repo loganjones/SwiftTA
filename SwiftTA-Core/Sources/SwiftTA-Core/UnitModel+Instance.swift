@@ -8,26 +8,26 @@
 
 import Foundation
 
-extension UnitModel {
+public extension UnitModel {
     
     struct Instance {
-        var position: Vector3f = .zero
-        var orientation: Vector3f = .zero
-        var pieces: [PieceState]
+        public var position: Vector3f = .zero
+        public var orientation: Vector3f = .zero
+        public var pieces: [PieceState]
     }
     
     struct PieceState {
-        var move = Vector3f.zero
-        var turn = Vector3f.zero
-        var hidden = false
-        var cache = true
-        var shade = true
-        var shadow = true
+        public var move = Vector3f.zero
+        public var turn = Vector3f.zero
+        public var hidden = false
+        public var cache = true
+        public var shade = true
+        public var shadow = true
     }
     
 }
 
-extension UnitModel.Instance {
+public extension UnitModel.Instance {
     
     init(for model: UnitModel) {
         self.init(count: model.pieces.count)
@@ -39,7 +39,7 @@ extension UnitModel.Instance {
     
 }
 
-extension UnitModel.Instance {
+public extension UnitModel.Instance {
     
     func beginTranslation(for piece: Int, along axis: UnitScript.Axis, to target: GameFloat, with speed: GameFloat) -> UnitScript.Animation {
         

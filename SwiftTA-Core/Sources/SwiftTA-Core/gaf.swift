@@ -9,7 +9,7 @@
 import Foundation
 import SwiftTA_Ctypes
 
-enum GafFrameEncoding: UInt8 {
+public enum GafFrameEncoding: UInt8 {
     /// The data at `offsetToFrameData` is a raw collection of `width` x `height` bytes.
     /// Once read, the result is an 8-bit per pixel paletted image.
     case taUncompressed         = 0
@@ -27,12 +27,12 @@ enum GafFrameEncoding: UInt8 {
     case takUncompressed1555    = 5
 }
 
-struct GafListing {
+public struct GafListing {
     
-    var items: [GafItem]
+    public var items: [GafItem]
     
     /// Parse & load a GAF archive into a list of GafItems.
-    init<File>(withContentsOf gaf: File) throws
+    public init<File>(withContentsOf gaf: File) throws
         where File: FileReadHandle
     {
         let fileHeader = try gaf.readValue(ofType: TA_GAF_HEADER.self)
@@ -51,14 +51,14 @@ struct GafListing {
         //try debugPrint(fileHeader, entryOffsets, gaf)
     }
     
-    enum LoadError: Error {
+    public enum LoadError: Error {
         case failedToOpenGAF
         case badGafVersion(UInt32)
         case badGafEntry(UInt32)
     }
 }
 
-extension GafListing {
+public extension GafListing {
     
     subscript(name: String) -> GafItem? {
         get { return items.first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) }
@@ -81,16 +81,16 @@ extension GafListing {
     
 }
 
-struct GafItem {
-    var name: String
-    var frameOffsets: [Int]
+public struct GafItem {
+    public var name: String
+    public var frameOffsets: [Int]
 }
 
-extension GafItem {
-    var numberOfFrames: Int { return frameOffsets.count }
+public extension GafItem {
+    @inlinable var numberOfFrames: Int { return frameOffsets.count }
 }
 
-extension GafItem {
+public extension GafItem {
     
     func frameInfo<File>(ofFrameAtIndex index: Int, from gaf: File) throws -> TA_GAF_FRAME_DATA
         where File: FileReadHandle
@@ -115,16 +115,16 @@ extension GafItem {
     
 }
 
-extension GafItem {
+public extension GafItem {
     
     /// The raw data of a GAF frame
     struct Frame {
-        var data: Data
-        var size: Size2<Int>
-        var offset: Point2<Int>
-        var format: PixelFormat
+        public var data: Data
+        public var size: Size2<Int>
+        public var offset: Point2<Int>
+        public var format: PixelFormat
         
-        enum PixelFormat {
+        public enum PixelFormat {
             /// Each pixel is an 8-bit index into an associated palette.
             case paletteIndex
             /// Each pixel is a 16-bit color value (4 bits per component).
@@ -378,7 +378,7 @@ extension GafItem {
     }
 }
 
-extension GafItem.Frame {
+public extension GafItem.Frame {
     
     init(_ data: Data, _ size: Size2<Int>, _ offset: Point2<Int>, _ format: PixelFormat = .paletteIndex) {
         self.data = data
@@ -389,7 +389,7 @@ extension GafItem.Frame {
     
 }
 
-extension GafItem.Frame.PixelFormat {
+public extension GafItem.Frame.PixelFormat {
     
     var pixelLength: Int {
         switch self {
@@ -402,7 +402,7 @@ extension GafItem.Frame.PixelFormat {
     
 }
 
-extension GafFrameEncoding {
+public extension GafFrameEncoding {
     
     var pixelFormat: GafItem.Frame.PixelFormat {
         switch self {
@@ -577,7 +577,7 @@ extension Palette.Color {
     
 }
 
-extension GafItem.Frame {
+public extension GafItem.Frame {
     
     func convertToRGBA() throws -> Data {
         switch format {

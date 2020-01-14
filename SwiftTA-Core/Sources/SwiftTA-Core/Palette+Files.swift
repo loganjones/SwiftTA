@@ -9,7 +9,7 @@
 import Foundation
 
 
-extension Palette {
+public extension Palette {
     
     static func standardTaPalette(from filesystem: FileSystem) throws -> Palette {
         
@@ -29,7 +29,7 @@ extension Palette {
 
 // MARK:- Textures
 
-extension Palette {
+public extension Palette {
     
     static let textureTransparencies: Set<Int> = [5]
     
@@ -79,7 +79,7 @@ extension Palette {
 
 // MARK:- Features
 
-extension Palette {
+public extension Palette {
     
     static let featureTransparencies: Set<Int> = [0]
     

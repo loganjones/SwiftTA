@@ -306,7 +306,11 @@ public extension UnitScript {
     }
     
     struct ExplodeTypeSet: OptionSet {
-        let rawValue: CodeUnit
+        public let rawValue: CodeUnit
+        
+        public init(rawValue: CodeUnit) {
+            self.rawValue = rawValue
+        }
         
         /// #define SHATTER            1        // The piece will shatter instead of remaining whole
         static let shatter = ExplodeTypeSet(rawValue: 1)

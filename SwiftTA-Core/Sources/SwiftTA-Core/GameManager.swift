@@ -14,8 +14,8 @@ import Foundation
  */
 public class GameManager: ScriptMachine {
     
-    let loadedState: GameState
-    unowned var renderer: GameRenderer
+    public let loadedState: GameState
+    public unowned var renderer: GameRenderer
     
     private var thread: Thread? = nil
     private var isRunningUpdateThread = false
@@ -167,18 +167,18 @@ public extension GameState {
 
 // MARK:- Objects
 
-struct GameObjectId: ExpressibleByIntegerLiteral, Equatable, Hashable, CustomStringConvertible {
+public struct GameObjectId: ExpressibleByIntegerLiteral, Equatable, Hashable, CustomStringConvertible {
     private let value: Int
-    init(integerLiteral value: Int) {
+    public init(integerLiteral value: Int) {
         self.value = value
     }
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(value)
     }
-    var description: String { return "Object(\(value))" }
+    public var description: String { return "Object(\(value))" }
 }
 
-struct GameObjectIdGenerator {
+public struct GameObjectIdGenerator {
     private let lock = DispatchSemaphore(value: 1)
     private var value = 0
     mutating func generate() -> GameObjectId {
@@ -190,17 +190,17 @@ struct GameObjectIdGenerator {
     }
 }
 
-enum GameObject {
+public enum GameObject {
     case feature(FeatureInstance)
     case unit(UnitInstance)
 }
 
-struct FeatureInstance {
+public struct FeatureInstance {
     let type: FeatureTypeId
     var worldPosition: Vertex3f
 }
 
-struct UnitInstance {
+public struct UnitInstance {
     
     let type: UnitData
     var worldPosition: Vertex3f
@@ -221,7 +221,7 @@ struct UnitInstance {
     
 }
 
-extension UnitInstance {
+public extension UnitInstance {
     
     init(_ unitType: UnitData, position: Vertex3f = .zero, orientation: Vector3f = .zero) {
         type = unitType
@@ -293,7 +293,7 @@ extension UnitInstance {
     
 }
 
-struct Health {
+public struct Health {
     var value: Int
     var total: Int
     var percentage: Float { return (Float(value) / Float(total)).clamped(to: 0...1) }

@@ -344,13 +344,13 @@ public extension FileSystem {
     
 }
 
-public extension FileSystem.FileHandle: FileReadHandle {
+extension FileSystem.FileHandle: FileReadHandle {
     
-    func readDataToEndOfFile() -> Data {
+    public func readDataToEndOfFile() -> Data {
         return readData(ofLength: file.info.size - offsetInFile)
     }
     
-    func readData(ofLength length: Int) -> Data {
+    public func readData(ofLength length: Int) -> Data {
         
         if let data = buffer {
             let start = offsetInFile
@@ -369,24 +369,24 @@ public extension FileSystem.FileHandle: FileReadHandle {
         }
     }
     
-    func seekToEndOfFile() -> Int {
+    public func seekToEndOfFile() -> Int {
         offsetInFile = file.info.size
         return offsetInFile
     }
     
-    func seek(toFileOffset offset: Int) {
+    public func seek(toFileOffset offset: Int) {
         offsetInFile = min(offset, file.info.size)
     }
     
-    var fileName: String {
+    public var fileName: String {
         return file.name
     }
     
-    var fileSize: Int {
+    public var fileSize: Int {
         return file.info.size
     }
     
-    var fileOffset: Int {
+    public var fileOffset: Int {
         return offsetInFile
     }
     

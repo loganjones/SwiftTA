@@ -68,7 +68,7 @@ public enum HpiFormat {
  - A `File` is a leaf item and can be extracted from the archive.
  - A `Directory` is a listing of more `HpiItem`.
  */
-enum HpiItem {
+public enum HpiItem {
     
     /// A file contained in an HPI archive.
     case file(File)
@@ -80,7 +80,7 @@ enum HpiItem {
      Metadata for a specific `File` contained in an HPI archive.
      The `File` entry can be used to fully `extract()` the file's data from the archive.
      */
-    struct File {
+    public struct File {
         var name: String
         var size: Int
         fileprivate var offset: Int
@@ -92,13 +92,13 @@ enum HpiItem {
      A listing of contained HpiItems.
      These may be Files or more Directories.
      */
-    struct Directory {
+    public struct Directory {
         var name: String
         var items: [HpiItem]
     }
 }
 
-extension HpiItem {
+public extension HpiItem {
 
     /**
      Every `HpiItem` has a name.
@@ -113,7 +113,7 @@ extension HpiItem {
     
 }
 
-extension HpiItem {
+public extension HpiItem {
     
     /**
      Parse & load an HPI archive into a heirarchical set of HPIItems.
@@ -122,7 +122,7 @@ extension HpiItem {
                          to extract individual files from the HPI archive.
      - returns: The root directory loaded from the HPI archive.
      */
-    public static func loadFromArchive(contentsOf hpiURL: URL) throws -> HpiItem.Directory {
+    static func loadFromArchive(contentsOf hpiURL: URL) throws -> HpiItem.Directory {
         
         let hpiFile = try FileHandle(forReadingFrom: hpiURL)
         let header = hpiFile.readValue(ofType: TA_HPI_HEADER.self)
@@ -147,7 +147,7 @@ extension HpiItem {
      - parameter hpiURL: Location of the HPI archive's file to read and extract from.
      - returns: The data contents of the extracted file.
      */
-    public static func extract(file fileInfo: File, fromHPI hpiURL: URL) throws -> Data {
+    static func extract(file fileInfo: File, fromHPI hpiURL: URL) throws -> Data {
         
         let hpiFile = try FileHandle(forReadingFrom: hpiURL)
         let header = hpiFile.readValue(ofType: TA_HPI_HEADER.self)
@@ -176,7 +176,7 @@ extension HpiItem {
     }
 }
 
-extension HpiItem.File {
+public extension HpiItem.File {
     
     func hasExtension(_ ext: String) -> Bool {
         return (name as NSString).pathExtension.caseInsensitiveCompare(ext) == .orderedSame
@@ -190,7 +190,7 @@ extension HpiItem.File {
 
 // MARK: - Total Annihilation
 
-extension HpiItem {
+public extension HpiItem {
     
     /**
      Parse & load a Total Annihilation HPI filesystem into a heirarchical set of HPIItems.

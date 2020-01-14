@@ -20,7 +20,7 @@ import Cgl
 class OpenglCore3UnitDrawable {
     
     private let program: UnitProgram
-    private var models: [SwiftTA_Core.UnitTypeId: SwiftTA_Core.Model] = [:]
+    private var models: [SwiftTA_Core.UnitTypeId: Model] = [:]
     
     struct FrameState {
         fileprivate let instances: [SwiftTA_Core.UnitTypeId: [Instance]]

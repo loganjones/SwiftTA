@@ -28,9 +28,13 @@ public struct UnitInfo {
     public var turnRate: GameFloat
 }
 
-public extension UnitInfo {
-    struct Capabilities: OptionSet {
-        let rawValue: Int
+ extension UnitInfo {
+    public struct Capabilities: OptionSet {
+        public let rawValue: Int
+        
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
         
         static let move = Capabilities(rawValue: 1 << 0) // "canmove"
         static let stop = Capabilities(rawValue: 1 << 1) // "canstop"

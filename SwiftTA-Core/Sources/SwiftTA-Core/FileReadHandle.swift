@@ -28,7 +28,7 @@ public protocol FileReadHandle {
     
 }
 
-extension FileReadHandle {
+public extension FileReadHandle {
     
     func readData(verifyingLength length: Int) throws -> Data {
         let data = readData(ofLength: length)
@@ -71,6 +71,6 @@ extension FileReadHandle {
     
 }
 
-enum FileReadError: Swift.Error {
+public enum FileReadError: Swift.Error {
     case unexpectedEOF
 }

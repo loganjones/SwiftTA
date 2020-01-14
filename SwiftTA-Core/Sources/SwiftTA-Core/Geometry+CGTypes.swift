@@ -16,35 +16,35 @@ import CoreGraphics
 
 // MARK:- CGType to Geometry Initializers
 
-extension Point2 where Element: BinaryInteger {
-    init(_ point: CGPoint) {
+public extension Point2 where Element: BinaryInteger {
+    @inlinable init(_ point: CGPoint) {
         self.init(Element(point.x), Element(point.y))
     }
 }
-extension Point2 where Element: BinaryFloatingPoint {
-    init(_ point: CGPoint) {
+public extension Point2 where Element: BinaryFloatingPoint {
+    @inlinable init(_ point: CGPoint) {
         self.init(Element(point.x), Element(point.y))
     }
 }
 
-extension Size2 where Element: BinaryInteger {
-    init(_ size: CGSize) {
+public extension Size2 where Element: BinaryInteger {
+    @inlinable init(_ size: CGSize) {
         self.init(Element(size.width), Element(size.height))
     }
 }
-extension Size2 where Element: BinaryFloatingPoint {
-    init(_ size: CGSize) {
+public extension Size2 where Element: BinaryFloatingPoint {
+    @inlinable init(_ size: CGSize) {
         self.init(Element(size.width), Element(size.height))
     }
 }
 
-extension Rect4 where Element: BinaryInteger {
-    init(_ rect: CGRect) {
+public extension Rect4 where Element: BinaryInteger {
+   @inlinable init(_ rect: CGRect) {
         self.init(Element(rect.origin.x), Element(rect.origin.y), Element(rect.size.width), Element(rect.size.height))
     }
 }
-extension Rect4 where Element: BinaryFloatingPoint {
-    init(_ rect: CGRect) {
+public extension Rect4 where Element: BinaryFloatingPoint {
+    @inlinable init(_ rect: CGRect) {
         self.init(Element(rect.origin.x), Element(rect.origin.y), Element(rect.size.width), Element(rect.size.height))
     }
 }
@@ -52,52 +52,52 @@ extension Rect4 where Element: BinaryFloatingPoint {
 
 // MARK:- Geometry to CGPoint Initializers
 
-extension CGPoint {
+public extension CGPoint {
     
-    init<Element: BinaryInteger>(_ point: Point2<Element>) {
+    @inlinable init<Element: BinaryInteger>(_ point: Point2<Element>) {
         self.init(x: CGFloat(point.x), y: CGFloat(point.y))
     }
-    init<Element: BinaryFloatingPoint>(_ point: Point2<Element>) {
+    @inlinable init<Element: BinaryFloatingPoint>(_ point: Point2<Element>) {
         self.init(x: CGFloat(point.x), y: CGFloat(point.y))
     }
     
 }
 
-extension CGSize {
+public extension CGSize {
     
-    init<Element: BinaryInteger>(_ size: Size2<Element>) {
+    @inlinable init<Element: BinaryInteger>(_ size: Size2<Element>) {
         self.init(width: CGFloat(size.width), height: CGFloat(size.height))
     }
-    init<Element: BinaryFloatingPoint>(_ size: Size2<Element>) {
+    @inlinable init<Element: BinaryFloatingPoint>(_ size: Size2<Element>) {
         self.init(width: CGFloat(size.width), height: CGFloat(size.height))
     }
     
 }
 
-extension CGRect {
+public extension CGRect {
     
-    init(size: CGSize) {
+    @inlinable init(size: CGSize) {
         self.init(x: 0, y: 0, width: size.width, height: size.height)
     }
     
-    init<Element: BinaryInteger>(origin: Point2<Element>, size: Size2<Element>) {
+    @inlinable init<Element: BinaryInteger>(origin: Point2<Element>, size: Size2<Element>) {
         self.init(x: CGFloat(origin.x), y: CGFloat(origin.y), width: CGFloat(size.width), height: CGFloat(size.height))
     }
-    init<Element: BinaryFloatingPoint>(origin: Point2<Element>, size: Size2<Element>) {
+    @inlinable init<Element: BinaryFloatingPoint>(origin: Point2<Element>, size: Size2<Element>) {
         self.init(x: CGFloat(origin.x), y: CGFloat(origin.y), width: CGFloat(size.width), height: CGFloat(size.height))
     }
     
-    init<Element: BinaryInteger>(size: Size2<Element>) {
+    @inlinable init<Element: BinaryInteger>(size: Size2<Element>) {
         self.init(x: 0, y: 0, width: CGFloat(size.width), height: CGFloat(size.height))
     }
-    init<Element: BinaryFloatingPoint>(size: Size2<Element>) {
+    @inlinable init<Element: BinaryFloatingPoint>(size: Size2<Element>) {
         self.init(x: 0, y: 0, width: CGFloat(size.width), height: CGFloat(size.height))
     }
     
-    init<Element: BinaryInteger>(_ rect: Rect4<Element>) {
+    @inlinable init<Element: BinaryInteger>(_ rect: Rect4<Element>) {
         self.init(x: CGFloat(rect.origin.x), y: CGFloat(rect.origin.y), width: CGFloat(rect.size.width), height: CGFloat(rect.size.height))
     }
-    init<Element: BinaryFloatingPoint>(_ rect: Rect4<Element>) {
+    @inlinable init<Element: BinaryFloatingPoint>(_ rect: Rect4<Element>) {
         self.init(x: CGFloat(rect.origin.x), y: CGFloat(rect.origin.y), width: CGFloat(rect.size.width), height: CGFloat(rect.size.height))
     }
     
@@ -106,7 +106,7 @@ extension CGRect {
 
 // MARK:- Operator Extensions
 
-extension CGPoint {
+public extension CGPoint {
     
     static func * (point: CGPoint, mult: Int) -> CGPoint {
         let df = CGFloat(mult)
@@ -136,7 +136,7 @@ extension CGPoint {
     }
     
 }
-extension CGSize {
+public extension CGSize {
     
     static func * (size: CGSize, mult: Int) -> CGSize {
         let df = CGFloat(mult)
