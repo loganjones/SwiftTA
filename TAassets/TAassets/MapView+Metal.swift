@@ -8,7 +8,7 @@
 
 import Cocoa
 import MetalKit
-
+import SwiftTA_Core
 
 class MetalMapView: NSView, MapViewLoader, MTKViewDelegate {
     

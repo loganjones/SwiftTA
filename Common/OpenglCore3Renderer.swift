@@ -16,18 +16,18 @@ import Cgl
 #endif
 
 
-class OpenglCore3Renderer: SwiftTA_Core.RunLoopGameRenderer {
+class OpenglCore3Renderer: RunLoopGameRenderer {
     
-    var viewState: SwiftTA_Core.GameViewState
+    var viewState: GameViewState
     private var tnt: OpenglCore3TntDrawable?
     private var features: OpenglCore3FeatureDrawable?
     private var units: OpenglCore3UnitDrawable?
     
-    required init?(loadedState: SwiftTA_Core.GameState, viewState: SwiftTA_Core.GameViewState) {
+    required init?(loadedState: GameState, viewState: GameViewState) {
         self.viewState = viewState
     }
     
-    func load(state loaded: SwiftTA_Core.GameState) {
+    func load(state loaded: GameState) {
         do {
             let tnt: OpenglCore3TntDrawable
             
@@ -67,6 +67,6 @@ class OpenglCore3Renderer: SwiftTA_Core.RunLoopGameRenderer {
 }
 
 protocol OpenglCore3TntDrawable {
-    func setupNextFrame(_ viewState: SwiftTA_Core.GameViewState)
+    func setupNextFrame(_ viewState: GameViewState)
     func drawFrame()
 }

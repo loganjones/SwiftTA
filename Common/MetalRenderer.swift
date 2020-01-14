@@ -13,7 +13,7 @@ typealias MTKViewDelegateRequirementForNSObjectProtocol = NSObject
 private let maxBuffersInFlight = 3
 
 
-class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, SwiftTA_Core.GameRenderer, SwiftTA_Core.GameViewProvider {
+class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer, GameViewProvider {
     
     private let inFlightSemaphore = DispatchSemaphore(value: maxBuffersInFlight)
     
@@ -26,7 +26,7 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, SwiftTA_Core
     private let features: MetalFeatureDrawable
     private let units: MetalUnitDrawable
     
-    required init?(loadedState loaded: SwiftTA_Core.GameState, viewState: SwiftTA_Core.GameViewState = SwiftTA_Core.GameViewState()) {
+    required init?(loadedState loaded: GameState, viewState: GameViewState = GameViewState()) {
         
         let beginRenderer = Date()
         
@@ -61,7 +61,7 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, SwiftTA_Core
             try tnt.configure(for: host)
             switch loaded.map {
             case .ta(let map):
-                let palette = try SwiftTA_Core.Palette.standardTaPalette(from: loaded.filesystem)
+                let palette = try Palette.standardTaPalette(from: loaded.filesystem)
                 try tnt.load(map, using: palette)
             case .tak(let map):
                 try tnt.load(map, from: loaded.filesystem)
@@ -99,7 +99,7 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, SwiftTA_Core
     var view: UIView { return metalView }
     #endif
     
-    private static func determineTntDrawable(_ map: SwiftTA_Core.MapModel, _ metalDevice: MTLDevice) -> MetalTntDrawable {
+    private static func determineTntDrawable(_ map: MapModel, _ metalDevice: MTLDevice) -> MetalTntDrawable {
         
         enum PreferredTnt { case simple, tiled }
         let tntStyle: PreferredTnt
@@ -173,8 +173,8 @@ extension MetalRenderer: MTKViewDelegate {
 
 protocol MetalTntDrawable {
     func configure(for metal: MetalHost) throws
-    func load(_ map: SwiftTA_Core.TaMapModel, using palette: SwiftTA_Core.Palette) throws
-    func load(_ map: SwiftTA_Core.TakMapModel, from filesystem: SwiftTA_Core.FileSystem) throws
-    func setupNextFrame(_ viewState: SwiftTA_Core.GameViewState, _ commandBuffer: MTLCommandBuffer)
+    func load(_ map: TaMapModel, using palette: Palette) throws
+    func load(_ map: TakMapModel, from filesystem: FileSystem) throws
+    func setupNextFrame(_ viewState: GameViewState, _ commandBuffer: MTLCommandBuffer)
     func drawFrame(with renderEncoder: MTLRenderCommandEncoder)
 }

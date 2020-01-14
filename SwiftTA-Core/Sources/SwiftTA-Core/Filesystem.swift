@@ -94,8 +94,8 @@ public extension FileSystem {
      The `File` entry can be used to fully `extract()` the file's data from its archive.
      */
     struct File {
-        var info: HpiItem.File
-        var archiveURL: URL
+        public var info: HpiItem.File
+        public var archiveURL: URL
     }
     
     /**
@@ -103,9 +103,9 @@ public extension FileSystem {
      These may be Files or more Directories.
      */
     struct Directory {
-        var name: String
-        var itemMap: [Int: Item]
-        var items: Dictionary<Int, Item>.Values { return itemMap.values }
+        public var name: String
+        public var itemMap: [Int: Item]
+        public var items: Dictionary<Int, Item>.Values { return itemMap.values }
     }
     
 }

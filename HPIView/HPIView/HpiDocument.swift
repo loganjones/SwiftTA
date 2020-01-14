@@ -10,7 +10,7 @@ import Cocoa
 import Quartz
 import QuickLook
 import CoreGraphics
-
+import SwiftTA_Core
 
 class HpiDocument: NSDocument {
     
@@ -599,19 +599,23 @@ class HpiItemPreviewController: NSViewController, HpiItemPreviewDisplay {
 
 extension FileHandle: FileReadHandle {
     
-    var fileName: String {
+    public var fileName: String {
         return "???"
     }
     
-    var fileSize: Int {
+    public var fileSize: Int {
         let current = offsetInFile
         let size = seekToEndOfFile()
         seek(toFileOffset: current)
         return Int(size)
     }
     
-    var fileOffset: Int {
+    public var fileOffset: Int {
         return Int(offsetInFile)
+    }
+    
+    public func seek(toFileOffset offset: Int) {
+        seek(toFileOffset: UInt64(offset))
     }
     
 }

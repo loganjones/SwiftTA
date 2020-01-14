@@ -11,17 +11,17 @@ import SwiftTA_Core
 
 class GameViewController: UIViewController {
     
-    let game: SwiftTA_Core.GameManager
-    let renderer: SwiftTA_Core.GameRenderer & SwiftTA_Core.GameViewProvider
+    let game: GameManager
+    let renderer: GameRenderer & GameViewProvider
     
     private let scrollView: UIScrollView
     private let dummy: UIView
     
-    required init(_ state: SwiftTA_Core.GameState) {
+    required init(_ state: GameState) {
         let initialViewState = state.generateInitialViewState(viewportSize: Size2<Int>(640, 480))
         
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!
-        self.game = SwiftTA_Core.GameManager(state: state, renderer: renderer)
+        self.game = GameManager(state: state, renderer: renderer)
         
         let defaultFrameRect = CGRect(size: initialViewState.viewport.size)
         scrollView = UIScrollView(frame: defaultFrameRect)

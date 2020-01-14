@@ -9,7 +9,7 @@
 import Metal
 import MetalKit
 import simd
-
+import SwiftTA_Core
 
 private let screenTileSize = 512
 private let maximumDisplaySize = Size2<Int>(width: 4096, height: 4096)

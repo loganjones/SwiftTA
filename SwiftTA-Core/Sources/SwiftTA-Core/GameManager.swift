@@ -100,7 +100,7 @@ public class GameManager: ScriptMachine {
     
     // TEMP
     
-    func getTime() -> Double {
+    public func getTime() -> Double {
         return getCurrentTime()
     }
     

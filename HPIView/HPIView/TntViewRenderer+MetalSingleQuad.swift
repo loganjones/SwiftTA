@@ -9,7 +9,7 @@
 import Metal
 import MetalKit
 import simd
-
+import SwiftTA_Core
 
 private let maxBuffersInFlight = 3
 

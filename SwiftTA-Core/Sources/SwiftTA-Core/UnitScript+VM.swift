@@ -9,18 +9,18 @@
 import Foundation
 
 
-extension UnitScript {
+public extension UnitScript {
     
     static var nextId = 0
     
     class Context {
-        var script: UnitScript
-        var staticVariables: [UnitScript.CodeUnit]
-        var threads: [Thread]
-        var animations: [Animation]
-        var pieceMap: [UnitModel.Pieces.Index]
+        public var script: UnitScript
+        public var staticVariables: [UnitScript.CodeUnit]
+        public var threads: [Thread]
+        public var animations: [Animation]
+        public var pieceMap: [UnitModel.Pieces.Index]
         
-        init(_ script: UnitScript, _ model: UnitModel) throws {
+        public init(_ script: UnitScript, _ model: UnitModel) throws {
             self.script = script
             staticVariables = Array<UnitScript.CodeUnit>(repeating: 0, count: script.numberOfStaticVariables)
             threads = []
@@ -37,13 +37,13 @@ extension UnitScript {
     
     class Thread {
         
-        var id: Int
-        var stack: Stack<UnitScript.CodeUnit>
-        var framePointer: Array<UnitScript.CodeUnit>.Index
-        var status: Status
-        var signalMask: UnitScript.CodeUnit
+        public var id: Int
+        public var stack: Stack<UnitScript.CodeUnit>
+        public var framePointer: Array<UnitScript.CodeUnit>.Index
+        public var status: Status
+        public var signalMask: UnitScript.CodeUnit
         
-        enum Status {
+        public enum Status {
             case running
             case sleeping(Double)
             case waitingForMove(Int, Axis)
@@ -51,11 +51,11 @@ extension UnitScript {
             case finished
         }
         
-        struct Stack<Element> {
+        public struct Stack<Element> {
             fileprivate var _array: [Element] = []
         }
         
-        init(_ id: Int, _ module: UnitScript.Module, parameters: [UnitScript.CodeUnit] = [] ) {
+        public init(_ id: Int, _ module: UnitScript.Module, parameters: [UnitScript.CodeUnit] = [] ) {
             stack = Stack()
             stack.push(module, with: parameters)
             framePointer = 0
@@ -72,13 +72,13 @@ extension UnitScript {
     
 }
 
-protocol ScriptMachine {
+public protocol ScriptMachine {
     
     func getTime() -> Double
     
 }
 
-extension UnitScript.Context {
+public extension UnitScript.Context {
     
     func run<Machine: ScriptMachine>(for instance: UnitModel.Instance, on machine: Machine) {
         threads.forEach { $0.run(with: self, for: instance, on: machine) }
@@ -152,7 +152,7 @@ extension UnitScript.Context {
     
 }
 
-extension UnitScript.Thread {
+public extension UnitScript.Thread {
     
     typealias CodeUnit = UnitScript.CodeUnit
     
@@ -269,7 +269,7 @@ extension UnitScript.Thread {
 
 // MARK:- Thread Stack
 
-extension UnitScript.Thread.Stack {
+public extension UnitScript.Thread.Stack {
     
     var count: Int {
         return _array.count

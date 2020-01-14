@@ -8,7 +8,7 @@
 
 import Cocoa
 import OpenGL
-
+import SwiftTA_Core
 
 class OpenglModelView<StateProvider: ModelViewStateProvider>: NSOpenGLView, ModelViewLoader {
     

@@ -23,7 +23,7 @@ class OpenglCore3FeatureDrawable {
     private var features: [Feature] = []
     private var shadows: [Feature] = []
     
-    init(_ features: [SwiftTA_Core.FeatureTypeId: SwiftTA_Core.MapFeatureInfo], containedIn map: SwiftTA_Core.MapModel, filesystem: SwiftTA_Core.FileSystem) throws {
+    init(_ features: [FeatureTypeId: MapFeatureInfo], containedIn map: MapModel, filesystem: FileSystem) throws {
         
         program = try makeProgram()
         
@@ -107,9 +107,9 @@ private extension OpenglCore3FeatureDrawable {
         typealias Frame = (slice: Int, offset: Point2<Int>)
     }
     
-    func loadFeatures(_ featureInfo: SwiftTA_Core.MapFeatureInfo.FeatureInfoCollection, andInstancesFrom map: SwiftTA_Core.MapModel, filesystem: SwiftTA_Core.FileSystem) -> (features: [Feature], shadows: [Feature]) {
+    func loadFeatures(_ featureInfo: MapFeatureInfo.FeatureInfoCollection, andInstancesFrom map: MapModel, filesystem: FileSystem) -> (features: [Feature], shadows: [Feature]) {
         
-        let palettes = SwiftTA_Core.MapFeatureInfo.loadFeaturePalettes(featureInfo, from: filesystem)
+        let palettes = MapFeatureInfo.loadFeaturePalettes(featureInfo, from: filesystem)
         let occurrences = groupFeatureOccurrences(map.featureMap)
         
         var features: [Feature] = []
@@ -117,9 +117,9 @@ private extension OpenglCore3FeatureDrawable {
         features.reserveCapacity(featureInfo.count)
         shadows.reserveCapacity(featureInfo.count/2)
         
-        let shadowPalette = SwiftTA_Core.Palette.shadow
+        let shadowPalette = Palette.shadow
         
-        SwiftTA_Core.MapFeatureInfo.collateFeatureGafItems(featureInfo, from: filesystem) {
+        MapFeatureInfo.collateFeatureGafItems(featureInfo, from: filesystem) {
             (name, info, item, gafHandle, gafListing) in
             
             guard let featureIndex = map.features.firstIndex(of: name) else { return }
@@ -155,7 +155,7 @@ private extension OpenglCore3FeatureDrawable {
         return (features, shadows)
     }
     
-    func makeTexture(for gafFrame: GafItem.Frame, using palette: SwiftTA_Core.Palette) throws -> OpenglTextureResource {
+    func makeTexture(for gafFrame: GafItem.Frame, using palette: Palette) throws -> OpenglTextureResource {
         
         let texture = OpenglTextureResource()
         glBindTexture(GLenum(GL_TEXTURE_2D), texture.id)
@@ -206,7 +206,7 @@ private extension OpenglCore3FeatureDrawable {
         return featureOccurrences
     }
     
-    func buildInstances(of feature: (size: Size2<Int>, offset: Point2<Int>, footprint: Size2<Int>), from occurrenceIndices: [Int], in map: SwiftTA_Core.MapModel) -> (OpenglVertexBufferResource, Int)? {
+    func buildInstances(of feature: (size: Size2<Int>, offset: Point2<Int>, footprint: Size2<Int>), from occurrenceIndices: [Int], in map: MapModel) -> (OpenglVertexBufferResource, Int)? {
         
         let vertexCount = occurrenceIndices.count * 6
         var vertices = (position: [Vertex3f](repeating: .zero, count: vertexCount), texCoord: [Vector2f](repeating: .zero, count: vertexCount))
@@ -273,7 +273,7 @@ private extension OpenglCore3FeatureDrawable.Feature {
     
 }
 
-private extension SwiftTA_Core.MapModel {
+private extension MapModel {
     func worldPosition(ofMapIndex index: Int) -> Point2<Int> {
         return Point2<Int>(index: index, stride: self.mapSize.width) &* 16
     }
@@ -346,7 +346,7 @@ private struct FeatureProgram {
 }
 
 private func loadShaderCode(forResource name: String, withExtension ext: String) throws -> String {
-    guard let url = Bundle.main.url(forResource: name, withExtension: ext) else { throw SwiftTA_Core.RuntimeError("Neccessary shader file not found.") }
+    guard let url = Bundle.main.url(forResource: name, withExtension: ext) else { throw RuntimeError("Neccessary shader file not found.") }
     return try String(contentsOf: url)
 }
 

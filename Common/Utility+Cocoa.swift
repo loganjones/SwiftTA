@@ -57,7 +57,7 @@ extension CGImage {
         return Size2<Int>(width, height)
     }
     
-    static func createWith(imageIndices: Data, size: Size2<Int>, palette: SwiftTA_Core.Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws -> CGImage {
+    static func createWith(imageIndices: Data, size: Size2<Int>, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws -> CGImage {
         
         let bitsPerPixel: Int
         let bytesPerRow: Int
@@ -98,9 +98,9 @@ extension CGImage {
     }
     
     static func createWith<File>(pcxContentsOf pcxFile: File) throws -> CGImage
-        where File: SwiftTA_Core.FileReadHandle
+        where File: FileReadHandle
     {
-        let (data, size) = try SwiftTA_Core.Pcx.extractImage(contentsOf: pcxFile)
+        let (data, size) = try Pcx.extractImage(contentsOf: pcxFile)
         
         guard let pixelProvider = CGDataProvider(data: data as CFData)
             else { throw ImageCreateError.failedToCreateProvider }
@@ -122,7 +122,7 @@ extension CGImage {
         return image
     }
     
-    static func createWith(rawFrame: SwiftTA_Core.GafItem.Frame) throws -> CGImage {
+    static func createWith(rawFrame: GafItem.Frame) throws -> CGImage {
         
         switch rawFrame.format {
             
@@ -176,7 +176,7 @@ extension CGImage {
     enum ImageCreateError: Error {
         case failedToCreateProvider
         case failedToCreateImage
-        case unsupportedGafPixelFormat(SwiftTA_Core.GafItem.Frame.PixelFormat)
+        case unsupportedGafPixelFormat(GafItem.Frame.PixelFormat)
     }
     
 }
@@ -185,7 +185,7 @@ extension CGImage {
 #if canImport(AppKit)
 extension NSImage {
     
-    convenience init(imageIndices: Data, size: Size2<Int>, palette: SwiftTA_Core.Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws {
+    convenience init(imageIndices: Data, size: Size2<Int>, palette: Palette, useTransparency: Bool = false, isFlipped: Bool = false) throws {
         let image = try CGImage.createWith(imageIndices: imageIndices, size: size, palette: palette, useTransparency: useTransparency, isFlipped: isFlipped)
         self.init(cgImage: image, size: NSSize(size))
     }
@@ -197,13 +197,13 @@ extension NSImage {
      Only 24-bit images with a VGA palette are supported.
      */
     convenience init<File>(pcxContentsOf pcxFile: File) throws
-        where File: SwiftTA_Core.FileReadHandle
+        where File: FileReadHandle
     {
         let image = try CGImage.createWith(pcxContentsOf: pcxFile)
         self.init(cgImage: image, size: NSSize(width: image.width, height: image.height))
     }
     
-    convenience init(rawFrame: SwiftTA_Core.GafItem.Frame) throws {
+    convenience init(rawFrame: GafItem.Frame) throws {
         let image = try CGImage.createWith(rawFrame: rawFrame)
         self.init(cgImage: image, size: NSSize(rawFrame.size))
     }
@@ -213,7 +213,7 @@ extension NSImage {
 
 // MARK:- Misc Conversions
 
-extension SwiftTA_Core.Palette.Color {
+extension Palette.Color {
     
     #if canImport(AppKit)
     var nsColor: NSColor {

@@ -81,8 +81,8 @@ public enum HpiItem {
      The `File` entry can be used to fully `extract()` the file's data from the archive.
      */
     public struct File {
-        var name: String
-        var size: Int
+        public var name: String
+        public var size: Int
         fileprivate var offset: Int
         fileprivate var compression: HpiFormat.FileEntryCompression
         fileprivate var compressedSize: Int
@@ -93,8 +93,12 @@ public enum HpiItem {
      These may be Files or more Directories.
      */
     public struct Directory {
-        var name: String
-        var items: [HpiItem]
+        public var name: String
+        public var items: [HpiItem]
+        public init(name: String, items: [HpiItem]) {
+            self.name = name
+            self.items = items
+        }
     }
 }
 

@@ -9,7 +9,7 @@
 import Foundation
 
 
-extension UnitScript {
+public extension UnitScript {
     
     func decompile(writingTo output: @escaping (String) -> (), options: CobDecompile.OutputOptions = .defaults) {
         
@@ -78,20 +78,20 @@ extension UnitScript {
     
 }
 
-enum CobDecompile {
+public enum CobDecompile {
 }
 
 // MARK:- Output Formatting
 
-extension CobDecompile {
+public extension CobDecompile {
     
     struct OutputOptions {
-        var shouldPrintInstructions: Bool
-        var shouldPrintOperands: Bool
-        var shouldPrintStatements: Bool
-        var indent: String
+        public var shouldPrintInstructions: Bool
+        public var shouldPrintOperands: Bool
+        public var shouldPrintStatements: Bool
+        public var indent: String
         
-        init(shouldPrintInstructions: Bool = false,
+        public init(shouldPrintInstructions: Bool = false,
              shouldPrintOperands: Bool = false,
              shouldPrintStatements: Bool = true,
              indent: String = "    ") {
@@ -101,20 +101,20 @@ extension CobDecompile {
             self.indent = indent
         }
         
-        static var defaults = OutputOptions()
+        public static var defaults = OutputOptions()
     }
     
     struct OutputFormatter {
         
-        var rawOutput: (String) -> ()
-        var options: OutputOptions
+        public var rawOutput: (String) -> ()
+        public var options: OutputOptions
         
         fileprivate var scopes: [Int] = []
     }
     
 }
 
-extension CobDecompile.OutputFormatter {
+public extension CobDecompile.OutputFormatter {
     
     init(rawOutput: @escaping (String) -> (), options: CobDecompile.OutputOptions = .defaults) {
         self.rawOutput = rawOutput

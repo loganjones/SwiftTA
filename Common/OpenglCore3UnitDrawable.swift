@@ -20,20 +20,20 @@ import Cgl
 class OpenglCore3UnitDrawable {
     
     private let program: UnitProgram
-    private var models: [SwiftTA_Core.UnitTypeId: Model] = [:]
+    private var models: [UnitTypeId: Model] = [:]
     
     struct FrameState {
-        fileprivate let instances: [SwiftTA_Core.UnitTypeId: [Instance]]
-        fileprivate init(_ instances: [SwiftTA_Core.UnitTypeId: [Instance]]) {
+        fileprivate let instances: [UnitTypeId: [Instance]]
+        fileprivate init(_ instances: [UnitTypeId: [Instance]]) {
             self.instances = instances
         }
     }
     
-    init(_ units: [SwiftTA_Core.UnitTypeId: UnitData], sides: [SwiftTA_Core.SideInfo], filesystem: SwiftTA_Core.FileSystem) throws {
+    init(_ units: [UnitTypeId: UnitData], sides: [SideInfo], filesystem: FileSystem) throws {
         
         program = try makeProgram()
         
-        let textures = SwiftTA_Core.ModelTexturePack(loadFrom: filesystem)
+        let textures = ModelTexturePack(loadFrom: filesystem)
         models = units.mapValues { try! Model($0, textures, sides, filesystem) }
     }
     
@@ -64,8 +64,8 @@ class OpenglCore3UnitDrawable {
         
     }
     
-    private func buildInstanceList(for objects: [SwiftTA_Core.GameViewObject], projectionMatrix: Matrix4x4f, viewportPosition: Point2f) -> [UnitTypeId: [Instance]] {
-        var instances: [SwiftTA_Core.UnitTypeId: [Instance]] = [:]
+    private func buildInstanceList(for objects: [GameViewObject], projectionMatrix: Matrix4x4f, viewportPosition: Point2f) -> [UnitTypeId: [Instance]] {
+        var instances: [UnitTypeId: [Instance]] = [:]
         
         for case let .unit(unit) in objects {
             let viewMatrix = Matrix4x4f.translation(unit.position.x - viewportPosition.x, unit.position.y - viewportPosition.y, 0) * Matrix4x4f.taPerspective
@@ -95,7 +95,7 @@ private extension OpenglCore3UnitDrawable {
 
 private extension OpenglCore3UnitDrawable.Model {
     
-    init(_ unit: SwiftTA_Core.UnitData, _ textures: SwiftTA_Core.ModelTexturePack, _ sides: [SwiftTA_Core.SideInfo], _ filesystem: SwiftTA_Core.FileSystem) throws {
+    init(_ unit: UnitData, _ textures: ModelTexturePack, _ sides: [SideInfo], _ filesystem: FileSystem) throws {
         
         let palette = try Palette.texturePalette(for: unit.info, in: sides, from: filesystem)
         let atlas = UnitTextureAtlas(for: unit.model.textures, from: textures)
@@ -142,7 +142,7 @@ private extension OpenglCore3UnitDrawable.Model {
     
 }
 
-private func countVertices(in model: SwiftTA_Core.UnitModel) -> Int {
+private func countVertices(in model: UnitModel) -> Int {
     return model.primitives.reduce(0) {
         (count, primitive) in
         let num = primitive.indices.count
@@ -150,7 +150,7 @@ private func countVertices(in model: SwiftTA_Core.UnitModel) -> Int {
     }
 }
 
-private func collectVertexAttributes(pieceIndex: SwiftTA_Core.UnitModel.Pieces.Index, model: SwiftTA_Core.UnitModel, textures: SwiftTA_Core.UnitTextureAtlas, vertexArray: inout VertexArrays) {
+private func collectVertexAttributes(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, textures: UnitTextureAtlas, vertexArray: inout VertexArrays) {
     
     let piece = model.pieces[pieceIndex]
     
@@ -164,7 +164,7 @@ private func collectVertexAttributes(pieceIndex: SwiftTA_Core.UnitModel.Pieces.I
     }
 }
 
-private func collectVertexAttributes(primitive: SwiftTA_Core.UnitModel.Primitive, pieceIndex: SwiftTA_Core.UnitModel.Pieces.Index, model: SwiftTA_Core.UnitModel, textures: SwiftTA_Core.UnitTextureAtlas, vertexArray: inout VertexArrays) {
+private func collectVertexAttributes(primitive: UnitModel.Primitive, pieceIndex: UnitModel.Pieces.Index, model: UnitModel, textures: UnitTextureAtlas, vertexArray: inout VertexArrays) {
     
     let vertices = primitive.indices.map({ model.vertices[$0] })
     let texCoords = textures.textureCoordinates(for: primitive.texture)
@@ -278,7 +278,7 @@ private struct VertexArrays {
     }
 }
 
-private func makeTexture(_ textureAtlas: SwiftTA_Core.UnitTextureAtlas, _ palette: SwiftTA_Core.Palette, _ filesystem: SwiftTA_Core.FileSystem) throws -> OpenglTextureResource {
+private func makeTexture(_ textureAtlas: UnitTextureAtlas, _ palette: Palette, _ filesystem: FileSystem) throws -> OpenglTextureResource {
     
     let data = textureAtlas.build(from: filesystem, using: palette)
     
@@ -324,12 +324,12 @@ private extension OpenglCore3UnitDrawable.Instance {
         transformations = [Matrix4x4f](repeating: .identity, count: pieceCount)
     }
     
-    static func applyPieceTransformations(orientation: Vector3f, model: SwiftTA_Core.UnitModel, instance: SwiftTA_Core.UnitModel.Instance, transformations: inout [Matrix4x4f]) {
+    static func applyPieceTransformations(orientation: Vector3f, model: UnitModel, instance: UnitModel.Instance, transformations: inout [Matrix4x4f]) {
         let initial = Matrix4x4f.rotation(radians: -orientation.z, axis: Vector3f(0,0,1))
         applyPieceTransformations(pieceIndex: model.root, p: initial, model: model, instance: instance, transformations: &transformations)
     }
     
-    static func applyPieceTransformations(pieceIndex: SwiftTA_Core.UnitModel.Pieces.Index, p: Matrix4x4f, model: SwiftTA_Core.UnitModel, instance: SwiftTA_Core.UnitModel.Instance, transformations: inout [Matrix4x4f]) {
+    static func applyPieceTransformations(pieceIndex: UnitModel.Pieces.Index, p: Matrix4x4f, model: UnitModel, instance: UnitModel.Instance, transformations: inout [Matrix4x4f]) {
         let piece = model.pieces[pieceIndex]
         let anims = instance.pieces[pieceIndex]
         
@@ -375,7 +375,7 @@ private extension OpenglCore3UnitDrawable.Instance {
         }
     }
     
-    static func applyPieceDiscard(pieceIndex: SwiftTA_Core.UnitModel.Pieces.Index, model: UnitModel, transformations: inout [Matrix4x4f]) {
+    static func applyPieceDiscard(pieceIndex: UnitModel.Pieces.Index, model: UnitModel, transformations: inout [Matrix4x4f]) {
         
         transformations[pieceIndex] = Matrix4x4f.translation(0, 0, -1000)
         
