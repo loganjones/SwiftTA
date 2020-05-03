@@ -17,11 +17,18 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
     
     private let inFlightSemaphore = DispatchSemaphore(value: maxBuffersInFlight)
     
-    var viewState: GameViewState
+    private let viewStateQueue = DispatchQueue(label: "swiftta.renderer.viewstate")
+    private var _viewState: GameViewState
+    var viewState: GameViewState {
+        get { viewStateQueue.sync { self._viewState } }
+        set { viewStateQueue.sync { self._viewState = newValue } }
+    }
+    
     let device: MTLDevice
     let metalView: MTKView
     private let commandQueue: MTLCommandQueue
     
+    private let gui: MetalGuiDrawable
     private let tnt: MetalTntDrawable
     private let features: MetalFeatureDrawable
     private let units: MetalUnitDrawable
@@ -38,11 +45,12 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
                 return nil
         }
         
-        self.viewState = viewState
+        _viewState = viewState
         self.device = metalDevice
         self.metalView = MTKView(frame: CGRect(size: viewState.viewport.size), device: metalDevice)
         self.commandQueue = metalCommandQueue
         
+        gui = MetalGuiDrawable(metalDevice, maxBuffersInFlight)
         tnt = MetalRenderer.determineTntDrawable(loaded.map, metalDevice)
         features = MetalFeatureDrawable(metalDevice, maxBuffersInFlight)
         units = MetalUnitDrawable(metalDevice, maxBuffersInFlight)
@@ -56,12 +64,17 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
         
         do {
             let host = MetalHost(view: metalView, device: device, library: library)
+            let palette = try Palette.standardTaPalette(from: loaded.filesystem)
+            
+            let beginGui = Date()
+            try gui.configure(for: host)
+            try gui.loadCursors(from: loaded.filesystem, with: palette.applyingChromaKeys([0]))
+            let endGui = Date()
             
             let beginMap = Date()
             try tnt.configure(for: host)
             switch loaded.map {
             case .ta(let map):
-                let palette = try Palette.standardTaPalette(from: loaded.filesystem)
                 try tnt.load(map, using: palette)
             case .tak(let map):
                 try tnt.load(map, from: loaded.filesystem)
@@ -81,6 +94,7 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
             let endRenderer = Date()
             print("""
                 Render assets load time: \(endRenderer.timeIntervalSince(beginRenderer)) seconds
+                  Gui(): \(endGui.timeIntervalSince(beginGui)) seconds
                   Map(\(loaded.map.mapSize)): \(endMap.timeIntervalSince(beginMap)) seconds
                   Units(\(loaded.units.count)): \(endUnits.timeIntervalSince(beginUnits)) seconds
                   Features(\(loaded.features.count)): \(endFeatures.timeIntervalSince(beginFeatures)) seconds
@@ -136,6 +150,7 @@ extension MetalRenderer: MTKViewDelegate {
         let semaphore = inFlightSemaphore
         commandBuffer.addCompletedHandler { _ in semaphore.signal() }
         
+        gui.setupNextFrame(viewState, commandBuffer)
         tnt.setupNextFrame(viewState, commandBuffer)
         features.setupNextFrame(viewState, commandBuffer)
         let ufs = units.setupNextFrame(viewState, commandBuffer)
@@ -159,6 +174,10 @@ extension MetalRenderer: MTKViewDelegate {
         
         renderEncoder.pushDebugGroup("Draw Units")
         units.drawFrame(ufs, with: renderEncoder)
+        renderEncoder.popDebugGroup()
+        
+        renderEncoder.pushDebugGroup("Draw GUI")
+        gui.drawFrame(with: renderEncoder)
         renderEncoder.popDebugGroup()
         
         renderEncoder.endEncoding()

@@ -12,6 +12,8 @@
 		B5CAAF0A20B26BB2003B17D7 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF0920B26BB2003B17D7 /* GameViewController.swift */; };
 		B5CAAF0C20B26BB3003B17D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0B20B26BB3003B17D7 /* Assets.xcassets */; };
 		B5CAAF0F20B26BB3003B17D7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF0D20B26BB3003B17D7 /* Main.storyboard */; };
+		B5DEFBA72438189300132BFB /* MetalGuiDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5DEFBA62438189300132BFB /* MetalGuiDrawable.swift */; };
+		B5DEFBAA24390C7300132BFB /* MetalGuiShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = B5DEFBA924390C7300132BFB /* MetalGuiShaders.metal */; };
 		B5E6FE8623CBF9540016A704 /* SwiftTA-Core in Frameworks */ = {isa = PBXBuildFile; productRef = B5E6FE8523CBF9540016A704 /* SwiftTA-Core */; };
 		F02CAF43214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02CAF42214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift */; };
 		F02CAF45214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02CAF44214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift */; };
@@ -40,6 +42,9 @@
 		B5CAAF0E20B26BB3003B17D7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B5CAAF1020B26BB3003B17D7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B5CAAF1120B26BB3003B17D7 /* SwiftTA_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftTA_macOS.entitlements; sourceTree = "<group>"; };
+		B5DEFBA62438189300132BFB /* MetalGuiDrawable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalGuiDrawable.swift; sourceTree = "<group>"; };
+		B5DEFBA824390C7300132BFB /* MetalGuiShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalGuiShaderTypes.h; sourceTree = "<group>"; };
+		B5DEFBA924390C7300132BFB /* MetalGuiShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalGuiShaders.metal; sourceTree = "<group>"; };
 		F00C4EE5215455A800D8246C /* OpenglCore3Renderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenglCore3Renderer.swift; sourceTree = "<group>"; };
 		F02CAF42214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OpenglCore3Renderer+Cocoa.swift"; sourceTree = "<group>"; };
 		F02CAF44214C62B90084F454 /* OpenglCore3OneTextureTntDrawable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenglCore3OneTextureTntDrawable.swift; sourceTree = "<group>"; };
@@ -121,6 +126,9 @@
 				F07131F6215AF1B900952E13 /* MetalFeatureDrawable.swift */,
 				F07131F8215C019700952E13 /* MetalFeatureShaders.metal */,
 				F07131F9215C019700952E13 /* MetalFeatureShaderTypes.h */,
+				B5DEFBA62438189300132BFB /* MetalGuiDrawable.swift */,
+				B5DEFBA924390C7300132BFB /* MetalGuiShaders.metal */,
+				B5DEFBA824390C7300132BFB /* MetalGuiShaderTypes.h */,
 				F0F540A72123880C00221A9C /* MetalOneTextureTntDrawable.swift */,
 				F0F5409A21237D1300221A9C /* MetalRenderer.swift */,
 				F0F5409B21237D1300221A9C /* MetalTiledTntDrawable.swift */,
@@ -229,6 +237,7 @@
 				F02CAF43214C52CE0084F454 /* OpenglCore3Renderer+Cocoa.swift in Sources */,
 				F0F5409D21237D1400221A9C /* MetalRenderer.swift in Sources */,
 				B5CAAF0820B26BB2003B17D7 /* AppDelegate.swift in Sources */,
+				B5DEFBAA24390C7300132BFB /* MetalGuiShaders.metal in Sources */,
 				F0F5409E21237D1400221A9C /* MetalTiledTntDrawable.swift in Sources */,
 				F0F540A82123880C00221A9C /* MetalOneTextureTntDrawable.swift in Sources */,
 				F0F2AA522165418900103B46 /* MetalUnitShaders.metal in Sources */,
@@ -236,6 +245,7 @@
 				F07131F7215AF1B900952E13 /* MetalFeatureDrawable.swift in Sources */,
 				F0A9DE5E20B4C7B7007E71C1 /* Utility+OpenGL.swift in Sources */,
 				F0A9DE6020B4C7B7007E71C1 /* Utility+Cocoa.swift in Sources */,
+				B5DEFBA72438189300132BFB /* MetalGuiDrawable.swift in Sources */,
 				F07131FA215C019900952E13 /* MetalFeatureShaders.metal in Sources */,
 				F0F2AA4C2162B82300103B46 /* OpenglCore3FeatureDrawable.swift in Sources */,
 				F0F2AA4F2164358700103B46 /* MetalUnitDrawable.swift in Sources */,

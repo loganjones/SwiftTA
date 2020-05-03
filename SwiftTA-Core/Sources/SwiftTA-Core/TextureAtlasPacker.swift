@@ -9,7 +9,7 @@ import Foundation
 
 /// A representation of a texture that can be packed within an atlas.
 /// We only care about the `size` here; so the requirements are minimal.
-protocol PackableTexture {
+public protocol PackableTexture {
     /// The size of this texture in pixels.
     var size: Size2<Int> { get }
 }
@@ -20,16 +20,16 @@ protocol PackableTexture {
 public enum TextureAtlasPacker {
     
     public struct LocationRect {
-        var left: Int
-        var top: Int
-        var right: Int
-        var bottom: Int
+        public var left: Int
+        public var top: Int
+        public var right: Int
+        public var bottom: Int
     }
     
     /// Computes the location for each given texture within a containing texture atlas.
     /// Returns the computed locations within the atlas (in the same orders as the given `textures`),
     /// and the total size of the final atlas.
-    static func pack<Textures>(_ textures: Textures) -> (atlasSize: Size2<Int>, locations: [LocationRect])
+    public static func pack<Textures>(_ textures: Textures) -> (atlasSize: Size2<Int>, locations: [LocationRect])
         where Textures: Collection, Textures.Element: PackableTexture {
         
         // Compute the total area of every texture to use as an approximate for how big an atlas we'll need.
@@ -59,6 +59,24 @@ public enum TextureAtlasPacker {
         }
         
         return (textureSize, locations)
+    }
+    
+    public static func copyPaletted(source: UnsafeRawBufferPointer, to destination: UnsafeMutableRawBufferPointer, sized size: Size2<Int>, at location: LocationRect, palette: Palette) {
+        let bytesPerPixel = 4
+        let pitch = size.width * bytesPerPixel
+        var sourceIndex = source.startIndex
+        for row in location.top ..< location.bottom {
+            for col in location.left ..< location.right {
+                let paletteIndex = source[sourceIndex]
+                let color = palette[paletteIndex]
+                let i = (row * pitch) + (col * bytesPerPixel)
+                destination[i+0] = color.red
+                destination[i+1] = color.green
+                destination[i+2] = color.blue
+                destination[i+3] = color.alpha
+                sourceIndex += 1
+            }
+        }
     }
     
 }

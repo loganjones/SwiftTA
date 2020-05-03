@@ -92,25 +92,27 @@ public extension GafItem {
 
 public extension GafItem {
     
-    func frameInfo<File>(ofFrameAtIndex index: Int, from gaf: File) throws -> TA_GAF_FRAME_DATA
-        where File: FileReadHandle
-    {
-        gaf.seek(toFileOffset: frameOffsets[index])
-        let frame = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
-        return frame
+    /// Structural information about a frame in a GAF item.
+    struct FrameMetadata {
+        /// The size of this frame in pixels.
+        public var size: Size2<Int>
+        /// The center position (in local pixels, from the top-left) of this frame.
+        public var offset: Point2<Int>
     }
     
-    func extractFrame<File>(index: Int, from gaf: File) throws -> Frame
-        where File: FileReadHandle
-    {
+    func readFrameMetadata<File>(from gaf: File) throws -> [FrameMetadata] where File: FileReadHandle {
+        try frameOffsets.map {
+            gaf.seek(toFileOffset: $0)
+            let header = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
+            return FrameMetadata(header)
+        }
+    }
+    
+    func readFrameMetadata<File>(atIndex index: Int, from gaf: File) throws -> FrameMetadata where File: FileReadHandle {
         guard frameOffsets.indices.contains(index) else { throw GafLoadError.outOfBoundsFrameIndex }
-        return try GafItem.extractFrame(from: gaf, at: frameOffsets[index])
-    }
-    
-    func extractFrames<File>(from gaf: File, useCache: Bool = true) throws -> [Frame]
-        where File: FileReadHandle
-    {
-        return try GafItem.extractFrames(from: gaf, at: frameOffsets, useCache: useCache)
+        gaf.seek(toFileOffset: frameOffsets[index])
+        let header = try gaf.readValue(ofType: TA_GAF_FRAME_DATA.self)
+        return FrameMetadata(header)
     }
     
 }
@@ -132,6 +134,19 @@ public extension GafItem {
             /// Each pixel is a 16-bit color value (5 bits per RGB component, 1 bit alpha).
             case raw1555
         }
+    }
+    
+    func extractFrame<File>(index: Int, from gaf: File) throws -> Frame
+        where File: FileReadHandle
+    {
+        guard frameOffsets.indices.contains(index) else { throw GafLoadError.outOfBoundsFrameIndex }
+        return try Self.extractFrame(from: gaf, at: frameOffsets[index])
+    }
+    
+    func extractFrames<File>(from gaf: File, useCache: Bool = true) throws -> [Frame]
+        where File: FileReadHandle
+    {
+        return try Self.extractFrames(from: gaf, at: frameOffsets, useCache: useCache)
     }
     
     static func extractFrame<File>(from gaf: File, at offset: Int) throws -> Frame
@@ -375,6 +390,13 @@ public extension GafItem {
         case unknownFrameEncoding(UInt8)
         case unexpectedSubframes
         case outOfBoundsFrameIndex
+    }
+}
+
+extension GafItem.FrameMetadata {
+    init(_ rawHeader: TA_GAF_FRAME_DATA) {
+        offset = rawHeader.offset
+        size = rawHeader.size
     }
 }
 

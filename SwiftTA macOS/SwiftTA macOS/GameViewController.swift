@@ -17,6 +17,14 @@ class GameViewController: NSViewController {
     private let scrollView: NSScrollView
     private let emptyView: NSView
     
+    private let invisibleCursor = { () -> NSCursor in
+        let image = NSImage(size: NSSize(width: 16, height: 16), flipped: true) { rect in
+            //NSColor.red.drawSwatch(in: rect)
+            return true
+        }
+        return NSCursor(image: image, hotSpot: .zero)
+    }()
+    
     required init(_ state: GameState) {
         let initialViewState = state.generateInitialViewState(viewportSize: Size2<Int>(1024, 768))
         
@@ -43,7 +51,9 @@ class GameViewController: NSViewController {
     
     override func loadView() {
         let frameRect = scrollView.frame
-        view = NSView(frame: frameRect)
+        let view = MouseTrackingView(frame: frameRect)
+        view.trackingDelegate = self
+        self.view = view
         
         let gameView = renderer.view
         gameView.frame = frameRect
@@ -83,4 +93,63 @@ class GameViewController: NSViewController {
         renderer.viewState.viewport = Rect4f(scrollView.contentView.bounds)
     }
 
+}
+
+extension GameViewController: MouseTrackingDelegate {
+    
+    override func cursorUpdate(with event: NSEvent) {
+        super.cursorUpdate(with: event)
+        invisibleCursor.set()
+        //print("[TEST] cursorUpdate")
+    }
+    
+    override func mouseEntered(with event: NSEvent) {
+        super.mouseEntered(with: event)
+        //print("[TEST] mouseEntered: \(event.locationInWindow)")
+    }
+    
+    override func mouseExited(with event: NSEvent) {
+        super.mouseExited(with: event)
+        //print("[TEST] mouseExited: \(event.locationInWindow)")
+    }
+    
+    override func mouseMoved(with event: NSEvent) {
+        super.mouseExited(with: event)
+        var location = event.locationInWindow
+        location.y = view.bounds.size.height - location.y
+        renderer.viewState.cursorLocation = Point2f(location)
+        //print("[TEST] mouseMoved: \(event.locationInWindow)")
+    }
+    
+}
+
+private protocol MouseTrackingDelegate: AnyObject {
+    func cursorUpdate(with event: NSEvent)
+    func mouseEntered(with event: NSEvent)
+    func mouseExited(with event: NSEvent)
+    func mouseMoved(with event: NSEvent)
+}
+
+private class MouseTrackingView: NSView {
+    
+    weak var trackingDelegate: MouseTrackingDelegate?
+    private weak var trackingArea: NSTrackingArea?
+    
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        print("[TEST] updateTrackingAreas")
+        
+        if let existing = trackingArea {
+            removeTrackingArea(existing)
+        }
+        
+        let new = NSTrackingArea(
+            rect: bounds,
+            options: [.activeAlways, .cursorUpdate, .mouseEnteredAndExited, .mouseMoved],
+            owner: trackingDelegate,
+            userInfo: nil)
+        addTrackingArea(new)
+        trackingArea = new
+    }
+    
 }

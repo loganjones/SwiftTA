@@ -11,6 +11,8 @@ import Foundation
 
 public struct GameViewState {
     public var viewport = Rect4f.zero
+    public var cursorLocation = Point2f.zero
+    public var cursorType = Cursor.normal
     public var objects: [GameViewObject] = []
     
     public init(viewport: Rect4f = .zero, objects: [GameViewObject] = []) {
