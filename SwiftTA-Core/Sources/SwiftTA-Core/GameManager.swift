@@ -86,16 +86,27 @@ public class GameManager: ScriptMachine {
     }
     
     private func constructView() {
+        var viewState = renderer.viewState
+        
+        let cursorPos = viewState.viewport.origin + viewState.cursorLocation
+        var cursor = Cursor.normal
+        
         var viewables: [GameViewObject] = []
         for (_, object) in objects {
             switch object {
             case let .unit(instance):
                 viewables.append(.unit(GameViewUnit(instance)))
+                if TEMP_unit(instance, isUnderCursorAt: cursorPos) {
+                    cursor = .select
+                }
             default:
                 ()
             }
         }
-        renderer.viewState.objects = viewables
+        viewState.objects = viewables
+        viewState.cursorType = cursor
+        
+        renderer.viewState = viewState
     }
     
     // TEMP
@@ -141,6 +152,15 @@ public class GameManager: ScriptMachine {
         
         unit.scriptContext.startScript("StartMoving")
         objects[id] = .unit(unit)
+    }
+    
+    private func TEMP_unit(_ unit: UnitInstance, isUnderCursorAt location: Point2f) -> Bool {
+        let fudge: GameFloat = 8
+        let unitPosition = unit.worldPosition.xy - Vector2f(0, unit.worldPosition.z / 2.0)
+        return location.x >= unitPosition.x - fudge
+            && location.x < unitPosition.x + fudge
+            && location.y >= unitPosition.y - fudge
+            && location.y < unitPosition.y + fudge
     }
     
 }
