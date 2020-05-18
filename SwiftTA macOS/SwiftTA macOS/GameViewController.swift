@@ -91,6 +91,7 @@ class GameViewController: NSViewController {
     
     @objc func viewFrameDidChange(_ notification: NSNotification) {
         renderer.viewState.viewport = Rect4f(scrollView.contentView.bounds)
+        renderer.viewState.screenSize = Size2f(scrollView.bounds.size)
     }
 
 }

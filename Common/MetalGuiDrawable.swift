@@ -122,7 +122,7 @@ extension MetalGuiDrawable {
         
         let modelMatrix = matrix_float4x4.identity
         let viewMatrix = matrix_float4x4.identity
-        let projectionMatrix = matrix_float4x4.ortho(Rect4(size: viewState.viewport.size), -1024, 256)
+        let projectionMatrix = matrix_float4x4.ortho(Rect4(size: viewState.screenSize), -1024, 256)
         
         let uniforms = uniformBuffer.next().contents.bindMemory(to: Uniforms.self, capacity: 1)
         uniforms.pointee.mvpMatrix = projectionMatrix * viewMatrix * modelMatrix
