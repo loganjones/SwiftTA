@@ -3,36 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B509FAFC2122719B005FC902 /* ModelTexturePack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAD82122719B005FC902 /* ModelTexturePack.swift */; };
-		B509FAFD2122719B005FC902 /* MapInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAD92122719B005FC902 /* MapInfo.swift */; };
-		B509FAFE2122719B005FC902 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FADA2122719B005FC902 /* TdfParser.swift */; };
-		B509FAFF2122719B005FC902 /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FADB2122719B005FC902 /* pcx.swift */; };
-		B509FB002122719B005FC902 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FADC2122719B005FC902 /* Palette.swift */; };
-		B509FB012122719B005FC902 /* gaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FADE2122719B005FC902 /* gaf.swift */; };
-		B509FB022122719B005FC902 /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAE12122719B005FC902 /* MapFeature.swift */; };
-		B509FB032122719B005FC902 /* UnitData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAE22122719B005FC902 /* UnitData.swift */; };
-		B509FB042122719B005FC902 /* UnitScript+CobDecompile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAE32122719B005FC902 /* UnitScript+CobDecompile.swift */; };
-		B509FB052122719B005FC902 /* SideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAE42122719B005FC902 /* SideData.swift */; };
-		B509FB072122719B005FC902 /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAE62122719B005FC902 /* UnitInfo.swift */; };
-		B509FB082122719B005FC902 /* Filesystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAE92122719B005FC902 /* Filesystem.swift */; };
-		B509FB092122719B005FC902 /* Palette+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAEA2122719B005FC902 /* Palette+Files.swift */; };
-		B509FB0A2122719B005FC902 /* UnitScript+Instructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAEB2122719B005FC902 /* UnitScript+Instructions.swift */; };
-		B509FB0B2122719B005FC902 /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAEC2122719B005FC902 /* UnitModel+Instance.swift */; };
-		B509FB0C2122719B005FC902 /* UnitScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAED2122719B005FC902 /* UnitScript.swift */; };
-		B509FB0D2122719B005FC902 /* UnitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAEE2122719B005FC902 /* UnitModel.swift */; };
-		B509FB0F2122719B005FC902 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF22122719B005FC902 /* Utility.swift */; };
-		B509FB112122719B005FC902 /* UnitTextureAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF42122719B005FC902 /* UnitTextureAtlas.swift */; };
-		B509FB122122719B005FC902 /* hpi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF52122719B005FC902 /* hpi.swift */; };
-		B509FB132122719B005FC902 /* FileReadHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF62122719B005FC902 /* FileReadHandle.swift */; };
-		B509FB142122719B005FC902 /* UnitScript+VM.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF72122719B005FC902 /* UnitScript+VM.swift */; };
-		B509FB152122719B005FC902 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF82122719B005FC902 /* MapModel.swift */; };
 		B509FB162122719B005FC902 /* Utility+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF92122719B005FC902 /* Utility+Metal.swift */; };
-		B509FB172122719B005FC902 /* UnitObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAFA2122719B005FC902 /* UnitObject.swift */; };
-		B5494259216C432D00D830E8 /* GameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5494258216C432D00D830E8 /* GameManager.swift */; };
+		B5C284AA23CD68E2007754E6 /* SwiftTA-Core in Frameworks */ = {isa = PBXBuildFile; productRef = B5C284A923CD68E2007754E6 /* SwiftTA-Core */; };
 		B5CAAF2420B26C76003B17D7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF2320B26C76003B17D7 /* AppDelegate.swift */; };
 		B5CAAF2620B26C76003B17D7 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CAAF2520B26C76003B17D7 /* GameViewController.swift */; };
 		B5CAAF2920B26C76003B17D7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF2720B26C76003B17D7 /* Main.storyboard */; };
@@ -40,63 +16,20 @@
 		B5CAAF2E20B26C76003B17D7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5CAAF2C20B26C76003B17D7 /* LaunchScreen.storyboard */; };
 		F07131FE215C082100952E13 /* MetalFeatureShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F07131FB215C082000952E13 /* MetalFeatureShaders.metal */; };
 		F07131FF215C082100952E13 /* MetalFeatureDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07131FD215C082000952E13 /* MetalFeatureDrawable.swift */; };
-		F07A45AB21790AF1007D6DD7 /* Geometry+Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A45A421790AF0007D6DD7 /* Geometry+Utility.swift */; };
-		F07A45AC21790AF1007D6DD7 /* Geometry+CGTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A45A521790AF1007D6DD7 /* Geometry+CGTypes.swift */; };
-		F07A45AD21790AF1007D6DD7 /* Geometry+Vector.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A45A621790AF1007D6DD7 /* Geometry+Vector.swift */; };
-		F07A45AE21790AF1007D6DD7 /* Geometry+Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A45A721790AF1007D6DD7 /* Geometry+Matrix.swift */; };
-		F07A45AF21790AF1007D6DD7 /* Geometry+Size.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A45A821790AF1007D6DD7 /* Geometry+Size.swift */; };
-		F07A45B021790AF1007D6DD7 /* Geometry+Rect.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A45A921790AF1007D6DD7 /* Geometry+Rect.swift */; };
-		F07A45B121790AF1007D6DD7 /* Geometry+simd.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A45AA21790AF1007D6DD7 /* Geometry+simd.swift */; };
 		F0F2AA552165432500103B46 /* MetalUnitShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0F2AA532165432400103B46 /* MetalUnitShaders.metal */; };
 		F0F2AA572165433200103B46 /* MetalUnitDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F2AA562165433200103B46 /* MetalUnitDrawable.swift */; };
 		F0F5408E2123577B00221A9C /* Utility+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = B509FAF32122719B005FC902 /* Utility+Cocoa.swift */; };
 		F0F5409321237B1700221A9C /* MetalTntShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0F5408F21237B1700221A9C /* MetalTntShaders.metal */; };
 		F0F5409421237B1700221A9C /* MetalRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409121237B1700221A9C /* MetalRenderer.swift */; };
 		F0F5409521237B1700221A9C /* MetalTiledTntDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409221237B1700221A9C /* MetalTiledTntDrawable.swift */; };
-		F0F5409721237B6200221A9C /* GameRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F5409621237B6200221A9C /* GameRenderer.swift */; };
-		F0F540A4212381F700221A9C /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F540A3212381F700221A9C /* GameState.swift */; };
 		F0F540A62123837500221A9C /* MetalOneTextureTntDrawable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F540A52123837500221A9C /* MetalOneTextureTntDrawable.swift */; };
-		F0FC643E216D36A9008728D9 /* MapFeatureTypeId.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FC643D216D36A8008728D9 /* MapFeatureTypeId.swift */; };
-		F0FC6440216D36B6008728D9 /* UnitTypeId.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FC643F216D36B6008728D9 /* UnitTypeId.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B509FAD82122719B005FC902 /* ModelTexturePack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelTexturePack.swift; sourceTree = "<group>"; };
-		B509FAD92122719B005FC902 /* MapInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapInfo.swift; sourceTree = "<group>"; };
-		B509FADA2122719B005FC902 /* TdfParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
-		B509FADB2122719B005FC902 /* pcx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pcx.swift; sourceTree = "<group>"; };
-		B509FADC2122719B005FC902 /* Palette.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Palette.swift; sourceTree = "<group>"; };
-		B509FADD2122719B005FC902 /* ta_COB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB.h; sourceTree = "<group>"; };
-		B509FADE2122719B005FC902 /* gaf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = gaf.swift; sourceTree = "<group>"; };
-		B509FADF2122719B005FC902 /* ta_TNT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_TNT.h; sourceTree = "<group>"; };
-		B509FAE02122719B005FC902 /* ta_3DO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_3DO.h; sourceTree = "<group>"; };
-		B509FAE12122719B005FC902 /* MapFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
-		B509FAE22122719B005FC902 /* UnitData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitData.swift; sourceTree = "<group>"; };
-		B509FAE32122719B005FC902 /* UnitScript+CobDecompile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+CobDecompile.swift"; sourceTree = "<group>"; };
-		B509FAE42122719B005FC902 /* SideData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideData.swift; sourceTree = "<group>"; };
-		B509FAE62122719B005FC902 /* UnitInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitInfo.swift; sourceTree = "<group>"; };
-		B509FAE72122719B005FC902 /* ta_GAF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_GAF.h; sourceTree = "<group>"; };
-		B509FAE82122719B005FC902 /* ta_COB_Instructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB_Instructions.h; sourceTree = "<group>"; };
-		B509FAE92122719B005FC902 /* Filesystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Filesystem.swift; sourceTree = "<group>"; };
-		B509FAEA2122719B005FC902 /* Palette+Files.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Palette+Files.swift"; sourceTree = "<group>"; };
-		B509FAEB2122719B005FC902 /* UnitScript+Instructions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+Instructions.swift"; sourceTree = "<group>"; };
-		B509FAEC2122719B005FC902 /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
-		B509FAED2122719B005FC902 /* UnitScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitScript.swift; sourceTree = "<group>"; };
-		B509FAEE2122719B005FC902 /* UnitModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitModel.swift; sourceTree = "<group>"; };
 		B509FAEF2122719B005FC902 /* Utility+OpenGL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+OpenGL.swift"; sourceTree = "<group>"; };
-		B509FAF02122719B005FC902 /* pcx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pcx.h; sourceTree = "<group>"; };
-		B509FAF12122719B005FC902 /* ta_HPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_HPI.h; sourceTree = "<group>"; };
-		B509FAF22122719B005FC902 /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		B509FAF32122719B005FC902 /* Utility+Cocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Cocoa.swift"; sourceTree = "<group>"; };
-		B509FAF42122719B005FC902 /* UnitTextureAtlas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTextureAtlas.swift; sourceTree = "<group>"; };
-		B509FAF52122719B005FC902 /* hpi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = hpi.swift; sourceTree = "<group>"; };
-		B509FAF62122719B005FC902 /* FileReadHandle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
-		B509FAF72122719B005FC902 /* UnitScript+VM.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+VM.swift"; sourceTree = "<group>"; };
-		B509FAF82122719B005FC902 /* MapModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapModel.swift; sourceTree = "<group>"; };
 		B509FAF92122719B005FC902 /* Utility+Metal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Metal.swift"; sourceTree = "<group>"; };
-		B509FAFA2122719B005FC902 /* UnitObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitObject.swift; sourceTree = "<group>"; };
 		B509FB182122721A005FC902 /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
-		B5494258216C432D00D830E8 /* GameManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameManager.swift; sourceTree = "<group>"; };
 		B5CAAF2020B26C76003B17D7 /* SwiftTA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftTA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5CAAF2320B26C76003B17D7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B5CAAF2520B26C76003B17D7 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
@@ -107,13 +40,6 @@
 		F07131FB215C082000952E13 /* MetalFeatureShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalFeatureShaders.metal; sourceTree = "<group>"; };
 		F07131FC215C082000952E13 /* MetalFeatureShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalFeatureShaderTypes.h; sourceTree = "<group>"; };
 		F07131FD215C082000952E13 /* MetalFeatureDrawable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalFeatureDrawable.swift; sourceTree = "<group>"; };
-		F07A45A421790AF0007D6DD7 /* Geometry+Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Utility.swift"; sourceTree = "<group>"; };
-		F07A45A521790AF1007D6DD7 /* Geometry+CGTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+CGTypes.swift"; sourceTree = "<group>"; };
-		F07A45A621790AF1007D6DD7 /* Geometry+Vector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Vector.swift"; sourceTree = "<group>"; };
-		F07A45A721790AF1007D6DD7 /* Geometry+Matrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Matrix.swift"; sourceTree = "<group>"; };
-		F07A45A821790AF1007D6DD7 /* Geometry+Size.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Size.swift"; sourceTree = "<group>"; };
-		F07A45A921790AF1007D6DD7 /* Geometry+Rect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Rect.swift"; sourceTree = "<group>"; };
-		F07A45AA21790AF1007D6DD7 /* Geometry+simd.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+simd.swift"; sourceTree = "<group>"; };
 		F0F2AA532165432400103B46 /* MetalUnitShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalUnitShaders.metal; sourceTree = "<group>"; };
 		F0F2AA542165432500103B46 /* MetalUnitShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalUnitShaderTypes.h; sourceTree = "<group>"; };
 		F0F2AA562165433200103B46 /* MetalUnitDrawable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalUnitDrawable.swift; sourceTree = "<group>"; };
@@ -121,11 +47,7 @@
 		F0F5409021237B1700221A9C /* MetalTntShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalTntShaderTypes.h; sourceTree = "<group>"; };
 		F0F5409121237B1700221A9C /* MetalRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalRenderer.swift; sourceTree = "<group>"; };
 		F0F5409221237B1700221A9C /* MetalTiledTntDrawable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalTiledTntDrawable.swift; sourceTree = "<group>"; };
-		F0F5409621237B6200221A9C /* GameRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameRenderer.swift; sourceTree = "<group>"; };
-		F0F540A3212381F700221A9C /* GameState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 		F0F540A52123837500221A9C /* MetalOneTextureTntDrawable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalOneTextureTntDrawable.swift; sourceTree = "<group>"; };
-		F0FC643D216D36A8008728D9 /* MapFeatureTypeId.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapFeatureTypeId.swift; sourceTree = "<group>"; };
-		F0FC643F216D36B6008728D9 /* UnitTypeId.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTypeId.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5C284AA23CD68E2007754E6 /* SwiftTA-Core in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -142,24 +65,6 @@
 		B509FAD62122719B005FC902 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				B509FAF62122719B005FC902 /* FileReadHandle.swift */,
-				B509FAE92122719B005FC902 /* Filesystem.swift */,
-				B509FADE2122719B005FC902 /* gaf.swift */,
-				B5494258216C432D00D830E8 /* GameManager.swift */,
-				F0F5409621237B6200221A9C /* GameRenderer.swift */,
-				F0F540A3212381F700221A9C /* GameState.swift */,
-				F07A45A521790AF1007D6DD7 /* Geometry+CGTypes.swift */,
-				F07A45A721790AF1007D6DD7 /* Geometry+Matrix.swift */,
-				F07A45A921790AF1007D6DD7 /* Geometry+Rect.swift */,
-				F07A45AA21790AF1007D6DD7 /* Geometry+simd.swift */,
-				F07A45A821790AF1007D6DD7 /* Geometry+Size.swift */,
-				F07A45A421790AF0007D6DD7 /* Geometry+Utility.swift */,
-				F07A45A621790AF1007D6DD7 /* Geometry+Vector.swift */,
-				B509FAF52122719B005FC902 /* hpi.swift */,
-				B509FAE12122719B005FC902 /* MapFeature.swift */,
-				F0FC643D216D36A8008728D9 /* MapFeatureTypeId.swift */,
-				B509FAD92122719B005FC902 /* MapInfo.swift */,
-				B509FAF82122719B005FC902 /* MapModel.swift */,
 				F07131FD215C082000952E13 /* MetalFeatureDrawable.swift */,
 				F07131FB215C082000952E13 /* MetalFeatureShaders.metal */,
 				F07131FC215C082000952E13 /* MetalFeatureShaderTypes.h */,
@@ -171,31 +76,6 @@
 				F0F2AA562165433200103B46 /* MetalUnitDrawable.swift */,
 				F0F2AA532165432400103B46 /* MetalUnitShaders.metal */,
 				F0F2AA542165432500103B46 /* MetalUnitShaderTypes.h */,
-				B509FAD82122719B005FC902 /* ModelTexturePack.swift */,
-				B509FADC2122719B005FC902 /* Palette.swift */,
-				B509FAEA2122719B005FC902 /* Palette+Files.swift */,
-				B509FAF02122719B005FC902 /* pcx.h */,
-				B509FADB2122719B005FC902 /* pcx.swift */,
-				B509FAE42122719B005FC902 /* SideData.swift */,
-				B509FAE02122719B005FC902 /* ta_3DO.h */,
-				B509FAE82122719B005FC902 /* ta_COB_Instructions.h */,
-				B509FADD2122719B005FC902 /* ta_COB.h */,
-				B509FAE72122719B005FC902 /* ta_GAF.h */,
-				B509FAF12122719B005FC902 /* ta_HPI.h */,
-				B509FADF2122719B005FC902 /* ta_TNT.h */,
-				B509FADA2122719B005FC902 /* TdfParser.swift */,
-				B509FAE22122719B005FC902 /* UnitData.swift */,
-				B509FAE62122719B005FC902 /* UnitInfo.swift */,
-				B509FAEE2122719B005FC902 /* UnitModel.swift */,
-				B509FAEC2122719B005FC902 /* UnitModel+Instance.swift */,
-				B509FAFA2122719B005FC902 /* UnitObject.swift */,
-				B509FAED2122719B005FC902 /* UnitScript.swift */,
-				B509FAE32122719B005FC902 /* UnitScript+CobDecompile.swift */,
-				B509FAEB2122719B005FC902 /* UnitScript+Instructions.swift */,
-				B509FAF72122719B005FC902 /* UnitScript+VM.swift */,
-				B509FAF42122719B005FC902 /* UnitTextureAtlas.swift */,
-				F0FC643F216D36B6008728D9 /* UnitTypeId.swift */,
-				B509FAF22122719B005FC902 /* Utility.swift */,
 				B509FAF32122719B005FC902 /* Utility+Cocoa.swift */,
 				B509FAF92122719B005FC902 /* Utility+Metal.swift */,
 				B509FAEF2122719B005FC902 /* Utility+OpenGL.swift */,
@@ -204,12 +84,20 @@
 			path = ../Common;
 			sourceTree = "<group>";
 		};
+		B5C284A823CD68E2007754E6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B5CAAF1720B26C76003B17D7 = {
 			isa = PBXGroup;
 			children = (
 				B509FAD62122719B005FC902 /* Common */,
 				B5CAAF2220B26C76003B17D7 /* SwiftTA iOS */,
 				B5CAAF2120B26C76003B17D7 /* Products */,
+				B5C284A823CD68E2007754E6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -251,6 +139,9 @@
 			dependencies = (
 			);
 			name = "SwiftTA iOS";
+			packageProductDependencies = (
+				B5C284A923CD68E2007754E6 /* SwiftTA-Core */,
+			);
 			productName = "SwiftTA iOS";
 			productReference = B5CAAF2020B26C76003B17D7 /* SwiftTA.app */;
 			productType = "com.apple.product-type.application";
@@ -307,53 +198,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B509FB082122719B005FC902 /* Filesystem.swift in Sources */,
-				B509FB132122719B005FC902 /* FileReadHandle.swift in Sources */,
-				F07A45B121790AF1007D6DD7 /* Geometry+simd.swift in Sources */,
-				F0FC643E216D36A9008728D9 /* MapFeatureTypeId.swift in Sources */,
-				B509FB0D2122719B005FC902 /* UnitModel.swift in Sources */,
 				B5CAAF2620B26C76003B17D7 /* GameViewController.swift in Sources */,
-				B509FB032122719B005FC902 /* UnitData.swift in Sources */,
-				F07A45AF21790AF1007D6DD7 /* Geometry+Size.swift in Sources */,
-				B509FB0B2122719B005FC902 /* UnitModel+Instance.swift in Sources */,
 				F07131FF215C082100952E13 /* MetalFeatureDrawable.swift in Sources */,
-				B509FB052122719B005FC902 /* SideData.swift in Sources */,
-				F0FC6440216D36B6008728D9 /* UnitTypeId.swift in Sources */,
-				F07A45AB21790AF1007D6DD7 /* Geometry+Utility.swift in Sources */,
 				F0F540A62123837500221A9C /* MetalOneTextureTntDrawable.swift in Sources */,
 				F0F2AA552165432500103B46 /* MetalUnitShaders.metal in Sources */,
-				F07A45AE21790AF1007D6DD7 /* Geometry+Matrix.swift in Sources */,
-				F0F540A4212381F700221A9C /* GameState.swift in Sources */,
-				F07A45AC21790AF1007D6DD7 /* Geometry+CGTypes.swift in Sources */,
-				B509FB072122719B005FC902 /* UnitInfo.swift in Sources */,
-				B509FB022122719B005FC902 /* MapFeature.swift in Sources */,
 				F0F5409421237B1700221A9C /* MetalRenderer.swift in Sources */,
-				B509FB012122719B005FC902 /* gaf.swift in Sources */,
-				B509FB0C2122719B005FC902 /* UnitScript.swift in Sources */,
-				B509FB0A2122719B005FC902 /* UnitScript+Instructions.swift in Sources */,
-				F0F5409721237B6200221A9C /* GameRenderer.swift in Sources */,
-				B509FB152122719B005FC902 /* MapModel.swift in Sources */,
 				F0F5409321237B1700221A9C /* MetalTntShaders.metal in Sources */,
-				B509FB112122719B005FC902 /* UnitTextureAtlas.swift in Sources */,
-				B509FAFF2122719B005FC902 /* pcx.swift in Sources */,
 				F07131FE215C082100952E13 /* MetalFeatureShaders.metal in Sources */,
 				F0F5408E2123577B00221A9C /* Utility+Cocoa.swift in Sources */,
-				B509FB142122719B005FC902 /* UnitScript+VM.swift in Sources */,
 				F0F5409521237B1700221A9C /* MetalTiledTntDrawable.swift in Sources */,
-				B509FB042122719B005FC902 /* UnitScript+CobDecompile.swift in Sources */,
-				B509FB172122719B005FC902 /* UnitObject.swift in Sources */,
 				B509FB162122719B005FC902 /* Utility+Metal.swift in Sources */,
-				B509FB0F2122719B005FC902 /* Utility.swift in Sources */,
-				F07A45B021790AF1007D6DD7 /* Geometry+Rect.swift in Sources */,
-				F07A45AD21790AF1007D6DD7 /* Geometry+Vector.swift in Sources */,
-				B509FAFC2122719B005FC902 /* ModelTexturePack.swift in Sources */,
-				B5494259216C432D00D830E8 /* GameManager.swift in Sources */,
-				B509FB092122719B005FC902 /* Palette+Files.swift in Sources */,
-				B509FB122122719B005FC902 /* hpi.swift in Sources */,
 				B5CAAF2420B26C76003B17D7 /* AppDelegate.swift in Sources */,
-				B509FAFD2122719B005FC902 /* MapInfo.swift in Sources */,
-				B509FAFE2122719B005FC902 /* TdfParser.swift in Sources */,
-				B509FB002122719B005FC902 /* Palette.swift in Sources */,
 				F0F2AA572165433200103B46 /* MetalUnitDrawable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -501,7 +356,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "SwiftTA iOS/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -521,7 +376,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "SwiftTA iOS/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -556,6 +411,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B5C284A923CD68E2007754E6 /* SwiftTA-Core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "SwiftTA-Core";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B5CAAF1820B26C76003B17D7 /* Project object */;
 }

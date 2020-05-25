@@ -7,7 +7,7 @@
 //
 
 import AppKit
-
+import SwiftTA_Core
 
 class CocoaTntView: NSView, TntViewLoader {
     

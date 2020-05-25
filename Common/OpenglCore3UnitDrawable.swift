@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftTA_Core
 
 #if canImport(OpenGL)
 import OpenGL

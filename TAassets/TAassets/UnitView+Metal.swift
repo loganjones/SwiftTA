@@ -8,7 +8,7 @@
 
 import Foundation
 import MetalKit
-
+import SwiftTA_Core
 
 class MetalUnitView<StateProvider: UnitViewStateProvider>: MTKView, MTKViewDelegate, UnitViewLoader {
     

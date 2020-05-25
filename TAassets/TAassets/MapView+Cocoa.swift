@@ -7,6 +7,7 @@
 //
 
 import AppKit
+import SwiftTA_Core
 
 class CocoaMapView: CocoaTntView, MapViewLoader {
     

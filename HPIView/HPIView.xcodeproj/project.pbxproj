@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,43 +12,22 @@
 		B50F6A501D87A54B0016C15B /* HpiDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6A4F1D87A54B0016C15B /* HpiDocument.swift */; };
 		B50F6A551D87A54B0016C15B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A541D87A54B0016C15B /* Assets.xcassets */; };
 		B50F6A581D87A54B0016C15B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B50F6A561D87A54B0016C15B /* MainMenu.xib */; };
-		B51FF36E1EEC6711009B509A /* Filesystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF36D1EEC66F4009B509A /* Filesystem.swift */; };
-		B51FF3701EEC966E009B509A /* FileReadHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FF36F1EEC966E009B509A /* FileReadHandle.swift */; };
-		B53524E32055BB5B007A2A2C /* UnitScript+CobDecompile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56086742055B519005AAEC6 /* UnitScript+CobDecompile.swift */; };
-		B53524E42055BB70007A2A2C /* UnitScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F201ED9EB80006C329B /* UnitScript.swift */; };
 		B553EE361DDFE2270033C70D /* ModelView+Opengl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE351DDFE2270033C70D /* ModelView+Opengl.swift */; };
 		B553EE381DE004AB0033C70D /* FinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B553EE371DE004AB0033C70D /* FinderView.swift */; };
+		B55FA59023CD73640011E57B /* SwiftTA-Core in Frameworks */ = {isa = PBXBuildFile; productRef = B55FA58F23CD73640011E57B /* SwiftTA-Core */; };
 		B57C32B520702B4700B24C99 /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57C32B420702B4700B24C99 /* PaletteView.swift */; };
-		B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B58ECAC01DC6BE90005F231F /* libz.tbd */; };
 		B5D4B6DB1E04E5F200ADBE65 /* HpiFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */; };
-		B5E26F231ED9EB80006C329B /* gaf.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F111ED9EB80006C329B /* gaf.swift */; };
-		B5E26F251ED9EB80006C329B /* hpi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F131ED9EB80006C329B /* hpi.swift */; };
-		B5E26F271ED9EB80006C329B /* pcx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F161ED9EB80006C329B /* pcx.swift */; };
-		B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1E1ED9EB80006C329B /* UnitModel.swift */; };
-		B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F221ED9EB80006C329B /* Utility.swift */; };
 		B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F2F1ED9ECE9006C329B /* CobView.swift */; };
 		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
-		B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */; };
 		F015C79A20AE369600873642 /* ModelViewRenderer+OpenglCore33.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79920AE369600873642 /* ModelViewRenderer+OpenglCore33.swift */; };
 		F015C79D20AE3D9600873642 /* unit-view-grid.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = F015C79B20AE3D9500873642 /* unit-view-grid.glsl.vert */; };
 		F015C79E20AE3D9600873642 /* unit-view-grid.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F015C79C20AE3D9500873642 /* unit-view-grid.glsl.frag */; };
 		F015C7A020AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79F20AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift */; };
-		F07A459B21790A24007D6DD7 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A459321790A23007D6DD7 /* GameState.swift */; };
-		F07A459C21790A24007D6DD7 /* Geometry+CGTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A459421790A23007D6DD7 /* Geometry+CGTypes.swift */; };
-		F07A459D21790A24007D6DD7 /* Geometry+Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A459521790A23007D6DD7 /* Geometry+Utility.swift */; };
-		F07A459E21790A24007D6DD7 /* Geometry+Vector.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A459621790A23007D6DD7 /* Geometry+Vector.swift */; };
-		F07A459F21790A24007D6DD7 /* Geometry+Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A459721790A24007D6DD7 /* Geometry+Matrix.swift */; };
-		F07A45A021790A24007D6DD7 /* Geometry+Size.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A459821790A24007D6DD7 /* Geometry+Size.swift */; };
-		F07A45A121790A24007D6DD7 /* Geometry+Rect.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A459921790A24007D6DD7 /* Geometry+Rect.swift */; };
-		F07A45A221790A24007D6DD7 /* Geometry+simd.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07A459A21790A24007D6DD7 /* Geometry+simd.swift */; };
-		F07A45A321790A8D007D6DD7 /* UnitData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1C1ED9EB80006C329B /* UnitData.swift */; };
 		F07B5CD020F7FEFF00491322 /* Utility+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07B5CCF20F7FEFF00491322 /* Utility+Metal.swift */; };
 		F08A641120EE86CD001E5982 /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08A641020EE86CD001E5982 /* ModelView.swift */; };
 		F08C9A8721126BE200DC18EE /* TntViewRenderer+MetalSingleQuad.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08C9A8621126BE200DC18EE /* TntViewRenderer+MetalSingleQuad.swift */; };
 		F08C9A8921126C6200DC18EE /* TntViewRenderer+MetalStaticGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08C9A8821126C6200DC18EE /* TntViewRenderer+MetalStaticGrid.swift */; };
 		F08C9A8B21126D2900DC18EE /* TntViewRenderer+MetalDynamicTiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08C9A8A21126D2900DC18EE /* TntViewRenderer+MetalDynamicTiles.swift */; };
-		F0AAC55920AB842C00D62553 /* UnitTextureAtlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AAC55820AB842C00D62553 /* UnitTextureAtlas.swift */; };
-		F0AAC55A20AB844700D62553 /* ModelTexturePack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F141ED9EB80006C329B /* ModelTexturePack.swift */; };
 		F0AAC55E20AB84C600D62553 /* unit-view-lighted.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F0AAC55B20AB84C500D62553 /* unit-view-lighted.glsl.frag */; };
 		F0AAC55F20AB84C600D62553 /* unit-view.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F0AAC55C20AB84C600D62553 /* unit-view.glsl.frag */; };
 		F0AAC56020AB84C600D62553 /* unit-view.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = F0AAC55D20AB84C600D62553 /* unit-view.glsl.vert */; };
@@ -59,19 +38,9 @@
 		F0CD87CD20FFB9470012B1C8 /* TntView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CD87CC20FFB9470012B1C8 /* TntView.swift */; };
 		F0CD87D120FFE7B30012B1C8 /* TntView+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CD87D020FFE7B30012B1C8 /* TntView+Metal.swift */; };
 		F0CD87D420FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0CD87D220FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal */; };
-		F0D23B92207402CD00C0A245 /* Palette+Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B91207402CC00C0A245 /* Palette+Files.swift */; };
-		F0D23B932074034400C0A245 /* UnitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */; };
-		F0D23B952074036800C0A245 /* TdfParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B942074036700C0A245 /* TdfParser.swift */; };
-		F0D23B972074038600C0A245 /* SideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B962074038600C0A245 /* SideData.swift */; };
-		F0D23B9A207403AD00C0A245 /* MapFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B98207403AD00C0A245 /* MapFeature.swift */; };
-		F0D23B9B207403AD00C0A245 /* MapInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D23B99207403AD00C0A245 /* MapInfo.swift */; };
-		F0D9A49A20588A810081DC15 /* MapModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49920588A800081DC15 /* MapModel.swift */; };
 		F0D9A49C2059F6D90081DC15 /* TntView+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49B2059F6D90081DC15 /* TntView+Cocoa.swift */; };
-		F0D9A4A02059FA3D0081DC15 /* Palette.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49F2059FA3D0081DC15 /* Palette.swift */; };
 		F0D9A4A22059FBAD0081DC15 /* Utility+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A4A12059FBAD0081DC15 /* Utility+Cocoa.swift */; };
 		F0D9A4A82059FF080081DC15 /* Utility+OpenGL.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A4A72059FF080081DC15 /* Utility+OpenGL.swift */; };
-		F0FC6432216D3408008728D9 /* UnitTypeId.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FC6431216D3408008728D9 /* UnitTypeId.swift */; };
-		F0FC6434216D3467008728D9 /* MapFeatureTypeId.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FC6433216D3467008728D9 /* MapFeatureTypeId.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,54 +50,24 @@
 		B50F6A541D87A54B0016C15B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B50F6A571D87A54B0016C15B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		B50F6A591D87A54B0016C15B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B51FF36D1EEC66F4009B509A /* Filesystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filesystem.swift; sourceTree = "<group>"; };
-		B51FF36F1EEC966E009B509A /* FileReadHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReadHandle.swift; sourceTree = "<group>"; };
 		B553EE351DDFE2270033C70D /* ModelView+Opengl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ModelView+Opengl.swift"; sourceTree = "<group>"; };
 		B553EE371DE004AB0033C70D /* FinderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FinderView.swift; sourceTree = "<group>"; };
-		B56086742055B519005AAEC6 /* UnitScript+CobDecompile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitScript+CobDecompile.swift"; sourceTree = "<group>"; };
 		B57C32B420702B4700B24C99 /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
 		B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		B58ECAC01DC6BE90005F231F /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		B5B472121E13A02600FC79E2 /* PALETTE.PAL */ = {isa = PBXFileReference; lastKnownFileType = file; path = PALETTE.PAL; sourceTree = "<group>"; };
 		B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HpiFinderRow.xib; sourceTree = "<group>"; };
-		B5E26F111ED9EB80006C329B /* gaf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = gaf.swift; sourceTree = "<group>"; };
-		B5E26F131ED9EB80006C329B /* hpi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = hpi.swift; sourceTree = "<group>"; };
-		B5E26F141ED9EB80006C329B /* ModelTexturePack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelTexturePack.swift; sourceTree = "<group>"; };
-		B5E26F151ED9EB80006C329B /* pcx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pcx.h; sourceTree = "<group>"; };
-		B5E26F161ED9EB80006C329B /* pcx.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pcx.swift; sourceTree = "<group>"; };
-		B5E26F171ED9EB80006C329B /* ta_3DO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_3DO.h; sourceTree = "<group>"; };
-		B5E26F181ED9EB80006C329B /* ta_COB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB.h; sourceTree = "<group>"; };
-		B5E26F191ED9EB80006C329B /* ta_COB_Instructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_COB_Instructions.h; sourceTree = "<group>"; };
-		B5E26F1A1ED9EB80006C329B /* ta_GAF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_GAF.h; sourceTree = "<group>"; };
-		B5E26F1B1ED9EB80006C329B /* ta_HPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ta_HPI.h; sourceTree = "<group>"; };
-		B5E26F1C1ED9EB80006C329B /* UnitData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitData.swift; sourceTree = "<group>"; };
-		B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitInfo.swift; sourceTree = "<group>"; };
-		B5E26F1E1ED9EB80006C329B /* UnitModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitModel.swift; sourceTree = "<group>"; };
-		B5E26F1F1ED9EB80006C329B /* UnitObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitObject.swift; sourceTree = "<group>"; };
-		B5E26F201ED9EB80006C329B /* UnitScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitScript.swift; sourceTree = "<group>"; };
-		B5E26F221ED9EB80006C329B /* Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		B5E26F2F1ED9ECE9006C329B /* CobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CobView.swift; sourceTree = "<group>"; };
 		B5E26F311ED9EDD7006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GafView.swift; sourceTree = "<group>"; };
-		B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnitModel+Instance.swift"; sourceTree = "<group>"; };
-		B5E26F491EE3AF5F006C329B /* ta_TNT.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ta_TNT.h; sourceTree = "<group>"; };
 		F015C79920AE369600873642 /* ModelViewRenderer+OpenglCore33.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelViewRenderer+OpenglCore33.swift"; sourceTree = "<group>"; };
 		F015C79B20AE3D9500873642 /* unit-view-grid.glsl.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-grid.glsl.vert"; path = "../../TAassets/TAassets/unit-view-grid.glsl.vert"; sourceTree = "<group>"; };
 		F015C79C20AE3D9500873642 /* unit-view-grid.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-grid.glsl.frag"; path = "../../TAassets/TAassets/unit-view-grid.glsl.frag"; sourceTree = "<group>"; };
 		F015C79F20AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ModelViewRenderer+OpenglLegacy.swift"; sourceTree = "<group>"; };
-		F07A459321790A23007D6DD7 /* GameState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
-		F07A459421790A23007D6DD7 /* Geometry+CGTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+CGTypes.swift"; sourceTree = "<group>"; };
-		F07A459521790A23007D6DD7 /* Geometry+Utility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Utility.swift"; sourceTree = "<group>"; };
-		F07A459621790A23007D6DD7 /* Geometry+Vector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Vector.swift"; sourceTree = "<group>"; };
-		F07A459721790A24007D6DD7 /* Geometry+Matrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Matrix.swift"; sourceTree = "<group>"; };
-		F07A459821790A24007D6DD7 /* Geometry+Size.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Size.swift"; sourceTree = "<group>"; };
-		F07A459921790A24007D6DD7 /* Geometry+Rect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+Rect.swift"; sourceTree = "<group>"; };
-		F07A459A21790A24007D6DD7 /* Geometry+simd.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geometry+simd.swift"; sourceTree = "<group>"; };
 		F07B5CCF20F7FEFF00491322 /* Utility+Metal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Metal.swift"; sourceTree = "<group>"; };
 		F08A641020EE86CD001E5982 /* ModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelView.swift; sourceTree = "<group>"; };
 		F08C9A8621126BE200DC18EE /* TntViewRenderer+MetalSingleQuad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TntViewRenderer+MetalSingleQuad.swift"; sourceTree = "<group>"; };
 		F08C9A8821126C6200DC18EE /* TntViewRenderer+MetalStaticGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TntViewRenderer+MetalStaticGrid.swift"; sourceTree = "<group>"; };
 		F08C9A8A21126D2900DC18EE /* TntViewRenderer+MetalDynamicTiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TntViewRenderer+MetalDynamicTiles.swift"; sourceTree = "<group>"; };
-		F0AAC55820AB842C00D62553 /* UnitTextureAtlas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnitTextureAtlas.swift; sourceTree = "<group>"; };
 		F0AAC55B20AB84C500D62553 /* unit-view-lighted.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-lighted.glsl.frag"; path = "../../TAassets/TAassets/unit-view-lighted.glsl.frag"; sourceTree = "<group>"; };
 		F0AAC55C20AB84C600D62553 /* unit-view.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view.glsl.frag"; path = "../../TAassets/TAassets/unit-view.glsl.frag"; sourceTree = "<group>"; };
 		F0AAC55D20AB84C600D62553 /* unit-view.glsl.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view.glsl.vert"; path = "../../TAassets/TAassets/unit-view.glsl.vert"; sourceTree = "<group>"; };
@@ -141,18 +80,9 @@
 		F0CD87D020FFE7B30012B1C8 /* TntView+Metal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TntView+Metal.swift"; sourceTree = "<group>"; };
 		F0CD87D220FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = "TntViewRenderer+MetalShaders.metal"; sourceTree = "<group>"; };
 		F0CD87D320FFF9430012B1C8 /* TntViewRenderer+MetalShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TntViewRenderer+MetalShaderTypes.h"; sourceTree = "<group>"; };
-		F0D23B91207402CC00C0A245 /* Palette+Files.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Palette+Files.swift"; sourceTree = "<group>"; };
-		F0D23B942074036700C0A245 /* TdfParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TdfParser.swift; sourceTree = "<group>"; };
-		F0D23B962074038600C0A245 /* SideData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideData.swift; sourceTree = "<group>"; };
-		F0D23B98207403AD00C0A245 /* MapFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapFeature.swift; sourceTree = "<group>"; };
-		F0D23B99207403AD00C0A245 /* MapInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapInfo.swift; sourceTree = "<group>"; };
-		F0D9A49920588A800081DC15 /* MapModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapModel.swift; sourceTree = "<group>"; };
 		F0D9A49B2059F6D90081DC15 /* TntView+Cocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TntView+Cocoa.swift"; sourceTree = "<group>"; };
-		F0D9A49F2059FA3D0081DC15 /* Palette.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Palette.swift; sourceTree = "<group>"; };
 		F0D9A4A12059FBAD0081DC15 /* Utility+Cocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Cocoa.swift"; sourceTree = "<group>"; };
 		F0D9A4A72059FF080081DC15 /* Utility+OpenGL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+OpenGL.swift"; sourceTree = "<group>"; };
-		F0FC6431216D3408008728D9 /* UnitTypeId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitTypeId.swift; sourceTree = "<group>"; };
-		F0FC6433216D3467008728D9 /* MapFeatureTypeId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFeatureTypeId.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -160,7 +90,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B58ECAC11DC6BE90005F231F /* libz.tbd in Frameworks */,
+				B55FA59023CD73640011E57B /* SwiftTA-Core in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,45 +167,6 @@
 		B5E26F101ED9EB80006C329B /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				B51FF36F1EEC966E009B509A /* FileReadHandle.swift */,
-				B51FF36D1EEC66F4009B509A /* Filesystem.swift */,
-				B5E26F111ED9EB80006C329B /* gaf.swift */,
-				F07A459321790A23007D6DD7 /* GameState.swift */,
-				F07A459421790A23007D6DD7 /* Geometry+CGTypes.swift */,
-				F07A459721790A24007D6DD7 /* Geometry+Matrix.swift */,
-				F07A459921790A24007D6DD7 /* Geometry+Rect.swift */,
-				F07A459A21790A24007D6DD7 /* Geometry+simd.swift */,
-				F07A459821790A24007D6DD7 /* Geometry+Size.swift */,
-				F07A459521790A23007D6DD7 /* Geometry+Utility.swift */,
-				F07A459621790A23007D6DD7 /* Geometry+Vector.swift */,
-				B5E26F131ED9EB80006C329B /* hpi.swift */,
-				F0D23B98207403AD00C0A245 /* MapFeature.swift */,
-				F0FC6433216D3467008728D9 /* MapFeatureTypeId.swift */,
-				F0D23B99207403AD00C0A245 /* MapInfo.swift */,
-				F0D9A49920588A800081DC15 /* MapModel.swift */,
-				B5E26F141ED9EB80006C329B /* ModelTexturePack.swift */,
-				F0D9A49F2059FA3D0081DC15 /* Palette.swift */,
-				F0D23B91207402CC00C0A245 /* Palette+Files.swift */,
-				B5E26F151ED9EB80006C329B /* pcx.h */,
-				B5E26F161ED9EB80006C329B /* pcx.swift */,
-				F0D23B962074038600C0A245 /* SideData.swift */,
-				B5E26F171ED9EB80006C329B /* ta_3DO.h */,
-				B5E26F181ED9EB80006C329B /* ta_COB.h */,
-				B5E26F191ED9EB80006C329B /* ta_COB_Instructions.h */,
-				B5E26F1A1ED9EB80006C329B /* ta_GAF.h */,
-				B5E26F1B1ED9EB80006C329B /* ta_HPI.h */,
-				B5E26F491EE3AF5F006C329B /* ta_TNT.h */,
-				F0D23B942074036700C0A245 /* TdfParser.swift */,
-				B5E26F1C1ED9EB80006C329B /* UnitData.swift */,
-				B5E26F1D1ED9EB80006C329B /* UnitInfo.swift */,
-				B5E26F1E1ED9EB80006C329B /* UnitModel.swift */,
-				B5E26F411EE373A6006C329B /* UnitModel+Instance.swift */,
-				B5E26F1F1ED9EB80006C329B /* UnitObject.swift */,
-				B5E26F201ED9EB80006C329B /* UnitScript.swift */,
-				B56086742055B519005AAEC6 /* UnitScript+CobDecompile.swift */,
-				F0AAC55820AB842C00D62553 /* UnitTextureAtlas.swift */,
-				F0FC6431216D3408008728D9 /* UnitTypeId.swift */,
-				B5E26F221ED9EB80006C329B /* Utility.swift */,
 				F0D9A4A12059FBAD0081DC15 /* Utility+Cocoa.swift */,
 				F07B5CCF20F7FEFF00491322 /* Utility+Metal.swift */,
 				F0D9A4A72059FF080081DC15 /* Utility+OpenGL.swift */,
@@ -300,6 +191,9 @@
 			dependencies = (
 			);
 			name = HPIView;
+			packageProductDependencies = (
+				B55FA58F23CD73640011E57B /* SwiftTA-Core */,
+			);
 			productName = HPIView;
 			productReference = B50F6A4A1D87A54B0016C15B /* HPIView.app */;
 			productType = "com.apple.product-type.application";
@@ -365,60 +259,29 @@
 			buildActionMask = 2147483647;
 			files = (
 				F07B5CD020F7FEFF00491322 /* Utility+Metal.swift in Sources */,
-				F0D23B972074038600C0A245 /* SideData.swift in Sources */,
 				F0C74B7120D0744000F52B01 /* ModelViewRenderer+Metal.swift in Sources */,
-				B51FF3701EEC966E009B509A /* FileReadHandle.swift in Sources */,
-				F07A45A021790A24007D6DD7 /* Geometry+Size.swift in Sources */,
 				F0CD87D420FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal in Sources */,
 				F015C7A020AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift in Sources */,
-				B51FF36E1EEC6711009B509A /* Filesystem.swift in Sources */,
 				F0CD87CD20FFB9470012B1C8 /* TntView.swift in Sources */,
 				F0D9A4A82059FF080081DC15 /* Utility+OpenGL.swift in Sources */,
-				F0D9A4A02059FA3D0081DC15 /* Palette.swift in Sources */,
 				F08C9A8721126BE200DC18EE /* TntViewRenderer+MetalSingleQuad.swift in Sources */,
 				B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */,
 				F0D9A49C2059F6D90081DC15 /* TntView+Cocoa.swift in Sources */,
 				B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */,
 				F0C74B6F20D06F2A00F52B01 /* ModelView+Metal.swift in Sources */,
-				B5E26F251ED9EB80006C329B /* hpi.swift in Sources */,
-				F07A45A121790A24007D6DD7 /* Geometry+Rect.swift in Sources */,
-				F0D23B9A207403AD00C0A245 /* MapFeature.swift in Sources */,
-				F07A459D21790A24007D6DD7 /* Geometry+Utility.swift in Sources */,
-				F07A45A221790A24007D6DD7 /* Geometry+simd.swift in Sources */,
-				B5E26F271ED9EB80006C329B /* pcx.swift in Sources */,
 				F0AEB0E22098FB590087B36B /* QuickLookView.swift in Sources */,
-				F07A45A321790A8D007D6DD7 /* UnitData.swift in Sources */,
-				B5E26F421EE373A6006C329B /* UnitModel+Instance.swift in Sources */,
-				B5E26F2A1ED9EB80006C329B /* UnitModel.swift in Sources */,
 				F08A641120EE86CD001E5982 /* ModelView.swift in Sources */,
 				F0CD87D120FFE7B30012B1C8 /* TntView+Metal.swift in Sources */,
-				F07A459C21790A24007D6DD7 /* Geometry+CGTypes.swift in Sources */,
 				B57C32B520702B4700B24C99 /* PaletteView.swift in Sources */,
-				F0FC6434216D3467008728D9 /* MapFeatureTypeId.swift in Sources */,
 				F08C9A8B21126D2900DC18EE /* TntViewRenderer+MetalDynamicTiles.swift in Sources */,
-				F0D9A49A20588A810081DC15 /* MapModel.swift in Sources */,
-				F0FC6432216D3408008728D9 /* UnitTypeId.swift in Sources */,
-				B5E26F231ED9EB80006C329B /* gaf.swift in Sources */,
-				F07A459F21790A24007D6DD7 /* Geometry+Matrix.swift in Sources */,
 				F015C79A20AE369600873642 /* ModelViewRenderer+OpenglCore33.swift in Sources */,
 				B50F6A501D87A54B0016C15B /* HpiDocument.swift in Sources */,
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
-				F0D23B952074036800C0A245 /* TdfParser.swift in Sources */,
 				B553EE381DE004AB0033C70D /* FinderView.swift in Sources */,
-				F0AAC55920AB842C00D62553 /* UnitTextureAtlas.swift in Sources */,
-				B5E26F2E1ED9EB80006C329B /* Utility.swift in Sources */,
-				F0D23B92207402CD00C0A245 /* Palette+Files.swift in Sources */,
 				F0C74B7420D07CFC00F52B01 /* ModelViewRenderer+MetalShaders.metal in Sources */,
-				F0AAC55A20AB844700D62553 /* ModelTexturePack.swift in Sources */,
-				F0D23B9B207403AD00C0A245 /* MapInfo.swift in Sources */,
-				F07A459B21790A24007D6DD7 /* GameState.swift in Sources */,
-				F0D23B932074034400C0A245 /* UnitInfo.swift in Sources */,
-				F07A459E21790A24007D6DD7 /* Geometry+Vector.swift in Sources */,
 				B553EE361DDFE2270033C70D /* ModelView+Opengl.swift in Sources */,
 				F08C9A8921126C6200DC18EE /* TntViewRenderer+MetalStaticGrid.swift in Sources */,
 				F0D9A4A22059FBAD0081DC15 /* Utility+Cocoa.swift in Sources */,
-				B53524E42055BB70007A2A2C /* UnitScript.swift in Sources */,
-				B53524E32055BB5B007A2A2C /* UnitScript+CobDecompile.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -542,7 +405,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Release;
 		};
@@ -554,7 +418,10 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 544Z2URGY9;
 				INFOPLIST_FILE = HPIView/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = Toasty.HPIView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = HPIView/BridgingHeader.h;
@@ -570,7 +437,10 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 544Z2URGY9;
 				INFOPLIST_FILE = HPIView/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = Toasty.HPIView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = HPIView/BridgingHeader.h;
@@ -600,6 +470,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B55FA58F23CD73640011E57B /* SwiftTA-Core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "SwiftTA-Core";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B50F6A421D87A54B0016C15B /* Project object */;
 }

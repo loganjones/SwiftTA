@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import SwiftTA_Core
 
 class FileBrowserViewController: NSViewController, ContentViewController {
     

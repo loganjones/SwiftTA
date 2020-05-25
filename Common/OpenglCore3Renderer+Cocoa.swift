@@ -8,6 +8,7 @@
 
 import AppKit
 import OpenGL
+import SwiftTA_Core
 
 
 class OpenglCore3CocoaRenderer: OpenglCore3Renderer, GameViewProvider {

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SwiftTA_Core
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {

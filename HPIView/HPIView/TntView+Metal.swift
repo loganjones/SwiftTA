@@ -8,6 +8,7 @@
 
 import Cocoa
 import MetalKit
+import SwiftTA_Core
 
 
 class MetalTntView: NSView, TntViewLoader, MTKViewDelegate {

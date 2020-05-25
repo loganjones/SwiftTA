@@ -13,6 +13,7 @@ import UIKit
 #else
 import Foundation
 #endif
+import SwiftTA_Core
 
 // MARK:- Text File Loading
 

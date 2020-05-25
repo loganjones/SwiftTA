@@ -9,7 +9,7 @@
 import Cocoa
 import OpenGL
 import OpenGL.GL3
-
+import SwiftTA_Core
 
 class Core33OpenglModelViewRenderer: OpenglModelViewRenderer {
     

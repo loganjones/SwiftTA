@@ -8,6 +8,7 @@
 
 import Cocoa
 import OpenGL
+import SwiftTA_Core
 
 
 class OpenglUnitView<StateProvider: UnitViewStateProvider>: NSOpenGLView, UnitViewLoader {

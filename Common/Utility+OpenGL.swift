@@ -13,6 +13,7 @@ import OpenGL.GL
 import Foundation
 import Cgl
 #endif
+import SwiftTA_Core
 
 
 let GL_GAMEFLOAT: Int32 = {

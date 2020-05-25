@@ -8,6 +8,7 @@
 
 import Foundation
 import Quartz
+import SwiftTA_Core
 
 class QuickLookViewController: NSViewController {
     

@@ -7,6 +7,7 @@
 //
 
 import MetalKit
+import SwiftTA_Core
 
 typealias MTKViewDelegateRequirementForNSObjectProtocol = NSObject
 private let maxBuffersInFlight = 3

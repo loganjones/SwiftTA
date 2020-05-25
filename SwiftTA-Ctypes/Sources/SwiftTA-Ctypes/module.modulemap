@@ -1,0 +1,4 @@
+module SwiftTA_Ctypes [system] {
+  header "SwiftTA-Ctypes.h"
+  export *
+}

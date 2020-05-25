@@ -7,7 +7,7 @@
 //
 
 import Cocoa
-
+import SwiftTA_Core
 
 class GameViewController: NSViewController {
     

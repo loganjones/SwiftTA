@@ -8,7 +8,7 @@
 
 import Cocoa
 import MetalKit
-
+import SwiftTA_Core
 
 class MetalModelView<StateProvider: ModelViewStateProvider>: MTKView, MTKViewDelegate, ModelViewLoader {
     
