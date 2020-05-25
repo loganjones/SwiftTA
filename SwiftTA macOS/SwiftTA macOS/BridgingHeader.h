@@ -9,3 +9,4 @@
 #import "MetalTntShaderTypes.h"
 #import "MetalFeatureShaderTypes.h"
 #import "MetalUnitShaderTypes.h"
+#import "MetalGuiShaderTypes.h"

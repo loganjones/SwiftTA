@@ -14,7 +14,7 @@ public class UnitTextureAtlas {
     public let textures: [Texture]
     
     public struct Texture {
-        var location: _Rect
+        var location: TextureAtlasPacker.LocationRect
         var content: Content
     }
     
@@ -118,7 +118,7 @@ private extension UnitTextureAtlas {
 
 private extension UnitTextureAtlas.Texture {
     static var zero: UnitTextureAtlas.Texture {
-        return UnitTextureAtlas.Texture(location: _Rect.zero, content: .notFound(""))
+        return UnitTextureAtlas.Texture(location: .zero, content: .notFound(""))
     }
 }
 
@@ -140,34 +140,19 @@ private extension UnitTextureAtlas {
     
     class func pack(_ content: [Content]) -> (Size2<Int>, [Texture]) {
         
-        let sorted = content.enumerated().sorted(by: largestContent)
+        let (atlasSize, locations) = TextureAtlasPacker.pack(content)
         
-        let totalArea = sorted.reduce(0) { (total: Int, e: IndexedContent) in total + e.c.size.area }
-        
-        var findSize = Size2<Int>(width: 1024,height: 1024)
-        while findSize.area > totalArea { findSize /= 2 }
-        let textureSize = findSize * 2
-        
-        let filler = RectFiller(size: textureSize)
-        
-        var textures = Array<Texture>(repeating: Texture.zero, count: content.count)
-        
-        sorted.forEach { (e: IndexedContent) in
-            if let rect = filler.findSuitableRect(ofSize: e.c.size) {
-                textures[e.i] = Texture(location: rect, content: e.c)
-            }
-            else {
-                textures[e.i] = Texture(location: _Rect.zero, content: e.c)
-            }
+        let textures = zip(content, locations).map {
+            Texture(location: $1, content: $0)
         }
         
-        return (textureSize, textures)
+        return (atlasSize, textures)
     }
     
 }
 
-public extension UnitTextureAtlas.Content {
-    var size: Size2<Int> {
+extension UnitTextureAtlas.Content: PackableTexture {
+    public var size: Size2<Int> {
         switch self {
         case .color: return Size2<Int>(width: 8, height: 8)
         case .gafItem(let gaf): return gaf.size
@@ -175,99 +160,3 @@ public extension UnitTextureAtlas.Content {
         }
     }
 }
-
-private typealias IndexedContent = (i: Int, c: UnitTextureAtlas.Content)
-
-private func largestContent(_ a: IndexedContent, _ b: IndexedContent) -> Bool {
-    return a.c.size.area > b.c.size.area
-}
-
-struct _Rect {
-    var left: Int
-    var top: Int
-    var right: Int
-    var bottom: Int
-}
-extension _Rect {
-    static var zero: _Rect { return _Rect(left: 0, top: 0, right: 0, bottom: 0) }
-    var width: Int { return right - left }
-    var height: Int { return bottom - top }
-}
-extension _Rect: CustomStringConvertible {
-    var description: String { return "[left:\(left),top:\(top), right:\(right),bottom:\(bottom)]" }
-}
-extension _Rect {
-    init(_ size: Size2<Int>) {
-        left = 0
-        top = 0
-        right = size.width
-        bottom = size.height
-    }
-}
-
-private class RectFiller {
-    
-    init(size: Size2<Int>) {
-        rects = [_Rect(size)]
-        rects.reserveCapacity(32)
-    }
-    
-    private var rects: [_Rect]
-    
-    func findSuitableRect(ofSize size: Size2<Int>) -> _Rect? {
-        
-        // Find the first rect where `size` would fit inside
-        guard let index = rects.firstIndex(where: { size.width <= $0.width && size.height <= $0.height })
-            else { return nil }
-        
-        // This rect can fit a rect of `size`
-        let found = rects[index]
-        
-        // We are done finding space for the new rect...
-        let result = _Rect(left: found.left,
-                           top: found.top,
-                           right: found.left + size.width,
-                           bottom: found.top + size.height)
-        
-        // but now we need to adjust the `rects` to remove the newly taken space.
-        
-        // If `result` exactly matches `found` then we can simply just remove `found` from `rects`.
-        if size.width == found.width && size.height == found.height {
-            rects.remove(at: index)
-        }
-        // If only the width dimension matches then we can adjust `found` in `rects` to subtract the taken space.
-        else if size.width == found.width {
-            var r = found
-            r.top += size.height
-            rects[index] = r
-        }
-        // If only the height dimension matches then we can adjust `found` in `rects` to subtract the taken space.
-        else if size.height == found.height {
-            var r = found
-            r.left += size.width
-            rects[index] = r
-        }
-        else {
-            // `result` is a smaller subrect within `found`.
-            // We'll need to split `founs into to rects:
-            // one the the left of `result`,
-            // and one under `result`.
-            
-            let split = _Rect(left: found.left + size.width,
-                              top: found.top,
-                              right: found.right,
-                              bottom: found.top + size.height)
-            
-            var r = found
-            r.top += size.height
-            rects[index] = r
-            
-            rects.insert(split, at: index)
-        }
-        
-        return result
-    }
-    
-}
-
-

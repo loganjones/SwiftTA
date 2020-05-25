@@ -86,16 +86,27 @@ public class GameManager: ScriptMachine {
     }
     
     private func constructView() {
+        var viewState = renderer.viewState
+        
+        let cursorPos = viewState.cursorLocation
+        var cursor = Cursor.normal
+        
         var viewables: [GameViewObject] = []
         for (_, object) in objects {
             switch object {
             case let .unit(instance):
                 viewables.append(.unit(GameViewUnit(instance)))
+                if TEMP_unit(instance, isUnderCursorAt: cursorPos, in: viewState) {
+                    cursor = .select
+                }
             default:
                 ()
             }
         }
-        renderer.viewState.objects = viewables
+        viewState.objects = viewables
+        viewState.cursorType = cursor
+        
+        renderer.viewState = viewState
     }
     
     // TEMP
@@ -143,6 +154,15 @@ public class GameManager: ScriptMachine {
         objects[id] = .unit(unit)
     }
     
+    private func TEMP_unit(_ unit: UnitInstance, isUnderCursorAt location: Point2f, in viewState: GameViewState) -> Bool {
+        let fudge: GameFloat = 8
+        let unitPosition = viewState.worldPositionToScreen(unit.worldPosition)
+        return location.x >= unitPosition.x - fudge
+            && location.x < unitPosition.x + fudge
+            && location.y >= unitPosition.y - fudge
+            && location.y < unitPosition.y + fudge
+    }
+    
 }
 
 public extension GameState {
@@ -161,6 +181,16 @@ public extension GameState {
         
         return GameViewState(viewport: Rect4f(viewport(ofSize: viewportSize, centeredOn: startPosition, in: map)),
                              objects: [])
+    }
+    
+}
+
+public extension GameViewState {
+    
+    func worldPositionToScreen(_ worldPosition: Point3f) -> Point2f {
+        let inViewport = (worldPosition.xy - Vector2f(0, worldPosition.z / 2.0)) - viewport.origin
+        let scaled = inViewport * (screenSize / viewport.size)
+        return scaled
     }
     
 }
