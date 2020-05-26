@@ -155,12 +155,8 @@ public class GameManager: ScriptMachine {
     }
     
     private func TEMP_unit(_ unit: UnitInstance, isUnderCursorAt location: Point2f, in viewState: GameViewState) -> Bool {
-        let fudge: GameFloat = 8
-        let unitPosition = viewState.worldPositionToScreen(unit.worldPosition)
-        return location.x >= unitPosition.x - fudge
-            && location.x < unitPosition.x + fudge
-            && location.y >= unitPosition.y - fudge
-            && location.y < unitPosition.y + fudge
+        let bb = viewState.worldToScreen(unit)
+        return bb.enclosingRect.contains(location) && bb.contains(location)
     }
     
 }
@@ -191,6 +187,24 @@ public extension GameViewState {
         let inViewport = (worldPosition.xy - Vector2f(0, worldPosition.z / 2.0)) - viewport.origin
         let scaled = inViewport * (screenSize / viewport.size)
         return scaled
+    }
+    
+    func worldToScreen(_ unit: UnitInstance) -> BoundingBox2Df {
+        let inViewport = (unit.worldPosition.xy - Vector2f(0, unit.worldPosition.z / 2.0)) - viewport.origin
+        let scale = screenSize / viewport.size
+        let scaledPosition = inViewport * scale
+        let scaledSize = Size2f(unit.type.info.footprint * 16) * scale
+        let direction = Vector2f(unit.modelInstance.orientation.z.cosine, unit.modelInstance.orientation.z.sine)
+        return BoundingBox2Df(center: scaledPosition, size: scaledSize, orientation: direction)
+    }
+    
+    func worldToScreen(_ unit: GameViewUnit) -> BoundingBox2Df {
+        let inViewport = (unit.position.xy - Vector2f(0, unit.position.z / 2.0)) - viewport.origin
+        let scale = screenSize / viewport.size
+        let scaledPosition = inViewport * scale
+        let scaledSize = Size2f(unit.type.info.footprint * 16) * scale
+        let direction = Vector2f(unit.orientation.z.cosine, unit.orientation.z.sine)
+        return BoundingBox2Df(center: scaledPosition, size: scaledSize, orientation: direction)
     }
     
 }
@@ -235,8 +249,10 @@ public struct UnitInstance {
     let type: UnitData
     var worldPosition: Vertex3f
     var orientation: Vector3f
+    
     var movementVelocity: Vector2f
     var movementDirection: Vector2f
+    
     var modelInstance: UnitModel.Instance
     var scriptContext: UnitScript.Context
     

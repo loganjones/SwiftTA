@@ -126,6 +126,13 @@ public extension Size2 where Element: FloatingPoint {
         lhs.values *= rhs
     }
     
+    @inlinable static func * (lhs: Size2, rhs: Size2) -> Size2 {
+        return Size2(values: lhs.values * rhs)
+    }
+    @inlinable static func *= (lhs: inout Size2, rhs: Size2) {
+        lhs.values *= rhs
+    }
+    
     @inlinable static func / (lhs: Size2, rhs: Element) -> Size2 {
         return Size2(values: lhs.values / rhs)
     }
