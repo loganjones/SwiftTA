@@ -112,7 +112,7 @@ extension MetalTiledTntDrawable {
         
         let depthStateDesciptor = MTLDepthStencilDescriptor()
         depthStateDesciptor.depthCompareFunction = MTLCompareFunction.less
-        depthStateDesciptor.isDepthWriteEnabled = true
+        depthStateDesciptor.isDepthWriteEnabled = false
         guard let depthState = device.makeDepthStencilState(descriptor: depthStateDesciptor) else {
             throw MTLDeviceInitializationError.badDepthState
         }
