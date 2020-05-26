@@ -134,8 +134,9 @@ public class GameManager: ScriptMachine {
         let startPosition = Point2f( GameFloat.random(in: 0...300), GameFloat.random(in: 0...GameFloat(loadedState.map.resolution.height)) )
         let height = loadedState.map.heightMap.height(atWorldPosition: startPosition)
         print("Spawning \(unitType.info.name) at \(startPosition), height: \(height)")
-        let instance = UnitInstance(unitType, position: Vertex3f(xy: startPosition, z: height))
+        var instance = UnitInstance(unitType, position: Vertex3f(xy: startPosition, z: height))
         instance.scriptContext.startScript("Create")
+        instance.selected = Bool.random()
         objects[id] = .unit(instance)
         objectSyncQueue.asyncAfter(deadline: .now() + 1) { self.TEMP_startMoving(id) }
         
@@ -265,6 +266,8 @@ public struct UnitInstance {
     }
     var status: Status
     
+    var selected: Bool
+    
 }
 
 public extension UnitInstance {
@@ -278,6 +281,7 @@ public extension UnitInstance {
         modelInstance = UnitModel.Instance(for: unitType.model)
         scriptContext = try! UnitScript.Context(unitType.script, unitType.model)
         status = .alive(Health(value: 100, total: 100))
+        selected = false
     }
     
     mutating func applyMovement(_ map: MapModel) {

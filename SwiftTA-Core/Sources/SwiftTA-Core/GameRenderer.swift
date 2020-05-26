@@ -55,6 +55,7 @@ public struct GameViewUnit {
     public var position: Vertex3f
     public var orientation: Vector3f
     public var pose: UnitModel.Instance
+    public var selected: Bool
 }
 public extension GameViewUnit {
     init(_ unit: UnitInstance) {
@@ -62,6 +63,7 @@ public extension GameViewUnit {
         position = unit.worldPosition
         orientation = unit.orientation
         pose = unit.modelInstance
+        selected = unit.selected
     }
 }
 

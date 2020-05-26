@@ -66,7 +66,7 @@ extension UnsafeRawPointer {
 extension UnsafeRawBufferPointer {
     
     public func bindMemory<T>(atByteOffset offset: Int, count: Int, to type: T.Type) -> UnsafeBufferPointer<T> {
-        let region = Range(start: offset, length: count * MemoryLayout<T>.stride)
+        let region = Range(start: offset, count: count * MemoryLayout<T>.stride)
         let newBuffer = UnsafeRawBufferPointer(rebasing: self[region])
         return newBuffer.bindMemory(to: type)
     }
@@ -321,8 +321,9 @@ func getCurrentTime() -> Double {
     return Double(tv.tv_sec) + (Double(tv.tv_usec) / 1000000.0)
 }
 
-extension Range where Bound: Numeric {
-    init(start: Bound, length: Bound) {
-        self = (start ..< (start + length))
+public extension Range where Bound: Numeric {
+    @inlinable
+    init(start: Bound, count: Bound) {
+        self = (start ..< (start + count))
     }
 }
