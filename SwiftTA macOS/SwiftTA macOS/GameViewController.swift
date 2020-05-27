@@ -93,6 +93,29 @@ class GameViewController: NSViewController {
         renderer.viewState.viewport = Rect4f(scrollView.contentView.bounds)
         renderer.viewState.screenSize = Size2f(scrollView.bounds.size)
     }
+    
+    override var acceptsFirstResponder: Bool { true }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] in
+            self?.handleKeyEvent($0, .down)
+        }
+        NSEvent.addLocalMonitorForEvents(matching: .keyUp) { [weak self] in
+            self?.handleKeyEvent($0, .up)
+        }
+    }
+    
+    private func handleKeyEvent(_ event: NSEvent, _ state: ButtonState) -> NSEvent? {
+        let input = KeyInput(
+            characters: event.characters ?? "",
+            state: state,
+            isRepeat: event.isARepeat
+        )
+        game.enqueueInput(.key(input))
+        return nil
+    }
 
 }
 
@@ -115,11 +138,39 @@ extension GameViewController: MouseTrackingDelegate {
     }
     
     override func mouseMoved(with event: NSEvent) {
-        super.mouseExited(with: event)
-        var location = event.locationInWindow
-        location.y = view.bounds.size.height - location.y
-        renderer.viewState.cursorLocation = Point2f(location)
+        super.mouseMoved(with: event)
+        renderer.viewState.cursorLocation = event.location(in: view)
         //print("[TEST] mouseMoved: \(event.locationInWindow)")
+    }
+    override func mouseDragged(with event: NSEvent) {
+        renderer.viewState.cursorLocation = event.location(in: view)
+    }
+    
+    override func mouseDown(with event: NSEvent) {
+        enqueueMouseInput(with: event)
+    }
+    override func mouseUp(with event: NSEvent) {
+        enqueueMouseInput(with: event)
+    }
+    override func rightMouseDown(with event: NSEvent) {
+        enqueueMouseInput(with: event)
+    }
+    override func rightMouseUp(with event: NSEvent) {
+        enqueueMouseInput(with: event)
+    }
+    override func otherMouseDown(with event: NSEvent) {
+        enqueueMouseInput(with: event)
+    }
+    override func otherMouseUp(with event: NSEvent) {
+        enqueueMouseInput(with: event)
+    }
+    
+    private func enqueueMouseInput(with event: NSEvent) {
+        game.enqueueInput(.click(MouseInput(
+            button: event.buttonNumber,
+            state: event.type.buttonState,
+            cursorLocation: event.location(in: view)
+        )))
     }
     
 }
@@ -138,7 +189,6 @@ private class MouseTrackingView: NSView {
     
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
-        print("[TEST] updateTrackingAreas")
         
         if let existing = trackingArea {
             removeTrackingArea(existing)
@@ -146,11 +196,32 @@ private class MouseTrackingView: NSView {
         
         let new = NSTrackingArea(
             rect: bounds,
-            options: [.activeAlways, .cursorUpdate, .mouseEnteredAndExited, .mouseMoved],
+            options: [.activeAlways, .cursorUpdate, .mouseEnteredAndExited, .mouseMoved, .enabledDuringMouseDrag],
             owner: trackingDelegate,
             userInfo: nil)
         addTrackingArea(new)
         trackingArea = new
     }
     
+}
+
+private extension NSEvent {
+    func location(in view: NSView) -> Point2f {
+        var location = self.locationInWindow
+        location.y = view.bounds.size.height - location.y
+        return Point2f(location)
+    }
+}
+
+private extension NSEvent.EventType {
+    var buttonState: ButtonState {
+        switch self {
+        case .leftMouseUp, .rightMouseUp, .otherMouseUp, .keyUp:
+            return .up
+        case .leftMouseDown, .rightMouseDown, .otherMouseDown, .keyDown:
+            return .down
+        default:
+            return .down
+        }
+    }
 }

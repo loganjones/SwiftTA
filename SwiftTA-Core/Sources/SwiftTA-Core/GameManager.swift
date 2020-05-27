@@ -25,6 +25,9 @@ public class GameManager: ScriptMachine {
     private var objectIdGenerator = GameObjectIdGenerator()
     private var objects: [GameObjectId: GameObject] = [:]
     
+    private let inputSyncQueue = DispatchQueue(label: "GameInput")
+    private var inputQueue = [GameInput]()
+    
     public init(state: GameState, renderer: GameRenderer) {
         loadedState = state
         self.renderer = renderer
@@ -65,7 +68,22 @@ public class GameManager: ScriptMachine {
         thread = nil
     }
     
+    public func enqueueInput(_ input: GameInput) {
+        inputSyncQueue.sync {
+            inputQueue.append(input)
+        }
+    }
+    
     private func update() {
+        let viewState = renderer.viewState
+        
+        let queue = inputSyncQueue.sync { () -> [GameInput] in
+            let current = inputQueue
+            inputQueue = []
+            return current
+        }
+        processInput(queue, viewState)
+        
         for (id, object) in objects {
             switch object {
             case let .unit(instance): updateUnit(instance, id)
@@ -73,6 +91,53 @@ public class GameManager: ScriptMachine {
             }
         }
         constructView()
+    }
+    
+    private func processInput(_ inputQueue: [GameInput], _ viewState: GameViewState) {
+        for i in inputQueue {
+            switch i {
+            case let .click(input):
+                if input.button == 0 && input.state == .up {
+                    if var found = firstUnit(underCursorAt: input.cursorLocation, in: viewState) {
+                        found.instance.selected = true
+                        objects[found.id] = .unit(found.instance)
+                        deselectAllUnits(except: [found.id])
+                    }
+                    else {
+                        deselectAllUnits()
+                    }
+                }
+            case .key:
+                break
+            }
+        }
+    }
+    
+    private func firstUnit(underCursorAt location: Point2f, in viewState: GameViewState) -> (id: GameObjectId, instance: UnitInstance)? {
+        for (id, object) in objects {
+            switch object {
+            case let .unit(instance):
+                if TEMP_unit(instance, isUnderCursorAt: location, in: viewState) {
+                    return (id, instance)
+                }
+            default:
+                ()
+            }
+        }
+        return nil
+    }
+    
+    private func deselectAllUnits(except: Set<GameObjectId> = []) {
+        for (id, object) in objects {
+            guard !except.contains(id) else { continue }
+            switch object {
+            case var .unit(instance) where instance.selected:
+                instance.selected = false
+                objects[id] = .unit(instance)
+            default:
+                ()
+            }
+        }
     }
     
     private func updateUnit(_ unit: UnitInstance, _ id: GameObjectId) {
@@ -136,7 +201,6 @@ public class GameManager: ScriptMachine {
         print("Spawning \(unitType.info.name) at \(startPosition), height: \(height)")
         var instance = UnitInstance(unitType, position: Vertex3f(xy: startPosition, z: height))
         instance.scriptContext.startScript("Create")
-        instance.selected = Bool.random()
         objects[id] = .unit(instance)
         objectSyncQueue.asyncAfter(deadline: .now() + 1) { self.TEMP_startMoving(id) }
         
