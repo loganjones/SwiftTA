@@ -58,12 +58,12 @@ public struct GameViewUnit {
     public var selected: Bool
 }
 public extension GameViewUnit {
-    init(_ unit: UnitInstance) {
+    init(_ unit: UnitInstance, isSelected: Bool = false) {
         type = unit.type
         position = unit.worldPosition
         orientation = unit.orientation
         pose = unit.modelInstance
-        selected = unit.selected
+        selected = isSelected
     }
 }
 

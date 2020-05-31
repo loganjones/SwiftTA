@@ -260,6 +260,42 @@ public extension HeightMap {
         return linearInterpolation(h0, h1, xs - GameFloat(x0))
     }
     
+    /// Determines the closest world position point on the height map
+    /// to the give view-space position.
+    ///
+    /// This is a reverse mapping of a view point to a map point.
+    /// The x-coordinate is trivial; but the y-coordinate will have to
+    /// be approximated by iterating (bottom-up) through the height values
+    /// in the position's column and mapping the y-coordinate to view space.
+    func worldPosition(forViewPosition viewPosition: Point2f) -> Point3f {
+        
+        let sampleIndex = Vector2<Int>(viewPosition / Vector2f(sampleSize))
+        let yPadding = viewPosition.y - GameFloat(sampleIndex.y * sampleSize.height)
+        
+        var iterator = sampleIndex
+        iterator.y = min(iterator.y + 10, sampleCount.height - 1)
+        
+        while true {
+            
+            let index = iterator.index(rowStride: sampleCount.width)
+            let h = GameFloat(samples[index])
+            let worldY = GameFloat(iterator.y * sampleSize.height)
+            let viewY = worldY - (h / 2.0)
+            
+            if viewY <= viewPosition.y {
+                return Point3f(viewPosition.x, worldY + yPadding, h)
+            }
+            else if iterator.y <= sampleIndex.y {
+                return Point3f(viewPosition.x, worldY + yPadding, h)
+            }
+            else {
+                iterator.y -= 1
+            }
+        }
+        
+        fatalError()
+    }
+    
 }
 
 // MARK:- TA

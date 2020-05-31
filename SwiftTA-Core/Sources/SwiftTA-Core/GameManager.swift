@@ -25,6 +25,8 @@ public class GameManager: ScriptMachine {
     private var objectIdGenerator = GameObjectIdGenerator()
     private var objects: [GameObjectId: GameObject] = [:]
     
+    private var userState = UserState()
+    
     private let inputSyncQueue = DispatchQueue(label: "GameInput")
     private var inputQueue = [GameInput]()
     
@@ -98,14 +100,18 @@ public class GameManager: ScriptMachine {
             switch i {
             case let .click(input):
                 if input.button == 0 && input.state == .up {
-                    if var found = firstUnit(underCursorAt: input.cursorLocation, in: viewState) {
-                        found.instance.selected = true
-                        objects[found.id] = .unit(found.instance)
-                        deselectAllUnits(except: [found.id])
+                    if let found = firstUnit(underCursorAt: input.cursorLocation, in: viewState) {
+                        userState.selection = [found.id]
+                        userState.inputMode = .move
                     }
-                    else {
-                        deselectAllUnits()
+                    else if !userState.selection.isEmpty {
+                        let unitId = userState.selection.first!
+                        TEMP_startMoving(unitId, to: input.cursorLocation, in: viewState)
                     }
+                }
+                else if input.button == 1 && input.state == .up {
+                    userState.selection = []
+                    userState.inputMode = .select
                 }
             case .key:
                 break
@@ -127,19 +133,6 @@ public class GameManager: ScriptMachine {
         return nil
     }
     
-    private func deselectAllUnits(except: Set<GameObjectId> = []) {
-        for (id, object) in objects {
-            guard !except.contains(id) else { continue }
-            switch object {
-            case var .unit(instance) where instance.selected:
-                instance.selected = false
-                objects[id] = .unit(instance)
-            default:
-                ()
-            }
-        }
-    }
-    
     private func updateUnit(_ unit: UnitInstance, _ id: GameObjectId) {
         //guard let type = loadedState.units[unit.type] else { continue }
         
@@ -151,16 +144,24 @@ public class GameManager: ScriptMachine {
     }
     
     private func constructView() {
+        let userState = self.userState
         var viewState = renderer.viewState
         
         let cursorPos = viewState.cursorLocation
-        var cursor = Cursor.normal
+        var cursor: Cursor
+        
+        switch userState.inputMode {
+        case .select:
+            cursor = .normal
+        case .move:
+            cursor = .move
+        }
         
         var viewables: [GameViewObject] = []
-        for (_, object) in objects {
+        for (id, object) in objects {
             switch object {
             case let .unit(instance):
-                viewables.append(.unit(GameViewUnit(instance)))
+                viewables.append(.unit(GameViewUnit(instance, isSelected: userState.selection.contains(id))))
                 if TEMP_unit(instance, isUnderCursorAt: cursorPos, in: viewState) {
                     cursor = .select
                 }
@@ -199,7 +200,7 @@ public class GameManager: ScriptMachine {
         let startPosition = Point2f( GameFloat.random(in: 0...300), GameFloat.random(in: 0...GameFloat(loadedState.map.resolution.height)) )
         let height = loadedState.map.heightMap.height(atWorldPosition: startPosition)
         print("Spawning \(unitType.info.name) at \(startPosition), height: \(height)")
-        var instance = UnitInstance(unitType, position: Vertex3f(xy: startPosition, z: height))
+        let instance = UnitInstance(unitType, position: Vertex3f(xy: startPosition, z: height))
         instance.scriptContext.startScript("Create")
         objects[id] = .unit(instance)
         objectSyncQueue.asyncAfter(deadline: .now() + 1) { self.TEMP_startMoving(id) }
@@ -222,6 +223,17 @@ public class GameManager: ScriptMachine {
     private func TEMP_unit(_ unit: UnitInstance, isUnderCursorAt location: Point2f, in viewState: GameViewState) -> Bool {
         let bb = viewState.worldToScreen(unit)
         return bb.enclosingRect.contains(location) && bb.contains(location)
+    }
+    
+    private func TEMP_startMoving(_ id: GameObjectId, to cursorLocation: Point2f, in viewState: GameViewState) {
+        guard let obj = objects[id], case var .unit(unit) = obj else { return }
+        
+        let cursorInViewport = viewState.screenToViewport(cursorLocation)
+        let worldPosition = loadedState.map.heightMap.worldPosition(forViewPosition: cursorInViewport)
+        unit.TEMP_waypoint = worldPosition.xy
+        
+        unit.scriptContext.startScript("StartMoving")
+        objects[id] = .unit(unit)
     }
     
 }
@@ -270,6 +282,11 @@ public extension GameViewState {
         let scaledSize = Size2f(unit.type.info.footprint * 16) * scale
         let direction = Vector2f(unit.orientation.z.cosine, unit.orientation.z.sine)
         return BoundingBox2Df(center: scaledPosition, size: scaledSize, orientation: direction)
+    }
+    
+    func screenToViewport(_ screenPosition: Point2f) -> Point2f {
+        let scale = viewport.size / screenSize
+        return (screenPosition * scale) + viewport.origin
     }
     
 }
@@ -330,8 +347,6 @@ public struct UnitInstance {
     }
     var status: Status
     
-    var selected: Bool
-    
 }
 
 public extension UnitInstance {
@@ -345,7 +360,6 @@ public extension UnitInstance {
         modelInstance = UnitModel.Instance(for: unitType.model)
         scriptContext = try! UnitScript.Context(unitType.script, unitType.model)
         status = .alive(Health(value: 100, total: 100))
-        selected = false
     }
     
     mutating func applyMovement(_ map: MapModel) {
