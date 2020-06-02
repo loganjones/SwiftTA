@@ -28,6 +28,7 @@ class MetalGuiDrawable {
     
     private var uniformBuffer: MetalRingBuffer
     private var quadBuffer: MetalRingBuffer
+    private var indexBuffer: MetalRingBuffer
     
     private var cursorsTexture: MTLTexture?
     
@@ -35,12 +36,20 @@ class MetalGuiDrawable {
     private var currentCursor: (type: Cursor, frameIndex: Int) = (.normal, 0)
     private var cursorAnimateCount = 0
     private let cursorAnimateTrigger = 4
+    private let cursorIndexRange = 0..<6
+    
+    private var selectionTexture: MTLTexture?
+    private var selectionIndexRange = 0..<1
+    
+    private var vertexMax = 1024 * 4
+    private var indexMax = 1024 * 6
     
     required init(_ device: MTLDevice, _ maxBuffersInFlight: Int) {
         self.device = device
         
         uniformBuffer = device.makeRingBuffer(length: MemoryLayout<Uniforms>.size, count: maxBuffersInFlight, options: [.storageModeShared])!
-        quadBuffer = device.makeRingBuffer(length: MemoryLayout<Vertex>.stride * 4, count: maxBuffersInFlight, options: [.storageModeShared])!
+        quadBuffer = device.makeRingBuffer(length: MemoryLayout<Vertex>.stride * vertexMax, count: maxBuffersInFlight, options: [.storageModeShared])!
+        indexBuffer = device.makeRingBuffer(length: MemoryLayout<UInt16>.stride * indexMax, count: maxBuffersInFlight, options: [.storageModeShared])!
     }
     
     func loadCursors(from filesystem: FileSystem, with palette: Palette) throws {
@@ -87,6 +96,19 @@ class MetalGuiDrawable {
         
         self.cursors = cursors
         self.cursorsTexture = texture
+        
+        
+        let descriptor3 = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba8Unorm_srgb, width: 256, height: 256, mipmapped: false)
+        guard let texture3 = device.makeTexture(descriptor: descriptor3) else {
+            throw TextureError.badTextureDescriptor
+        }
+        let colorSize = Size2<Int>(256, 256)
+        let colorData = palette.makeRgba(withColorAtIndex: 251, size: colorSize)
+        colorData.withUnsafeBytes() { buffer in
+            let r = MTLRegion(origin: MTLOrigin(x: 0, y: 0, z: 0), size: MTLSize(colorSize, depth: 1))
+            texture3.replace(region: r, mipmapLevel: 0, withBytes: buffer.baseAddress!, bytesPerRow: colorSize.width * 4)
+        }
+        self.selectionTexture = texture3
     }
     
     enum TextureError: Swift.Error {
@@ -127,16 +149,45 @@ extension MetalGuiDrawable {
         let uniforms = uniformBuffer.next().contents.bindMemory(to: Uniforms.self, capacity: 1)
         uniforms.pointee.mvpMatrix = projectionMatrix * viewMatrix * modelMatrix
         
+        var vertexCount = 0
         let p1 = frame.position1 + viewState.cursorLocation
         let p2 = frame.position2 + viewState.cursorLocation
-        let vz = Float(100)
+        var vz = GameFloat(256)
         let t1 = frame.texcoord1
         let t2 = frame.texcoord2
-        let p = quadBuffer.next().contents.bindMemory(to: Vertex.self, capacity: 4)
-        p[0].position = vector_float3(p1.x, p1.y, vz); p[0].texCoord = vector_float2(t1.x, t1.y)
-        p[1].position = vector_float3(p1.x, p2.y, vz); p[1].texCoord = vector_float2(t1.x, t2.y)
-        p[2].position = vector_float3(p2.x, p1.y, vz); p[2].texCoord = vector_float2(t2.x, t1.y)
-        p[3].position = vector_float3(p2.x, p2.y, vz); p[3].texCoord = vector_float2(t2.x, t2.y)
+        let p = quadBuffer.next().contents.bindMemory(to: Vertex.self, capacity: vertexMax)
+        let indices = indexBuffer.next().contents.bindMemory(to: UInt16.self, capacity: indexMax)
+        p[0] = Vertex(position: Vector3f(p1.x, p1.y, vz), texCoord: Vector2f(t1.x, t1.y))
+        p[1] = Vertex(position: Vector3f(p1.x, p2.y, vz), texCoord: Vector2f(t1.x, t2.y))
+        p[2] = Vertex(position: Vector3f(p2.x, p2.y, vz), texCoord: Vector2f(t2.x, t2.y))
+        p[3] = Vertex(position: Vector3f(p2.x, p1.y, vz), texCoord: Vector2f(t2.x, t1.y))
+        vertexCount += 4
+        indices.addTriangle(at: 0, indices: [0,1,2])
+        indices.addTriangle(at: 3, indices: [3,0,2])
+        
+        vz = 0
+        
+        let selectionIndexStart = 6
+        var selectionIndexCount = 0
+        for case let .unit(unit) in viewState.objects {
+            guard unit.selected else { continue }
+            guard vertexCount < vertexMax else { break }
+            guard (selectionIndexStart + selectionIndexCount) < indexMax else { break }
+            let bounds = viewState.worldToScreen(unit)
+            let points = bounds.points
+            let vz = unit.position.z
+            let i = vertexCount
+            p[i+0] = Vertex(position: Vector3f(points.a.x, points.a.y, vz), texCoord: Vector2f(0, 0))
+            p[i+1] = Vertex(position: Vector3f(points.b.x, points.b.y, vz), texCoord: Vector2f(0, 1))
+            p[i+2] = Vertex(position: Vector3f(points.c.x, points.c.y, vz), texCoord: Vector2f(1, 1))
+            p[i+3] = Vertex(position: Vector3f(points.d.x, points.d.y, vz), texCoord: Vector2f(1, 0))
+            let ii = selectionIndexStart + selectionIndexCount
+            indices.addTriangle(at: ii+0, indices: [i+0,i+1,i+2])
+            indices.addTriangle(at: ii+3, indices: [i+3,i+0,i+2])
+            vertexCount += 4
+            selectionIndexCount += 6
+        }
+        selectionIndexRange = Range(start: selectionIndexStart, count: selectionIndexCount)
     }
     
     func drawFrame(with renderEncoder: MTLRenderCommandEncoder) {
@@ -147,9 +198,12 @@ extension MetalGuiDrawable {
         renderEncoder.setFragmentBuffer(uniformBuffer, index: BufferIndex.uniforms)
         renderEncoder.setVertexBuffer(quadBuffer, index: BufferIndex.vertices)
         
-        if let cursorsTexture = cursorsTexture {
-            renderEncoder.setFragmentTexture(cursorsTexture, index: TextureIndex.color)
-            renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
+        renderEncoder.setFragmentTexture(cursorsTexture, index: TextureIndex.color)
+        renderEncoder.drawIndexedPrimitives(type: .triangle, indexRange: cursorIndexRange, indexType: .uint16, indexBuffer: indexBuffer)
+            
+        if !selectionIndexRange.isEmpty {
+            renderEncoder.setFragmentTexture(selectionTexture, index: TextureIndex.color)
+            renderEncoder.drawIndexedPrimitives(type: .triangle, indexRange: selectionIndexRange, indexType: .uint16, indexBuffer: indexBuffer)
         }
     }
     
@@ -251,6 +305,16 @@ private extension MetalGuiDrawable {
         }
         
         return frame
+    }
+    
+}
+
+private extension UnsafeMutablePointer where Pointee == UInt16 {
+    
+    func addTriangle(at index: Int, indices: [Int]) {
+        self[index+0] = UInt16(indices[0])
+        self[index+1] = UInt16(indices[1])
+        self[index+2] = UInt16(indices[2])
     }
     
 }

@@ -150,7 +150,7 @@ private extension MetalFeatureDrawable {
             
             if gafFrames.count == 1 {
                 if let texture = try? makeTexture(for: gafFrames[0], using: palette),
-                    let instances = buildInstances(of: (texture.size2D, gafFrames[0].offset, info.footprint), from: occurrences, in: map)
+                    let instances = buildInstances(of: (texture.size2D, gafFrames[0].offset, info.footprint, info.height), from: occurrences, in: map)
                 {
                     features.append(.static(StaticFeature(texture: texture, instances: instances.0, instancesVertexCount: instances.1)))
                 }
@@ -159,7 +159,7 @@ private extension MetalFeatureDrawable {
                     let shadowItem = gafListing[shadowName],
                     let shadowFrame = try? shadowItem.extractFrame(index: 0, from: gafHandle),
                     let shadowTexture = try? makeTexture(for: shadowFrame, using: shadowPalette),
-                    let shadowInstances = buildInstances(of: (shadowTexture.size2D, shadowFrame.offset, info.footprint), from: occurrences, in: map)
+                    let shadowInstances = buildInstances(of: (shadowTexture.size2D, shadowFrame.offset, info.footprint, info.height), from: occurrences, in: map)
                 {
                     shadows.append(.static(StaticFeature(texture: shadowTexture, instances: shadowInstances.0, instancesVertexCount: shadowInstances.1)))
                 }
@@ -168,7 +168,7 @@ private extension MetalFeatureDrawable {
                 // TEMP
                 print("TODO: Support animated map feature \(name) (\(gafFrames.count) frames)")
                 let texture = try! makeTexture(for: gafFrames[0], using: palette)
-                let instances = buildInstances(of: (texture.size2D, gafFrames[0].offset, info.footprint), from: occurrences, in: map)!
+                let instances = buildInstances(of: (texture.size2D, gafFrames[0].offset, info.footprint, info.height), from: occurrences, in: map)!
                 features.append(.static(StaticFeature(texture: texture, instances: instances.0, instancesVertexCount: instances.1)))
             }
         }
@@ -216,21 +216,25 @@ private extension MetalFeatureDrawable {
         return featureOccurrences
     }
     
-    func buildInstances(of feature: (size: Size2<Int>, offset: Point2<Int>, footprint: Size2<Int>), from occurrenceIndices: [Int], in map: MapModel) -> (MTLBuffer, Int)? {
+    func buildInstances(of feature: (size: Size2<Int>, offset: Point2<Int>, footprint: Size2<Int>, height: Int), from occurrenceIndices: [Int], in map: MapModel) -> (MTLBuffer, Int)? {
         
         let vertexCount = occurrenceIndices.count * 6
         guard let vertexBuffer = device.makeBuffer(length: MemoryLayout<Vertex>.stride * vertexCount, options: [.storageModeShared]) else { return nil }
         var vertices = vertexBuffer.contents().bindMemory(to: Vertex.self, capacity: vertexCount)
         
+        let featureHeight = GameFloat(feature.height)
+        
         for i in occurrenceIndices {
+            
+            let terrainHeight = map.heightMap.height(atMapIndex: i)
             
             let boundingBox = map.worldPosition(ofMapIndex: i)
                 .center(inFootprint: feature.footprint)
                 .offset(by: feature.offset)
-                .adjust(forHeight: map.heightMap.height(atMapIndex: i))
+                .adjust(forHeight: terrainHeight)
                 .makeRect(size: Size2f(feature.size))
             
-            createRect(boundingBox, in: vertices)
+            createRect(boundingBox, z: GameFloat(terrainHeight), height: featureHeight, in: vertices)
             vertices += 6
         }
         
@@ -282,25 +286,25 @@ private extension Point2 where Element == Int {
     
 }
 
-private func createRect(_ rect: Rect4f, in vertices: UnsafeMutablePointer<Vertex>) {
+private func createRect(_ rect: Rect4f, z: GameFloat, height: GameFloat, in vertices: UnsafeMutablePointer<Vertex>) {
     
     let x = Float(rect.origin.x)
     let y = Float(rect.origin.y)
-    let z = Float(rect.maxY) / (32000.0 / 256.0)//Float(10)
+    let z = height.isZero ? -100 : z
     let w = Float(rect.size.width)
     let h = Float(rect.size.height)
     
-    vertices[0].position = vector_float3(x+0, y+0, z)
+    vertices[0].position = vector_float3(x+0, y+0, z+height)
     vertices[0].texCoord = vector_float2(0, 0)
     vertices[1].position = vector_float3(x+0, y+h, z)
     vertices[1].texCoord = vector_float2(0, 1)
     vertices[2].position = vector_float3(x+w, y+h, z)
     vertices[2].texCoord = vector_float2(1, 1)
     
-    vertices[3].position = vector_float3(x+0, y+0, z)
+    vertices[3].position = vector_float3(x+0, y+0, z+height)
     vertices[3].texCoord = vector_float2(0, 0)
     vertices[4].position = vector_float3(x+w, y+h, z)
     vertices[4].texCoord = vector_float2(1, 1)
-    vertices[5].position = vector_float3(x+w, y+0, z)
+    vertices[5].position = vector_float3(x+w, y+0, z+height)
     vertices[5].texCoord = vector_float2(1, 0)
 }

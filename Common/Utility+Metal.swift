@@ -227,8 +227,20 @@ extension MTLRenderCommandEncoder {
         self.setFragmentBuffer(buffer.buffer, offset: buffer.offset, index: index.rawValue)
     }
     
-    func drawIndexedPrimitives(type primitiveType: MTLPrimitiveType, indexCount: Int, indexType: MTLIndexType, indexBuffer: MetalRingBuffer) {
-        self.drawIndexedPrimitives(type: primitiveType, indexCount: indexCount, indexType: indexType, indexBuffer: indexBuffer.buffer, indexBufferOffset: indexBuffer.offset)
+    func drawIndexedPrimitives(type primitiveType: MTLPrimitiveType, indexStart: Int = 0, indexCount: Int, indexType: MTLIndexType, indexBuffer: MetalRingBuffer) {
+        self.drawIndexedPrimitives(type: primitiveType, indexCount: indexCount, indexType: indexType, indexBuffer: indexBuffer.buffer, indexBufferOffset: indexBuffer.offset + (indexStart * indexType.stride))
+    }
+    func drawIndexedPrimitives(type primitiveType: MTLPrimitiveType, indexRange: Range<Int>, indexType: MTLIndexType, indexBuffer: MetalRingBuffer) {
+        self.drawIndexedPrimitives(type: primitiveType, indexCount: indexRange.count, indexType: indexType, indexBuffer: indexBuffer.buffer, indexBufferOffset: indexBuffer.offset + (indexRange.lowerBound * indexType.stride))
     }
     
+}
+extension MTLIndexType {
+    var stride: Int {
+        switch self {
+        case .uint16: return MemoryLayout<UInt16>.stride
+        case .uint32: return MemoryLayout<UInt32>.stride
+        @unknown default: return 1
+        }
+    }
 }

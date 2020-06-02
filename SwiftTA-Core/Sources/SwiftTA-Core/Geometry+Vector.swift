@@ -38,6 +38,9 @@ public extension Vector2 {
         return Rect4(origin: self, size: size)
     }
     
+    @inlinable
+    static var zero: Vector2<Element> { Vector2<Element>() }
+    
 }
 
 public extension Vector2 where Element: SignedNumeric & Comparable {
@@ -144,6 +147,16 @@ public extension Vector2 where Element: FloatingPoint {
         return Vector2(
             Swift.min(Swift.max(rect.minX, x), rect.maxX),
             Swift.min(Swift.max(rect.minY, y), rect.maxY)
+        )
+    }
+    
+    /// Rotates the receiver to the given `oientation` (assumed to be a direction vector in a unit circle; ie. unit length).
+    @inlinable
+    func rotated(to oientation: Vector2<Element>) -> Vector2<Element> {
+        let (a, b) = (self, oientation)
+        return Vector2<Element>(
+            a.x * b.x - a.y * b.y,
+            a.x * b.y + a.y * b.x
         )
     }
     

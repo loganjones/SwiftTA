@@ -84,7 +84,7 @@ class MetalUnitDrawable {
         for case let .unit(unit) in viewState.objects {
             
             let screenPosition = unit.position.xy - Vector2f(0, unit.position.z / 2.0)
-            let viewMatrix = matrix_float4x4.translation(xy: vector_float2(screenPosition - viewState.viewport.origin), z: 0) * matrix_float4x4.taPerspective
+            let viewMatrix = matrix_float4x4.translation(xy: vector_float2(screenPosition - viewState.viewport.origin), z: unit.position.z) * matrix_float4x4.taPerspective
             
             uniforms.pointee.vpMatrix = projectionMatrix * viewMatrix
             uniforms.pointee.normalMatrix = matrix_float3x3(topLeftOf: viewMatrix).inverse.transpose

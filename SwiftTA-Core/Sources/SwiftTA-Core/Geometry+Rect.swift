@@ -111,6 +111,13 @@ public extension Rect4 where Element: FixedWidthInteger  {
         return insetBy(dx: ds, dy: ds)
     }
     
+    /// Returns `true` if the given point lies within the receiver's area.
+    @inlinable
+    func contains(_ point: Point2<Element>) -> Bool {
+        let p = point &- origin
+        return p.x >= 0 && p.y >= 0 && p.x < size.width && p.y < size.height
+    }
+    
 }
 
 public extension Rect4 where Element: FloatingPoint  {
@@ -125,6 +132,13 @@ public extension Rect4 where Element: FloatingPoint  {
     }
     @inlinable func insetBy(_ ds: Element) -> Rect4 {
         return insetBy(dx: ds, dy: ds)
+    }
+    
+    /// Returns `true` if the given point lies within the receiver's area.
+    @inlinable
+    func contains(_ point: Point2<Element>) -> Bool {
+        let p = point - origin
+        return p.x >= 0 && p.y >= 0 && p.x < size.width && p.y < size.height
     }
     
 }

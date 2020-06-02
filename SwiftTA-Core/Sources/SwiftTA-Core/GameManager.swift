@@ -25,6 +25,11 @@ public class GameManager: ScriptMachine {
     private var objectIdGenerator = GameObjectIdGenerator()
     private var objects: [GameObjectId: GameObject] = [:]
     
+    private var userState = UserState()
+    
+    private let inputSyncQueue = DispatchQueue(label: "GameInput")
+    private var inputQueue = [GameInput]()
+    
     public init(state: GameState, renderer: GameRenderer) {
         loadedState = state
         self.renderer = renderer
@@ -65,7 +70,22 @@ public class GameManager: ScriptMachine {
         thread = nil
     }
     
+    public func enqueueInput(_ input: GameInput) {
+        inputSyncQueue.sync {
+            inputQueue.append(input)
+        }
+    }
+    
     private func update() {
+        let viewState = renderer.viewState
+        
+        let queue = inputSyncQueue.sync { () -> [GameInput] in
+            let current = inputQueue
+            inputQueue = []
+            return current
+        }
+        processInput(queue, viewState)
+        
         for (id, object) in objects {
             switch object {
             case let .unit(instance): updateUnit(instance, id)
@@ -73,6 +93,44 @@ public class GameManager: ScriptMachine {
             }
         }
         constructView()
+    }
+    
+    private func processInput(_ inputQueue: [GameInput], _ viewState: GameViewState) {
+        for i in inputQueue {
+            switch i {
+            case let .click(input):
+                if input.button == 0 && input.state == .up {
+                    if let found = firstUnit(underCursorAt: input.cursorLocation, in: viewState) {
+                        userState.selection = [found.id]
+                        userState.inputMode = .move
+                    }
+                    else if !userState.selection.isEmpty {
+                        let unitId = userState.selection.first!
+                        TEMP_startMoving(unitId, to: input.cursorLocation, in: viewState)
+                    }
+                }
+                else if input.button == 1 && input.state == .up {
+                    userState.selection = []
+                    userState.inputMode = .select
+                }
+            case .key:
+                break
+            }
+        }
+    }
+    
+    private func firstUnit(underCursorAt location: Point2f, in viewState: GameViewState) -> (id: GameObjectId, instance: UnitInstance)? {
+        for (id, object) in objects {
+            switch object {
+            case let .unit(instance):
+                if TEMP_unit(instance, isUnderCursorAt: location, in: viewState) {
+                    return (id, instance)
+                }
+            default:
+                ()
+            }
+        }
+        return nil
     }
     
     private func updateUnit(_ unit: UnitInstance, _ id: GameObjectId) {
@@ -86,16 +144,24 @@ public class GameManager: ScriptMachine {
     }
     
     private func constructView() {
+        let userState = self.userState
         var viewState = renderer.viewState
         
         let cursorPos = viewState.cursorLocation
-        var cursor = Cursor.normal
+        var cursor: Cursor
+        
+        switch userState.inputMode {
+        case .select:
+            cursor = .normal
+        case .move:
+            cursor = .move
+        }
         
         var viewables: [GameViewObject] = []
-        for (_, object) in objects {
+        for (id, object) in objects {
             switch object {
             case let .unit(instance):
-                viewables.append(.unit(GameViewUnit(instance)))
+                viewables.append(.unit(GameViewUnit(instance, isSelected: userState.selection.contains(id))))
                 if TEMP_unit(instance, isUnderCursorAt: cursorPos, in: viewState) {
                     cursor = .select
                 }
@@ -155,12 +221,19 @@ public class GameManager: ScriptMachine {
     }
     
     private func TEMP_unit(_ unit: UnitInstance, isUnderCursorAt location: Point2f, in viewState: GameViewState) -> Bool {
-        let fudge: GameFloat = 8
-        let unitPosition = viewState.worldPositionToScreen(unit.worldPosition)
-        return location.x >= unitPosition.x - fudge
-            && location.x < unitPosition.x + fudge
-            && location.y >= unitPosition.y - fudge
-            && location.y < unitPosition.y + fudge
+        let bb = viewState.worldToScreen(unit)
+        return bb.enclosingRect.contains(location) && bb.contains(location)
+    }
+    
+    private func TEMP_startMoving(_ id: GameObjectId, to cursorLocation: Point2f, in viewState: GameViewState) {
+        guard let obj = objects[id], case var .unit(unit) = obj else { return }
+        
+        let cursorInViewport = viewState.screenToViewport(cursorLocation)
+        let worldPosition = loadedState.map.heightMap.worldPosition(forViewPosition: cursorInViewport)
+        unit.TEMP_waypoint = worldPosition.xy
+        
+        unit.scriptContext.startScript("StartMoving")
+        objects[id] = .unit(unit)
     }
     
 }
@@ -191,6 +264,29 @@ public extension GameViewState {
         let inViewport = (worldPosition.xy - Vector2f(0, worldPosition.z / 2.0)) - viewport.origin
         let scaled = inViewport * (screenSize / viewport.size)
         return scaled
+    }
+    
+    func worldToScreen(_ unit: UnitInstance) -> BoundingBox2Df {
+        let inViewport = (unit.worldPosition.xy - Vector2f(0, unit.worldPosition.z / 2.0)) - viewport.origin
+        let scale = screenSize / viewport.size
+        let scaledPosition = inViewport * scale
+        let scaledSize = Size2f(unit.type.info.footprint * 16) * scale
+        let direction = Vector2f(unit.modelInstance.orientation.z.cosine, unit.modelInstance.orientation.z.sine)
+        return BoundingBox2Df(center: scaledPosition, size: scaledSize, orientation: direction)
+    }
+    
+    func worldToScreen(_ unit: GameViewUnit) -> BoundingBox2Df {
+        let inViewport = (unit.position.xy - Vector2f(0, unit.position.z / 2.0)) - viewport.origin
+        let scale = screenSize / viewport.size
+        let scaledPosition = inViewport * scale
+        let scaledSize = Size2f(unit.type.info.footprint * 16) * scale
+        let direction = Vector2f(unit.orientation.z.cosine, unit.orientation.z.sine)
+        return BoundingBox2Df(center: scaledPosition, size: scaledSize, orientation: direction)
+    }
+    
+    func screenToViewport(_ screenPosition: Point2f) -> Point2f {
+        let scale = viewport.size / screenSize
+        return (screenPosition * scale) + viewport.origin
     }
     
 }
@@ -235,8 +331,10 @@ public struct UnitInstance {
     let type: UnitData
     var worldPosition: Vertex3f
     var orientation: Vector3f
+    
     var movementVelocity: Vector2f
     var movementDirection: Vector2f
+    
     var modelInstance: UnitModel.Instance
     var scriptContext: UnitScript.Context
     

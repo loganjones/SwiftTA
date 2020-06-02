@@ -201,4 +201,20 @@ public extension Palette {
         return pixelData
     }
     
+    func makeRgba(withColorAtIndex colorIndex: UInt8, size: Size2<Int>) -> Data {
+        let palette = self
+        var pixelData = Data(count: size.area * 4)
+        pixelData.withUnsafeMutableBytes() { (destination: UnsafeMutableRawBufferPointer) in
+            var destinationIndex = destination.startIndex
+            for _ in 0..<(size.width * size.height) {
+                destination[destinationIndex+0] = palette[colorIndex].red
+                destination[destinationIndex+1] = palette[colorIndex].green
+                destination[destinationIndex+2] = palette[colorIndex].blue
+                destination[destinationIndex+3] = palette[colorIndex].alpha
+                destinationIndex += 4
+            }
+        }
+        return pixelData
+    }
+    
 }
