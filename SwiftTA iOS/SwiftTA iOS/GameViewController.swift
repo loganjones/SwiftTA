@@ -8,6 +8,7 @@
 
 import UIKit
 import SwiftTA_Core
+import SwiftTA_Metal
 
 class GameViewController: UIViewController {
     

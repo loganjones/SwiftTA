@@ -19,11 +19,13 @@
 		B5D4B6DB1E04E5F200ADBE65 /* HpiFinderRow.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */; };
 		B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F2F1ED9ECE9006C329B /* CobView.swift */; };
 		B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E26F311ED9EDD7006C329B /* GafView.swift */; };
+		B5EDC8D724A96A0A00313D5F /* Utility+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5EDC8D624A96A0A00313D5F /* Utility+Cocoa.swift */; };
+		B5EDC8DE24A96D4E00313D5F /* Utility+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5EDC8DC24A96D4E00313D5F /* Utility+Metal.swift */; };
+		B5EDC8DF24A96D4E00313D5F /* Utility+OpenGL.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5EDC8DD24A96D4E00313D5F /* Utility+OpenGL.swift */; };
 		F015C79A20AE369600873642 /* ModelViewRenderer+OpenglCore33.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79920AE369600873642 /* ModelViewRenderer+OpenglCore33.swift */; };
 		F015C79D20AE3D9600873642 /* unit-view-grid.glsl.vert in Resources */ = {isa = PBXBuildFile; fileRef = F015C79B20AE3D9500873642 /* unit-view-grid.glsl.vert */; };
 		F015C79E20AE3D9600873642 /* unit-view-grid.glsl.frag in Resources */ = {isa = PBXBuildFile; fileRef = F015C79C20AE3D9500873642 /* unit-view-grid.glsl.frag */; };
 		F015C7A020AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015C79F20AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift */; };
-		F07B5CD020F7FEFF00491322 /* Utility+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07B5CCF20F7FEFF00491322 /* Utility+Metal.swift */; };
 		F08A641120EE86CD001E5982 /* ModelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08A641020EE86CD001E5982 /* ModelView.swift */; };
 		F08C9A8721126BE200DC18EE /* TntViewRenderer+MetalSingleQuad.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08C9A8621126BE200DC18EE /* TntViewRenderer+MetalSingleQuad.swift */; };
 		F08C9A8921126C6200DC18EE /* TntViewRenderer+MetalStaticGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08C9A8821126C6200DC18EE /* TntViewRenderer+MetalStaticGrid.swift */; };
@@ -39,8 +41,6 @@
 		F0CD87D120FFE7B30012B1C8 /* TntView+Metal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CD87D020FFE7B30012B1C8 /* TntView+Metal.swift */; };
 		F0CD87D420FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F0CD87D220FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal */; };
 		F0D9A49C2059F6D90081DC15 /* TntView+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A49B2059F6D90081DC15 /* TntView+Cocoa.swift */; };
-		F0D9A4A22059FBAD0081DC15 /* Utility+Cocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A4A12059FBAD0081DC15 /* Utility+Cocoa.swift */; };
-		F0D9A4A82059FF080081DC15 /* Utility+OpenGL.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D9A4A72059FF080081DC15 /* Utility+OpenGL.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,11 +59,13 @@
 		B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HpiFinderRow.xib; sourceTree = "<group>"; };
 		B5E26F2F1ED9ECE9006C329B /* CobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CobView.swift; sourceTree = "<group>"; };
 		B5E26F311ED9EDD7006C329B /* GafView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GafView.swift; sourceTree = "<group>"; };
+		B5EDC8D624A96A0A00313D5F /* Utility+Cocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Cocoa.swift"; sourceTree = "<group>"; };
+		B5EDC8DC24A96D4E00313D5F /* Utility+Metal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Metal.swift"; sourceTree = "<group>"; };
+		B5EDC8DD24A96D4E00313D5F /* Utility+OpenGL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+OpenGL.swift"; sourceTree = "<group>"; };
 		F015C79920AE369600873642 /* ModelViewRenderer+OpenglCore33.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelViewRenderer+OpenglCore33.swift"; sourceTree = "<group>"; };
 		F015C79B20AE3D9500873642 /* unit-view-grid.glsl.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-grid.glsl.vert"; path = "../../TAassets/TAassets/unit-view-grid.glsl.vert"; sourceTree = "<group>"; };
 		F015C79C20AE3D9500873642 /* unit-view-grid.glsl.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = "unit-view-grid.glsl.frag"; path = "../../TAassets/TAassets/unit-view-grid.glsl.frag"; sourceTree = "<group>"; };
 		F015C79F20AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ModelViewRenderer+OpenglLegacy.swift"; sourceTree = "<group>"; };
-		F07B5CCF20F7FEFF00491322 /* Utility+Metal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Metal.swift"; sourceTree = "<group>"; };
 		F08A641020EE86CD001E5982 /* ModelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelView.swift; sourceTree = "<group>"; };
 		F08C9A8621126BE200DC18EE /* TntViewRenderer+MetalSingleQuad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TntViewRenderer+MetalSingleQuad.swift"; sourceTree = "<group>"; };
 		F08C9A8821126C6200DC18EE /* TntViewRenderer+MetalStaticGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TntViewRenderer+MetalStaticGrid.swift"; sourceTree = "<group>"; };
@@ -81,8 +83,6 @@
 		F0CD87D220FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = "TntViewRenderer+MetalShaders.metal"; sourceTree = "<group>"; };
 		F0CD87D320FFF9430012B1C8 /* TntViewRenderer+MetalShaderTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TntViewRenderer+MetalShaderTypes.h"; sourceTree = "<group>"; };
 		F0D9A49B2059F6D90081DC15 /* TntView+Cocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TntView+Cocoa.swift"; sourceTree = "<group>"; };
-		F0D9A4A12059FBAD0081DC15 /* Utility+Cocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+Cocoa.swift"; sourceTree = "<group>"; };
-		F0D9A4A72059FF080081DC15 /* Utility+OpenGL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Utility+OpenGL.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,7 +100,6 @@
 		B50F6A411D87A54B0016C15B = {
 			isa = PBXGroup;
 			children = (
-				B5E26F101ED9EB80006C329B /* Common */,
 				B50F6A4C1D87A54B0016C15B /* HPIView */,
 				B50F6A4B1D87A54B0016C15B /* Products */,
 				B58ECABF1DC6BE90005F231F /* Frameworks */,
@@ -141,6 +140,9 @@
 				F0CD87D320FFF9430012B1C8 /* TntViewRenderer+MetalShaderTypes.h */,
 				F08C9A8621126BE200DC18EE /* TntViewRenderer+MetalSingleQuad.swift */,
 				F08C9A8821126C6200DC18EE /* TntViewRenderer+MetalStaticGrid.swift */,
+				B5EDC8D624A96A0A00313D5F /* Utility+Cocoa.swift */,
+				B5EDC8DC24A96D4E00313D5F /* Utility+Metal.swift */,
+				B5EDC8DD24A96D4E00313D5F /* Utility+OpenGL.swift */,
 				B50F6A541D87A54B0016C15B /* Assets.xcassets */,
 				B58ECABB1DC6B3B9005F231F /* BridgingHeader.h */,
 				B5D4B6DA1E04E5F200ADBE65 /* HpiFinderRow.xib */,
@@ -162,17 +164,6 @@
 				B58ECAC01DC6BE90005F231F /* libz.tbd */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		B5E26F101ED9EB80006C329B /* Common */ = {
-			isa = PBXGroup;
-			children = (
-				F0D9A4A12059FBAD0081DC15 /* Utility+Cocoa.swift */,
-				F07B5CCF20F7FEFF00491322 /* Utility+Metal.swift */,
-				F0D9A4A72059FF080081DC15 /* Utility+OpenGL.swift */,
-			);
-			name = Common;
-			path = ../Common;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -258,18 +249,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F07B5CD020F7FEFF00491322 /* Utility+Metal.swift in Sources */,
 				F0C74B7120D0744000F52B01 /* ModelViewRenderer+Metal.swift in Sources */,
 				F0CD87D420FFF9430012B1C8 /* TntViewRenderer+MetalShaders.metal in Sources */,
 				F015C7A020AE421000873642 /* ModelViewRenderer+OpenglLegacy.swift in Sources */,
 				F0CD87CD20FFB9470012B1C8 /* TntView.swift in Sources */,
-				F0D9A4A82059FF080081DC15 /* Utility+OpenGL.swift in Sources */,
 				F08C9A8721126BE200DC18EE /* TntViewRenderer+MetalSingleQuad.swift in Sources */,
+				B5EDC8DE24A96D4E00313D5F /* Utility+Metal.swift in Sources */,
 				B5E26F321ED9EDD7006C329B /* GafView.swift in Sources */,
 				F0D9A49C2059F6D90081DC15 /* TntView+Cocoa.swift in Sources */,
 				B5E26F301ED9ECE9006C329B /* CobView.swift in Sources */,
 				F0C74B6F20D06F2A00F52B01 /* ModelView+Metal.swift in Sources */,
 				F0AEB0E22098FB590087B36B /* QuickLookView.swift in Sources */,
+				B5EDC8DF24A96D4E00313D5F /* Utility+OpenGL.swift in Sources */,
 				F08A641120EE86CD001E5982 /* ModelView.swift in Sources */,
 				F0CD87D120FFE7B30012B1C8 /* TntView+Metal.swift in Sources */,
 				B57C32B520702B4700B24C99 /* PaletteView.swift in Sources */,
@@ -278,10 +269,10 @@
 				B50F6A501D87A54B0016C15B /* HpiDocument.swift in Sources */,
 				B50F6A4E1D87A54B0016C15B /* AppDelegate.swift in Sources */,
 				B553EE381DE004AB0033C70D /* FinderView.swift in Sources */,
+				B5EDC8D724A96A0A00313D5F /* Utility+Cocoa.swift in Sources */,
 				F0C74B7420D07CFC00F52B01 /* ModelViewRenderer+MetalShaders.metal in Sources */,
 				B553EE361DDFE2270033C70D /* ModelView+Opengl.swift in Sources */,
 				F08C9A8921126C6200DC18EE /* TntViewRenderer+MetalStaticGrid.swift in Sources */,
-				F0D9A4A22059FBAD0081DC15 /* Utility+Cocoa.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
