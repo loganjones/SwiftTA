@@ -9,17 +9,17 @@
 import MetalKit
 import SwiftTA_Core
 
-typealias MTKViewDelegateRequirementForNSObjectProtocol = NSObject
+public typealias MTKViewDelegateRequirementForNSObjectProtocol = NSObject
 private let maxBuffersInFlight = 3
 
 
-class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer, GameViewProvider {
+public class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer, GameViewProvider {
     
     private let inFlightSemaphore = DispatchSemaphore(value: maxBuffersInFlight)
     
     private let viewStateQueue = DispatchQueue(label: "swiftta.renderer.viewstate")
     private var _viewState: GameViewState
-    var viewState: GameViewState {
+    public var viewState: GameViewState {
         get { viewStateQueue.sync { self._viewState } }
         set { viewStateQueue.sync { self._viewState = newValue } }
     }
@@ -33,16 +33,21 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
     private let features: MetalFeatureDrawable
     private let units: MetalUnitDrawable
     
-    required init?(loadedState loaded: GameState, viewState: GameViewState = GameViewState()) {
+    public required init?(loadedState loaded: GameState, viewState: GameViewState = GameViewState()) {
         
         let beginRenderer = Date()
         
-        guard let metalDevice = MTLCreateSystemDefaultDevice(),
-            let metalCommandQueue = metalDevice.makeCommandQueue(),
-            let library = metalDevice.makeDefaultLibrary()
-            else {
-                print("Metal is not supported on this device")
-                return nil
+        guard let metalDevice = MTLCreateSystemDefaultDevice() else {
+            print("Metal is not supported on this device.")
+            return nil
+        }
+        guard let metalCommandQueue = metalDevice.makeCommandQueue() else {
+            print("Metal command queue not available.")
+            return nil
+        }
+        guard let library = try? metalDevice.makeDefaultLibrary(bundle: Bundle.module) else {
+            print("Failed to load Metal library.")
+            return nil
         }
         
         _viewState = viewState
@@ -108,9 +113,9 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
     }
     
     #if canImport(AppKit)
-    var view: NSView { return metalView }
+    public var view: NSView { return metalView }
     #elseif canImport(UIKit)
-    var view: UIView { return metalView }
+    public var view: UIView { return metalView }
     #endif
     
     private static func determineTntDrawable(_ map: MapModel, _ metalDevice: MTLDevice) -> MetalTntDrawable {
@@ -136,11 +141,11 @@ class MetalRenderer: MTKViewDelegateRequirementForNSObjectProtocol, GameRenderer
 
 extension MetalRenderer: MTKViewDelegate {
     
-    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         //viewState.viewport.size = size
     }
     
-    func draw(in view: MTKView) {
+    public func draw(in view: MTKView) {
         let viewState = self.viewState
         
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }

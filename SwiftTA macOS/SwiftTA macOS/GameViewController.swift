@@ -8,6 +8,8 @@
 
 import Cocoa
 import SwiftTA_Core
+import SwiftTA_Metal
+import SwiftTA_OpenGL3
 
 class GameViewController: NSViewController {
     
@@ -29,7 +31,7 @@ class GameViewController: NSViewController {
         let initialViewState = state.generateInitialViewState(viewportSize: Size2<Int>(1024, 768))
         
         self.renderer = MetalRenderer(loadedState: state, viewState: initialViewState)!
-        //self.renderer = OpenglCore3CocoaRenderer(loadedState: state, viewState: initialViewState)!
+        //self.renderer = OpenglCore3Renderer(loadedState: state, viewState: initialViewState)!
         self.game = GameManager(state: state, renderer: renderer)
         
         let defaultFrameRect = CGRect(size: initialViewState.viewport.size)
